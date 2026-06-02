@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Film — CINEPLEX</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+  <style>
+    /* ══════════════════════════════════════
+       CAST — real photos
+    ══════════════════════════════════════ */
+    .dp-cast-card img.dp-cast-photo {
+      width: 72px; height: 72px;
+      border-radius: 50%;
+      object-fit: cover; object-position: top;
+      display: block;
+      margin: 0 auto 10px;
+      border: 2px solid rgba(255,255,255,0.09);
+      transition: transform 0.22s, border-color 0.22s;
+    }
+    .dp-cast-card:hover img.dp-cast-photo {
+      transform: scale(1.07);
+      border-color: rgba(255,255,255,0.25);
+    }
+
+    /* ── Actor Modal ── */
+    .actor-modal-overlay {
+      position: fixed; inset: 0; z-index: 8000;
+      background: rgba(0,0,0,0.72);
+      backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.25s cubic-bezier(0.16,1,0.3,1);
+      padding: 20px;
+    }
+    .actor-modal-overlay.open { opacity: 1; pointer-events: all; }
+    .actor-modal {
+      background: rgba(9,9,9,0.78);
+      backdrop-filter: blur(52px) saturate(180%); -webkit-backdrop-filter: blur(52px) saturate(180%);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 24px; padding: 0;
+      width: 100%; max-width: 560px; max-height: 88vh;
+      overflow: hidden; overflow-y: auto;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 32px 80px rgba(0,0,0,0.75);
+      transform: translateY(18px) scale(0.97);
+      transition: transform 0.28s cubic-bezier(0.16,1,0.3,1);
+    }
+    .actor-modal-overlay.open .actor-modal { transform: translateY(0) scale(1); }
+    .actor-modal::-webkit-scrollbar { width: 4px; }
+    .actor-modal::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+    .actor-modal-header {
+      position: relative;
+      padding: 28px 28px 24px;
+      background: linear-gradient(135deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.09) 100%);
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      display: flex; align-items: center; gap: 18px;
+    }
+    .actor-modal-close {
+      position: absolute; top: 16px; right: 16px;
+      width: 32px; height: 32px; border-radius: 9px;
+      background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.09);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: rgba(255,255,255,0.6);
+      transition: background 0.18s;
+    }
+    .actor-modal-close:hover { background: rgba(255,255,255,0.14); color: #ffffff; }
+    .actor-modal-avatar {
+      width: 72px; height: 72px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px; font-weight: 900; color: #ffffff;
+      flex-shrink: 0;
+      box-shadow: 0 0 28px rgba(255,255,255,0.35);
+    }
+    .actor-modal-name { font-size: 22px; font-weight: 800; margin-bottom: 4px; }
+    .actor-modal-role { font-size: 13px; color: rgba(255,255,255,0.42); }
+    .actor-modal-body { padding: 22px 28px 28px; }
+    .actor-modal-bio {
+      font-size: 14px; line-height: 1.65;
+      color: rgba(255,255,255,0.6);
+      margin-bottom: 24px;
+    }
+    .actor-modal-films-label {
+      font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.3);
+      text-transform: uppercase; letter-spacing: 1.2px;
+      margin-bottom: 14px;
+    }
+    .actor-modal-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 16px 10px;
+    }
+    .actor-modal-empty {
+      text-align: center; padding: 28px 0;
+      color: rgba(255,255,255,0.3); font-size: 14px;
+    }
+  </style>
+</head>
+<body class="movie-page">
+  <!-- Actor Modal -->
+  <div class="actor-modal-overlay" id="actor-modal-overlay" onclick="closeActorModal(event)">
+    <div class="actor-modal" id="actor-modal">
+      <div class="actor-modal-header">
+        <div class="actor-modal-avatar" id="am-avatar"></div>
+        <div>
+          <div class="actor-modal-name" id="am-name"></div>
+          <div class="actor-modal-role">Actor</div>
+        </div>
+        <button class="actor-modal-close" onclick="document.getElementById('actor-modal-overlay').classList.remove('open')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="actor-modal-body">
+        <div class="actor-modal-bio" id="am-bio"></div>
+        <div class="actor-modal-films-label">FILMOGRAPHY</div>
+        <div class="actor-modal-grid" id="am-grid"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ambient-bg"></div>
+  <div id="navbar-placeholder"></div>
+
+  <main>
+    <div id="detail-root"></div>
+  </main>
+
+  <script src="../js/data.js"></script>
+  <script src="../js/actors_data.js"></script>
+  <script src="../js/i18n.js"></script>
+  <script src="../js/app.js"></script>
+  <script src="../js/api.js"></script>
+  <script>
+    App.initNavbar('', '../');
+    App.initAnimations();
+
+    const id = App.getParam('id');
+    let movie = getMovieById(id);
+    let _apiRelated = null;
+
+    /* Reviews come exclusively from real, logged-in accounts (backend). */
+    const MOCK_REVIEWS = [];
+
+    function buildStars(n, total = 5) {
+      let html = '<div class="review-stars">';
+      for (let i = 1; i <= total; i++) {
+        html += i <= n
+          ? '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" style="color:#ffffff"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>'
+          : '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" style="color:rgba(255,255,255,0.15)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>';
+      }
+      return html + '</div>';
+    }
+
+    function buildReviews(reviews) {
+      if (!reviews.length) {
+        return `<div class="reviews-empty" style="text-align:center;padding:32px 0;color:rgba(255,255,255,0.4);font-size:14px">
+          Hozircha sharhlar yo'q. Birinchi bo'lib fikr bildiring!
+        </div>`;
+      }
+      return reviews.map(r => {
+        const avatar = r.avatar
+          ? `<div class="review-avatar" style="overflow:hidden"><img src="${r.avatar}" alt="${r.name}" style="width:100%;height:100%;object-fit:cover;border-radius:50%"></div>`
+          : `<div class="review-avatar" style="background:${r.color}">${r.initials}</div>`;
+        return `
+        <div class="review-card" data-id="${r.id}">
+          <div class="review-card-header">
+            <div class="review-user">
+              ${avatar}
+              <div>
+                <div class="review-name">${r.name}</div>
+                <div class="review-date">${r.date}</div>
+              </div>
+            </div>
+            ${r.rating ? buildStars(r.rating) : ''}
+          </div>
+          <div class="review-text">${r.text}</div>
+          <div class="review-footer">
+            <button class="review-helpful" onclick="markHelpful('${r.id}', this)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/><path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+              <span class="helpful-count">${r.helpful}</span> foydali
+            </button>
+            <span class="review-badge">Tasdiqlangan</span>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    /* Gradient palette for cast avatars */
+    const CAST_GRADS = [
+      'linear-gradient(135deg,#3a3a3a,#121212)',
+      'linear-gradient(135deg,#3a3a3a,#121212)',
+      'linear-gradient(135deg,#3a3a3a,#121212)',
+      'linear-gradient(135deg,#3a3a3a,#121212)',
+      'linear-gradient(135deg,#3a3a3a,#121212)',
+      'linear-gradient(135deg,#3a3a3a,#121212)',
+      'linear-gradient(135deg,#3a3a3a,#121212)',
+      'linear-gradient(135deg,#3a3a3a,#121212)',
+    ];
+
+    (async () => {
+    /* Try API if not in static data */
+    if (!movie && typeof MoviesAPI !== 'undefined') {
+      try {
+        const resp = await MoviesAPI.getById(id);
+        movie = resp.movie;
+        _apiRelated = resp.related || [];
+        /* Normalize: API uses isTrending/isNew booleans, cast/genre as arrays */
+        if (movie) {
+          movie.genre = movie.genre || [];
+          movie.cast  = movie.cast  || [];
+          movie.description = movie.description || '';
+          const _castOv = JSON.parse(localStorage.getItem('cp_cast_overrides') || '{}');
+          if (_castOv[movie.id] && _castOv[movie.id].length) movie.cast = _castOv[movie.id];
+        }
+      } catch {}
+    }
+
+    if (!movie) {
+      document.getElementById('detail-root').innerHTML = `
+        <div style="text-align:center;padding:120px 20px;color:rgba(255,255,255,0.4);">
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin:0 auto 16px;display:block;opacity:0.3"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+          <h2 style="font-size:20px;font-weight:700;color:rgba(255,255,255,0.5);margin-bottom:8px;">Film topilmadi</h2>
+          <a href="../index.html" style="color:#ffffff;font-size:14px;text-decoration:underline;">Bosh sahifaga qaytish</a>
+        </div>`;
+      return;
+    }
+    {
+      document.title = movie.title + ' — CINEPLEX';
+      const fav = isFavorite(movie.id);
+
+      const durationOrSeries = movie.type === 'series'
+        ? `${movie.seasons} Seasons · ${movie.episodes} Episodes`
+        : movie.duration;
+
+      /* Gallery: prefer movie.gallery array, fall back to related movies' images */
+      let galleryHTML;
+      if (movie.gallery && movie.gallery.length) {
+        galleryHTML = movie.gallery.map(url => `
+          <div class="dp-gallery-item">
+            <img src="${url}" alt="" loading="lazy">
+          </div>`).join('');
+      } else {
+        const galleryMovies = (_apiRelated && _apiRelated.length ? _apiRelated : (typeof getRelated === 'function' ? getRelated(movie) : [])).slice(0, 6);
+        while (galleryMovies.length < 6) galleryMovies.push(movie);
+        galleryHTML = galleryMovies.map(m => `
+          <div class="dp-gallery-item" onclick="App.go('../pages/movie.html?id=${m.id}')">
+            <img src="${m.img}" alt="${m.title}" loading="lazy">
+          </div>`).join('');
+      }
+
+      /* Cast cards — with real IMDB photos when available */
+      const castHTML = movie.cast.map((name, i) => {
+        const inits = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+        const grad  = CAST_GRADS[i % CAST_GRADS.length];
+        const actorData = typeof ACTORS_DATA !== 'undefined'
+          ? ACTORS_DATA.find(a => a.name.toLowerCase() === name.toLowerCase())
+          : null;
+        const actorId = actorData ? actorData.id : null;
+        const photo   = actorData && actorData.photo ? actorData.photo : null;
+
+        const avatarEl = photo
+          ? `<img class="dp-cast-photo" src="${photo}" alt="${name}"
+               onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
+               loading="lazy">
+             <div class="dp-cast-avatar" style="background:${grad};display:none">${inits}</div>`
+          : `<div class="dp-cast-avatar" style="background:${grad}">${inits}</div>`;
+
+        const clickTarget = actorId
+          ? `App.go('../pages/actor-profile.html?id=${actorId}')`
+          : `openActorModal('${name.replace(/'/g,"\\'")}', '${grad}')`;
+
+        return `
+          <div class="dp-cast-card" onclick="${clickTarget}" style="cursor:pointer">
+            ${avatarEl}
+            <div class="dp-cast-name">${name}</div>
+          </div>`;
+      }).join('');
+
+      /* Related row */
+      const related = _apiRelated && _apiRelated.length ? _apiRelated : (typeof getRelated === 'function' ? getRelated(movie) : []);
+      const relatedHTML = related.length ? `
+        <div class="dp-related-section animate-in">
+          <div class="dp-section-label">SHUNGA O'XSHASH</div>
+          <div class="section-header" style="padding:0;margin-bottom:16px">
+            <div></div>
+            <div class="section-nav">
+              <button class="section-nav-btn" onclick="scrollRow('related-row',-1)">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m15 18-6-6 6-6"/></svg>
+              </button>
+              <button class="section-nav-btn" onclick="scrollRow('related-row',1)">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 18 6-6-6-6"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="movies-row" id="related-row" style="padding:30px 0">
+            ${related.map(m => App.buildCard(m, '../')).join('')}
+          </div>
+        </div>
+      ` : '';
+
+      /* ── Banner trailer info (single source — no separate trailer section) ── */
+      const _heroTrailerInfo = (function () {
+        if (movie.trailerS3Url) {
+          return {
+            type: 'video',
+            src: movie.trailerS3Url,
+            html: `<video class="dp-hero-trailer" id="dp-trailer" src="${movie.trailerS3Url}" autoplay muted loop playsinline></video>`
+          };
+        }
+        const _rawHtid = (typeof TRAILER_IDS !== 'undefined' && TRAILER_IDS[movie.id]) || movie.trailer_id || movie.trailerUrl || movie.trailer_url;
+        const htid = _rawHtid && typeof extractYouTubeId === 'function' ? (extractYouTubeId(_rawHtid) || _rawHtid) : _rawHtid;
+        if (!htid) return { type: 'none', html: '' };
+        const _org = window.location.origin;
+        return {
+          type: 'youtube',
+          id: htid,
+          html: `<iframe class="dp-hero-trailer" id="dp-trailer" src="https://www.youtube-nocookie.com/embed/${htid}?autoplay=1&mute=1&controls=0&loop=1&playlist=${htid}&rel=0&playsinline=1&origin=${_org}&enablejsapi=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>`
+        };
+      })();
+
+      document.getElementById('detail-root').innerHTML = `
+
+        <!-- ── HERO ── -->
+        <div class="dp-hero animate-in">
+          <img class="dp-hero-img" src="${movie.banner_img || movie.img}" alt="${movie.title}">
+          ${_heroTrailerInfo.html}
+          <div class="dp-hero-overlay"></div>
+          <div class="dp-hero-fade"></div>
+          <a class="detail-back" onclick="history.back();return false;" href="#">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m15 18-6-6 6-6"/></svg>
+          </a>
+          ${_heroTrailerInfo.type !== 'none' ? `
+          <div class="dp-hero-controls" id="dp-hero-controls">
+            <button class="dp-hero-ctrl-btn" id="dp-vol-btn" type="button" onclick="toggleHeroTrailerMute()" title="Ovoz / ovozsiz">
+              <svg id="dp-vol-muted" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+              <svg id="dp-vol-on" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+            </button>
+            <button class="dp-hero-ctrl-btn" id="dp-fs-btn" type="button" onclick="expandHeroTrailer()" title="To'liq ekran">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+            </button>
+          </div>` : ''}
+          <div class="dp-hero-content">
+            <h1 class="dp-hero-title">${movie.title}</h1>
+            <div class="dp-hero-rating">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              ${movie.rating}
+              <span class="rating-denom">/10</span>
+            </div>
+            <div class="dp-hero-meta">
+              <span>${movie.year}</span>
+              <span class="dp-hero-meta-sep">|</span>
+              <span>${durationOrSeries}</span>
+              <span class="dp-hero-meta-sep">|</span>
+              <span>${movie.age}+ Rating</span>
+              <span class="dp-hero-meta-sep">|</span>
+              <span>${movie.genre.map(g => g.charAt(0).toUpperCase()+g.slice(1)).join(', ')}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── INFO ROW ── -->
+        <div class="dp-info-section animate-in" style="transition-delay:0.06s">
+          <div class="dp-poster">
+            <img src="${movie.img}" alt="${movie.title}">
+          </div>
+          <div class="dp-details">
+            <div class="dp-detail-line">
+              <strong>Cast:</strong> <span>${movie.cast.join(', ')}</span>
+            </div>
+            <div class="dp-synopsis">${movie.description}</div>
+            <div class="dp-genres">
+              ${movie.genre.map(g => `<span class="dp-genre-pill">${g.charAt(0).toUpperCase()+g.slice(1)}</span>`).join('')}
+            </div>
+            <div class="dp-actions">
+              <button class="btn-play" onclick="App.go('../pages/watch.html?id=${movie.id}')">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                Ko'rish
+              </button>
+              <button class="btn-secondary" id="fav-btn" onclick="toggleFav()">
+                <span id="fav-icon">${fav ? App.icons.heartFill : App.icons.heart}</span>
+                <span id="fav-label">${fav ? 'Saqlandi' : 'Saqlash'}</span>
+              </button>
+              <button class="btn-secondary" onclick="shareMovie()">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                Ulashish
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── GALLERY ── -->
+        <div class="dp-gallery animate-in" style="transition-delay:0.1s">
+          <div class="dp-section-label">GALLEREYA</div>
+          <div class="dp-gallery-grid">${galleryHTML}</div>
+        </div>
+
+        <!-- ── CAST ── -->
+        <div class="dp-cast-section animate-in" style="transition-delay:0.14s">
+          <div class="dp-section-label">AKTYORLAR</div>
+          <div class="dp-cast-scroll">${castHTML}</div>
+        </div>
+
+        <!-- ── RELATED ── -->
+        ${relatedHTML}
+
+        <!-- ── REVIEWS ── -->
+        <section class="reviews-section animate-in" style="transition-delay:0.18s">
+          <div class="reviews-header">
+            <div class="reviews-title">Sharhlar va Izohlar</div>
+            <div class="reviews-count" id="review-count">${MOCK_REVIEWS.length} ta sharh</div>
+          </div>
+
+          ${(function () {
+            const u = (typeof Auth !== 'undefined') ? Auth.getUser() : null;
+            const loggedIn = (typeof Auth !== 'undefined') && Auth.isLoggedIn() && u;
+            if (!loggedIn) {
+              return `<div class="review-write-card review-login-prompt">
+                <div class="review-write-label">Sharh qoldirish uchun hisobingizga kiring.</div>
+                <a class="review-submit-btn" href="/pages/login.html" style="display:inline-block;text-decoration:none;margin-top:14px">Kirish</a>
+              </div>`;
+            }
+            const name = u.name || 'Foydalanuvchi';
+            const initials = name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2);
+            const avUrl = u.avatar ? (typeof u.avatar === 'object' ? u.avatar.url : u.avatar) : '';
+            const av = avUrl
+              ? `<div class="review-write-avatar" style="overflow:hidden;background:none;padding:0"><img src="${avUrl}" alt="${name}" style="width:100%;height:100%;object-fit:cover;border-radius:50%"></div>`
+              : `<div class="review-write-avatar">${initials}</div>`;
+            return `<div class="review-write-card">
+              <div class="review-write-top">
+                ${av}
+                <div class="review-write-label">${name}, fikringizni yozing…</div>
+              </div>
+              <div class="review-stars-input" id="star-input">
+                <button class="review-star-btn" data-s="1">★</button>
+                <button class="review-star-btn" data-s="2">★</button>
+                <button class="review-star-btn" data-s="3">★</button>
+                <button class="review-star-btn" data-s="4">★</button>
+                <button class="review-star-btn" data-s="5">★</button>
+              </div>
+              <textarea class="review-textarea" id="review-input" placeholder="Sharhingizni yozing…"></textarea>
+              <button class="review-submit-btn" onclick="submitReview()">Sharh qoldirish</button>
+            </div>`;
+          })()}
+
+          <div class="reviews-list" id="reviews-list">
+            ${buildReviews(MOCK_REVIEWS)}
+          </div>
+        </section>
+      `;
+
+      App.initAnimations();
+
+      /* Expose trailer info to the banner mute/fullscreen handlers */
+      window._cpHeroTrailer = _heroTrailerInfo;
+      window._cpHeroMuted   = true;
+
+      /* ── Fade in detail hero trailer (iframe = YouTube, video = S3) ── */
+      const dpTrailer = document.getElementById('dp-trailer');
+      if (dpTrailer) {
+        const delay = dpTrailer.tagName === 'VIDEO' ? 400 : 2500;
+        setTimeout(() => { if (dpTrailer.style.display !== 'none') dpTrailer.classList.add('visible'); }, delay);
+      }
+
+      /* ── Star input ── */
+      let selectedStars = 0;
+      const starInput = document.getElementById('star-input');
+      if (starInput) {
+        starInput.addEventListener('click', e => {
+          const btn = e.target.closest('.review-star-btn');
+          if (!btn) return;
+          selectedStars = +btn.dataset.s;
+          document.querySelectorAll('.review-star-btn').forEach((b, i) => {
+            b.classList.toggle('active', i < selectedStars);
+          });
+        });
+        starInput.addEventListener('mouseover', e => {
+          const btn = e.target.closest('.review-star-btn');
+          if (!btn) return;
+          const h = +btn.dataset.s;
+          document.querySelectorAll('.review-star-btn').forEach((b, i) => {
+            b.style.color = i < h ? '#ffffff' : '';
+          });
+        });
+        starInput.addEventListener('mouseleave', () => {
+          document.querySelectorAll('.review-star-btn').forEach(b => { b.style.color = ''; });
+        });
+      }
+
+      /* ── Load real reviews from API ── */
+      async function loadReviews() {
+        if (typeof ReviewsAPI === 'undefined') return;
+        try {
+          const data = await ReviewsAPI.getByMovie(movie.id);
+          if (data.total > 0) {
+            const apiReviews = data.data.map(r => ({
+              id: r.id,
+              name: r.user_name,
+              initials: (r.user_name || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2),
+              avatar: r.user_avatar || '',
+              color: 'linear-gradient(135deg,#3a3a3a,#121212)',
+              rating: r.rating,
+              date: r.created_at.slice(0,10),
+              text: r.body,
+              helpful: r.helpful
+            }));
+            document.getElementById('reviews-list').innerHTML = buildReviews(apiReviews);
+            document.getElementById('review-count').textContent = data.total + ' ta sharh';
+          }
+        } catch {}
+      }
+      loadReviews();
+
+      /* ── Submit review ── */
+      window.submitReview = async function() {
+        if (typeof Auth === 'undefined' || !Auth.isLoggedIn()) {
+          showToast('Sharh qoldirish uchun hisobingizga kiring');
+          setTimeout(() => { window.location.href = '/pages/login.html'; }, 1200);
+          return;
+        }
+        const input = document.getElementById('review-input');
+        const text = input ? input.value.trim() : '';
+        if (!text) { showToast('Avval sharh yozing'); return; }
+        if (!selectedStars) { showToast('Yulduz reytingini tanlang'); return; }
+
+        try {
+          await ReviewsAPI.create(movie.id, selectedStars, text);
+          showToast('Sharh qo\'shildi!');
+          loadReviews();
+        } catch(e) { showToast('Xato: ' + e.message); return; }
+
+        input.value = '';
+        selectedStars = 0;
+        document.querySelectorAll('.review-star-btn').forEach(b => b.classList.remove('active'));
+      };
+
+      /* ── Helpful ── */
+      window.markHelpful = async function(id, btn) {
+        if (typeof Auth !== 'undefined' && Auth.isLoggedIn()) {
+          try {
+            await ReviewsAPI.helpful(id);
+          } catch {}
+        }
+        const countEl = btn.querySelector('.helpful-count');
+        countEl.textContent = parseInt(countEl.textContent) + 1;
+        btn.style.color = 'rgba(255,255,255,0.7)';
+        btn.style.pointerEvents = 'none';
+        showToast('Foydali deb belgilandi');
+      };
+
+      /* ── Watchlist toggle ── */
+      window.toggleFav = async function() {
+        if (typeof Auth !== 'undefined' && Auth.isLoggedIn()) {
+          try {
+            const data = await WatchlistAPI.toggle(movie.id);
+            document.getElementById('fav-icon').innerHTML  = data.added ? App.icons.heartFill : App.icons.heart;
+            document.getElementById('fav-label').textContent = data.added ? 'Saqlandi' : 'Saqlash';
+            document.getElementById('fav-btn').classList.toggle('active', data.added);
+            showToast(data.message);
+            return;
+          } catch(_) {
+            /* API failed (e.g. static movie with non-ObjectId) — fall through to localStorage */
+          }
+        }
+        /* localStorage path: not logged in OR API call failed */
+        const added = typeof toggleWatchlistLocal === 'function'
+          ? toggleWatchlistLocal(movie)
+          : toggleFavorite(movie.id);
+        document.getElementById('fav-icon').innerHTML  = added ? App.icons.heartFill : App.icons.heart;
+        document.getElementById('fav-label').textContent = added ? 'Saqlandi' : 'Saqlash';
+        document.getElementById('fav-btn').classList.toggle('active', added);
+      };
+
+      /* ── Share ── */
+      window.shareMovie = function() {
+        if (navigator.share) {
+          navigator.share({ title: movie.title, text: movie.description, url: window.location.href });
+        } else {
+          navigator.clipboard.writeText(window.location.href).then(() => showToast('Link copied!'));
+        }
+      };
+    }
+    })(); /* end async IIFE */
+
+    /* ── YouTube error handler — hide the banner trailer silently on embed error ── */
+    window.addEventListener('message', function(e) {
+      try {
+        const data = JSON.parse(typeof e.data === 'string' ? e.data : '{}');
+        if (data.event !== 'onError') return;
+        const t = document.getElementById('dp-trailer');
+        if (t && t.tagName === 'IFRAME' && t.contentWindow === e.source) {
+          t.style.display = 'none';
+          const c = document.getElementById('dp-hero-controls');
+          if (c) c.style.display = 'none';
+        }
+      } catch {}
+    });
+
+    /* ── Banner trailer: mute toggle + fullscreen full-playback ── */
+    window._cpHeroTrailer = null;     /* set by the detail render below */
+    window._cpHeroMuted   = true;
+
+    window.toggleHeroTrailerMute = function () {
+      const info = window._cpHeroTrailer;
+      const t = document.getElementById('dp-trailer');
+      if (!info || !t) return;
+      window._cpHeroMuted = !window._cpHeroMuted;
+      if (info.type === 'youtube') {
+        const func = window._cpHeroMuted ? 'mute' : 'unMute';
+        t.contentWindow.postMessage(JSON.stringify({ event: 'command', func, args: '' }), '*');
+        if (!window._cpHeroMuted) t.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setVolume', args: [80] }), '*');
+      } else if (info.type === 'video') {
+        t.muted = window._cpHeroMuted;
+        if (!window._cpHeroMuted) t.volume = 0.8;
+      }
+      const m = document.getElementById('dp-vol-muted');
+      const s = document.getElementById('dp-vol-on');
+      if (m) m.style.display = window._cpHeroMuted ? '' : 'none';
+      if (s) s.style.display = window._cpHeroMuted ? 'none' : '';
+    };
+
+    window.expandHeroTrailer = function () {
+      const info = window._cpHeroTrailer;
+      const t = document.getElementById('dp-trailer');
+      if (!info || !t) return;
+      const reqFs = t.requestFullscreen || t.webkitRequestFullscreen || t.webkitEnterFullscreen || t.msRequestFullscreen;
+      if (info.type === 'video') {
+        t.loop = false; t.muted = false; t.controls = true; t.volume = 0.9;
+        if (reqFs) reqFs.call(t);
+        t.play().catch(() => {});
+      } else if (info.type === 'youtube') {
+        /* Reload with full controls + sound, no loop, so it plays to the end */
+        const _org = window.location.origin;
+        t.src = `https://www.youtube-nocookie.com/embed/${info.id}?autoplay=1&mute=0&controls=1&rel=0&playsinline=1&origin=${_org}&enablejsapi=1`;
+        if (reqFs) reqFs.call(t);
+      }
+      window._cpHeroMuted = false;
+      const m = document.getElementById('dp-vol-muted');
+      const s = document.getElementById('dp-vol-on');
+      if (m) m.style.display = 'none';
+      if (s) s.style.display = '';
+    };
+
+    /* Restore the ambient muted loop after leaving fullscreen */
+    document.addEventListener('fullscreenchange', function () {
+      if (document.fullscreenElement) return;
+      const info = window._cpHeroTrailer;
+      const t = document.getElementById('dp-trailer');
+      if (!info || !t) return;
+      if (info.type === 'youtube') {
+        const _org = window.location.origin;
+        t.src = `https://www.youtube-nocookie.com/embed/${info.id}?autoplay=1&mute=1&controls=0&loop=1&playlist=${info.id}&rel=0&playsinline=1&origin=${_org}&enablejsapi=1`;
+        setTimeout(() => t.classList.add('visible'), 600);
+      } else if (info.type === 'video') {
+        t.controls = false; t.loop = true; t.muted = true;
+        t.play().catch(() => {});
+      }
+      window._cpHeroMuted = true;
+      const m = document.getElementById('dp-vol-muted');
+      const s = document.getElementById('dp-vol-on');
+      if (m) m.style.display = '';
+      if (s) s.style.display = 'none';
+    });
+
+    /* ── Actor Modal ── */
+    const ACTOR_BIOS = [
+      'Drama va jangovar janrlarda chuqur, qatlamli talqinlari bilan tomoshabinlarni maftun etadigan tan olingan ijrochi.',
+      'Kuchli ijrolari va murakkab rollarni tanlash intiziomi bilan zamonaviy kinoartn shakllantirishga hissa qo\'shgan ko\'p qirrali iste\'dod.',
+      'Ekrandagi ulug\'vor mavjudligi va har bir qahramonga chinlik va chuqurlik olib kirish qobiliyati bilan mashhur.',
+      'O\'nlab yillar davomida butun avlodni belgilaydigan ijrolarni doimiy ravishda taqdim etib kelayotgan tanqidchilar tomonidan e\'tirof etilgan aktyor.',
+      'Tanqidchilar va muxlislar tomonidan butun dunyoda tan olinib, hikoya qilish chegaralarini kengaytiruvchi transformatsion rollar bilan mashhur.',
+    ];
+
+    window.openActorModal = function(name, gradient) {
+      const inits = name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+      const films = MOVIES.filter(m => m.cast && m.cast.includes(name));
+
+      /* Look up real IMDB data */
+      const actorData = typeof ACTORS_DATA !== 'undefined'
+        ? ACTORS_DATA.find(a => a.name.toLowerCase() === name.toLowerCase())
+        : null;
+
+      const bio = actorData && actorData.bio
+        ? actorData.bio
+        : ACTOR_BIOS[name.length % ACTOR_BIOS.length];
+
+      const avatarEl = document.getElementById('am-avatar');
+      if (actorData && actorData.photo) {
+        avatarEl.innerHTML = `<img src="${actorData.photo}" alt="${name}"
+          style="width:72px;height:72px;border-radius:50%;object-fit:cover;object-position:top;"
+          onerror="this.parentElement.innerHTML='${inits}';this.parentElement.style.background='${gradient}'">`;
+        avatarEl.style.background = 'transparent';
+      } else {
+        avatarEl.innerHTML = inits;
+        avatarEl.style.background = gradient;
+      }
+
+      /* Meta chips */
+      let metaHTML = '';
+      if (actorData) {
+        if (actorData.birthDate) {
+          const d = new Date(actorData.birthDate);
+          metaHTML += `<span style="font-size:11px;color:var(--text-muted);margin-right:10px">
+            📅 ${d.toLocaleDateString('uz-UZ',{year:'numeric',month:'long',day:'numeric'})}
+          </span>`;
+        }
+        if (actorData.birthPlace) {
+          metaHTML += `<span style="font-size:11px;color:var(--text-muted);margin-right:10px">
+            📍 ${actorData.birthPlace}
+          </span>`;
+        }
+      }
+
+      document.getElementById('am-name').textContent = name;
+      document.getElementById('am-bio').innerHTML = `
+        ${metaHTML ? `<div style="margin-bottom:10px;display:flex;flex-wrap:wrap;gap:4px">${metaHTML}</div>` : ''}
+        <span>${bio}</span>
+        ${actorData ? `<a href="../pages/actor-profile.html?id=${actorData.id}"
+          style="display:inline-flex;align-items:center;gap:5px;margin-top:12px;font-size:12px;
+                 color:rgba(255,255,255,0.45);transition:color 0.15s"
+          onmouseover="this.style.color='#ffffff'" onmouseout="this.style.color='rgba(255,255,255,0.45)'">
+          To'liq profil ko'rish →
+        </a>` : ''}`;
+
+      const grid = document.getElementById('am-grid');
+      grid.innerHTML = films.length
+        ? films.map(m => App.buildCard(m, '../')).join('')
+        : '<div class="actor-modal-empty">Bu kutubxonada filmlar topilmadi.</div>';
+
+      document.getElementById('actor-modal-overlay').classList.add('open');
+    };
+
+    window.closeActorModal = function(e) {
+      if (e.target === document.getElementById('actor-modal-overlay')) {
+        document.getElementById('actor-modal-overlay').classList.remove('open');
+      }
+    };
+  </script>
+</body>
+</html>

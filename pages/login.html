@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kirish — CINEPLEX</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+  <style>
+    .auth-page {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 16px;
+      position: relative;
+    }
+
+    .auth-page::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 70% 60% at 20% 30%, rgba(255,255,255,0.18) 0%, transparent 55%),
+        radial-gradient(ellipse 50% 50% at 80% 70%, rgba(255,255,255,0.12) 0%, transparent 55%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── Card ── */
+    .auth-card {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 440px;
+      background: var(--glass-1);
+      border: 1px solid var(--border);
+      border-radius: var(--r-xl);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      padding: 44px 40px 40px;
+      box-shadow: 0 32px 80px rgba(0,0,0,0.5);
+    }
+
+    /* Brand */
+    .auth-brand {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .auth-brand-name {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: 5px;
+      text-transform: uppercase;
+      color: #ffffff;
+    }
+    .auth-brand-name span { color: var(--gold); }
+    .auth-brand-tagline {
+      font-size: 11px;
+      color: rgba(255,255,255,0.3);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+
+    /* Header */
+    .auth-header { margin-bottom: 28px; }
+    .auth-title {
+      font-size: 26px;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 6px;
+    }
+    .auth-sub {
+      font-size: 13px;
+      color: rgba(255,255,255,0.38);
+      line-height: 1.6;
+    }
+    .auth-sub a {
+      color: var(--gold);
+      text-decoration: none;
+      font-weight: 600;
+      transition: opacity 0.18s;
+    }
+    .auth-sub a:hover { opacity: 0.75; }
+
+    .auth-divider {
+      height: 1px;
+      background: var(--border);
+      margin-bottom: 28px;
+    }
+
+    /* Fields */
+    .field { margin-bottom: 18px; }
+    .field-label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.45);
+      margin-bottom: 8px;
+    }
+    .field-wrap { position: relative; }
+    .field-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: rgba(255,255,255,0.22);
+      pointer-events: none;
+      display: flex;
+      transition: color 0.2s;
+    }
+    .field-input {
+      width: 100%;
+      background: var(--glass-2);
+      border: 1px solid var(--border);
+      border-radius: var(--r-md);
+      padding: 13px 44px 13px 42px;
+      color: #ffffff;
+      font-family: 'Outfit', sans-serif;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+    }
+    .field-input::placeholder { color: rgba(255,255,255,0.18); }
+    .field-input:focus {
+      border-color: var(--border-h);
+      background: rgba(255,255,255,0.06);
+      box-shadow: 0 0 0 3px rgba(193,193,193,0.08);
+    }
+    .field-input:focus + .field-icon { color: rgba(193,193,193,0.55); }
+    .field-input.invalid { border-color: rgba(104,104,104,0.45); }
+
+    .field-toggle-pw {
+      position: absolute;
+      right: 13px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: rgba(255,255,255,0.25);
+      cursor: pointer;
+      padding: 4px;
+      display: flex;
+      transition: color 0.18s;
+    }
+    .field-toggle-pw:hover { color: rgba(193,193,193,0.7); }
+
+    .field-err {
+      font-size: 11px;
+      color: rgba(104,104,104,0.85);
+      margin-top: 5px;
+      padding-left: 2px;
+      display: none;
+    }
+    .field-err.visible { display: block; }
+
+    /* Remember + forgot row */
+    .auth-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      margin-top: -4px;
+    }
+    .remember-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+    .remember-cb {
+      width: 16px; height: 16px;
+      border-radius: 4px;
+      border: 1px solid var(--border-h);
+      background: var(--glass-2);
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+      transition: background 0.18s, border-color 0.18s;
+      position: relative;
+      flex-shrink: 0;
+    }
+    .remember-cb:checked {
+      background: var(--gold);
+      border-color: var(--gold);
+    }
+    .remember-cb:checked::after {
+      content: '';
+      position: absolute;
+      left: 3px; top: 1px;
+      width: 5px; height: 8px;
+      border: 2px solid #000000;
+      border-top: none; border-left: none;
+      transform: rotate(45deg);
+    }
+    .remember-label {
+      font-size: 12px;
+      color: rgba(255,255,255,0.38);
+      user-select: none;
+    }
+    .forgot-link {
+      font-size: 12px;
+      color: rgba(255,255,255,0.38);
+      text-decoration: none;
+      transition: color 0.18s;
+    }
+    .forgot-link:hover { color: var(--gold); }
+
+    /* Alerts */
+    .auth-alert {
+      background: rgba(104,104,104,0.08);
+      border: 1px solid rgba(104,104,104,0.22);
+      border-radius: var(--r-md);
+      padding: 12px 14px;
+      font-size: 13px;
+      color: rgba(141,141,141,0.95);
+      margin-bottom: 18px;
+      display: none;
+    }
+    .auth-alert.visible { display: flex; align-items: flex-start; gap: 9px; }
+    .auth-success {
+      background: rgba(155,155,155,0.08);
+      border: 1px solid rgba(155,155,155,0.2);
+      border-radius: var(--r-md);
+      padding: 12px 14px;
+      font-size: 13px;
+      color: rgba(183,183,183,0.95);
+      margin-bottom: 18px;
+      display: none;
+    }
+    .auth-success.visible { display: block; }
+
+    /* Submit */
+    .auth-submit {
+      width: 100%;
+      padding: 15px;
+      border-radius: var(--r-md);
+      background: var(--gold);
+      color: #000000;
+      font-family: 'Outfit', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      transition: opacity 0.18s, transform 0.18s, box-shadow 0.18s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .auth-submit:hover:not(:disabled) {
+      opacity: 0.9;
+      transform: translateY(-1px);
+      box-shadow: 0 10px 32px rgba(193,193,193,0.28);
+    }
+    .auth-submit:active:not(:disabled) { transform: translateY(0); }
+    .auth-submit:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .auth-submit .spinner {
+      display: none;
+      width: 16px; height: 16px;
+      border: 2px solid rgba(0,0,0,0.3);
+      border-top-color: #000000;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    .auth-submit.loading .spinner { display: block; }
+    .auth-submit.loading .btn-text { opacity: 0.6; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Back link */
+    .auth-back {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 20px;
+      font-size: 12px;
+      color: rgba(255,255,255,0.3);
+      text-decoration: none;
+      transition: color 0.18s;
+    }
+    .auth-back:hover { color: rgba(255,255,255,0.6); }
+
+    @media (max-width: 480px) {
+      .auth-card { padding: 32px 22px 28px; }
+      .auth-title { font-size: 22px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="auth-page">
+    <div class="auth-card">
+
+      <!-- Brand -->
+      <div class="auth-brand">
+        <div class="auth-brand-name">CINE<span>PLEX</span></div>
+        <div class="auth-brand-tagline">Premium Streaming</div>
+      </div>
+
+      <!-- Header -->
+      <div class="auth-header">
+        <h1 class="auth-title">Xush kelibsiz</h1>
+        <p class="auth-sub">
+          Akkountingiz yo'qmi?
+          <a href="./register.html">Ro'yxatdan o'tish</a>
+        </p>
+      </div>
+
+      <div class="auth-divider"></div>
+
+      <!-- Alerts -->
+      <div class="auth-alert" id="auth-alert">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span id="auth-alert-text"></span>
+      </div>
+      <div class="auth-success" id="auth-success"></div>
+
+      <!-- Form -->
+      <form id="login-form" novalidate autocomplete="on">
+
+        <!-- Email -->
+        <div class="field">
+          <label class="field-label" for="login-email">Elektron pochta</label>
+          <div class="field-wrap">
+            <input class="field-input" type="email" id="login-email" name="email"
+              placeholder="email@example.com" autocomplete="email" spellcheck="false">
+            <span class="field-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+            </span>
+          </div>
+          <div class="field-err" id="err-email">Elektron pochta manzilini kiriting</div>
+        </div>
+
+        <!-- Password -->
+        <div class="field">
+          <label class="field-label" for="login-password">Parol</label>
+          <div class="field-wrap">
+            <input class="field-input" type="password" id="login-password" name="password"
+              placeholder="Parolingizni kiriting" autocomplete="current-password">
+            <button type="button" class="field-toggle-pw" id="toggle-pw" aria-label="Parolni ko'rsatish">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" id="pw-eye-icon"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+          <div class="field-err" id="err-password">Parolni kiriting</div>
+        </div>
+
+        <!-- Remember + Forgot -->
+        <div class="auth-row">
+          <label class="remember-wrap">
+            <input type="checkbox" class="remember-cb" id="remember-cb">
+            <span class="remember-label">Meni eslab qol</span>
+          </label>
+          <a href="#" class="forgot-link">Parolni unutdingizmi?</a>
+        </div>
+
+        <!-- Submit -->
+        <button type="submit" class="auth-submit" id="login-submit">
+          <div class="spinner"></div>
+          <span class="btn-text">Kirish</span>
+        </button>
+
+      </form>
+
+      <a href="../index.html" class="auth-back">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="m15 18-6-6 6-6"/></svg>
+        Bosh sahifaga qaytish
+      </a>
+
+    </div>
+  </div>
+
+  <script src="../js/api.js"></script>
+  <script>
+    // Auto-redirect if already logged in
+    if (typeof Auth !== 'undefined' && Auth.isLoggedIn()) {
+      const redir = new URLSearchParams(location.search).get('redirect') || './profile.html';
+      window.location.replace(redir);
+    }
+
+    // Password toggle
+    const toggleBtn = document.getElementById('toggle-pw');
+    const pwInput   = document.getElementById('login-password');
+    if (toggleBtn) {
+      toggleBtn.addEventListener('click', function() {
+        const show = pwInput.type === 'password';
+        pwInput.type = show ? 'text' : 'password';
+        document.getElementById('pw-eye-icon').innerHTML = show
+          ? '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>'
+          : '<path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/>';
+      });
+    }
+
+    function showErr(id, msg) {
+      const el = document.getElementById(id);
+      if (el) { el.textContent = msg || el.textContent; el.classList.add('visible'); }
+      const inp = id === 'err-email' ? document.getElementById('login-email') : document.getElementById('login-password');
+      if (inp) inp.classList.add('invalid');
+    }
+    function clearErr(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.remove('visible');
+      const inp = id === 'err-email' ? document.getElementById('login-email') : document.getElementById('login-password');
+      if (inp) inp.classList.remove('invalid');
+    }
+
+    document.getElementById('login-email').addEventListener('focus', () => clearErr('err-email'));
+    document.getElementById('login-password').addEventListener('focus', () => clearErr('err-password'));
+
+    document.getElementById('login-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const alertEl   = document.getElementById('auth-alert');
+      const alertText = document.getElementById('auth-alert-text');
+      const successEl = document.getElementById('auth-success');
+      alertEl.classList.remove('visible');
+      successEl.classList.remove('visible');
+
+      const email    = document.getElementById('login-email').value.trim();
+      const password = document.getElementById('login-password').value;
+      let valid = true;
+
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        showErr('err-email', 'Yaroqli elektron pochta kiriting'); valid = false;
+      }
+      if (!password) {
+        showErr('err-password', 'Parolni kiriting'); valid = false;
+      }
+      if (!valid) return;
+
+      const btn = document.getElementById('login-submit');
+      btn.classList.add('loading');
+      btn.disabled = true;
+
+      try {
+        const res = await AuthAPI.login(email, password);
+
+        if (res && (res.success || res.data)) {
+          successEl.textContent = 'Muvaffaqiyatli kirdingiz! Yo\'naltirmoqda…';
+          successEl.classList.add('visible');
+          const redir = new URLSearchParams(location.search).get('redirect') || './profile.html';
+          setTimeout(() => { window.location.replace(redir); }, 900);
+        } else {
+          alertText.textContent = res?.message || 'Kirish muvaffaqiyatsiz';
+          alertEl.classList.add('visible');
+          btn.classList.remove('loading'); btn.disabled = false;
+        }
+      } catch (err) {
+        const msg = err?.message || 'Server bilan ulanishda xato';
+        const isWrong = msg.toLowerCase().includes('invalid') || msg.toLowerCase().includes('password') || msg.toLowerCase().includes('credentials') || msg.toLowerCase().includes('not found');
+        alertText.textContent = isWrong
+          ? 'Email yoki parol noto\'g\'ri'
+          : msg;
+        alertEl.classList.add('visible');
+        btn.classList.remove('loading'); btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

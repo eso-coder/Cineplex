@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Janrlar — CINEPLEX</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+  <div class="ambient-bg"></div>
+  <div id="navbar-placeholder"></div>
+
+  <main>
+
+    <!-- Hero -->
+    <div class="category-hero animate-in" style="padding-left:30px;padding-right:30px">
+      <div class="category-hero-title">Janrlar bo'yicha</div>
+      <div class="category-hero-sub">Sevimli filmingizni janr bo'yicha toping</div>
+    </div>
+
+    <!-- Genre grid -->
+    <div class="category-grid animate-in" style="transition-delay:0.08s">
+
+      <a class="category-card" data-genre="action" href="#movies-section" onclick="filterGenre('action')"
+         style="background-image:url('https://rwvfilm.com/uploads/media/image/0001/02/2288cbf53f90b29cd77e29cf1716fe93a730a5b3.jpg')">
+        <div class="cat-name">Jangovar</div>
+        <div class="cat-count" id="count-action">— film</div>
+        <span class="cat-tag">Mashhur</span>
+      </a>
+
+      <a class="category-card" data-genre="comedy" href="#movies-section" onclick="filterGenre('comedy')"
+         style="background-image:url('https://rwvfilm.com/uploads/media/image/0001/03/thumb_2896_image_medium.jpg')">
+        <div class="cat-name">Komediya</div>
+        <div class="cat-count" id="count-comedy">— film</div>
+      </a>
+
+      <a class="category-card" data-genre="drama" href="#movies-section" onclick="filterGenre('drama')"
+         style="background-image:url('https://rwvfilm.com/uploads/media/image/0001/05/thumb_4051_image_medium.jpg')">
+        <div class="cat-name">Drama</div>
+        <div class="cat-count" id="count-drama">— film</div>
+        <span class="cat-tag">Trendda</span>
+      </a>
+
+      <a class="category-card" data-genre="scifi" href="#movies-section" onclick="filterGenre('scifi')"
+         style="background-image:url('https://rwvfilm.com/uploads/media/image/0001/03/thumb_2883_image_medium.jpg')">
+        <div class="cat-name">Fantastika</div>
+        <div class="cat-count" id="count-scifi">— film</div>
+      </a>
+
+      <a class="category-card" data-genre="fantasy" href="#movies-section" onclick="filterGenre('fantasy')"
+         style="background-image:url('https://rwvfilm.com/uploads/media/image/0001/04/thumb_3841_image_medium.jpg')">
+        <div class="cat-name">Fantaziya</div>
+        <div class="cat-count" id="count-fantasy">— film</div>
+      </a>
+
+      <a class="category-card" data-genre="thriller" href="#movies-section" onclick="filterGenre('thriller')"
+         style="background-image:url('https://rwvfilm.com/uploads/media/image/0001/03/thumb_2919_image_medium.jpg')">
+        <div class="cat-name">Triller</div>
+        <div class="cat-count" id="count-thriller">— film</div>
+      </a>
+
+      <a class="category-card" data-genre="historical" href="#movies-section" onclick="filterGenre('historical')"
+         style="background-image:url('https://rwvfilm.com/uploads/media/image/0001/02/a4de7120d6ec56f46ee8c2b6859a8b21ac88a8c6.jpg')">
+        <div class="cat-name">Tarixiy</div>
+        <div class="cat-count" id="count-historical">— film</div>
+      </a>
+
+      <a class="category-card" data-genre="all" href="#movies-section" onclick="filterGenre('all')"
+         style="background-image:url('https://rwvfilm.com/uploads/media/image/0001/03/thumb_2793_image_medium.jpg')">
+        <div class="cat-name">Barcha filmlar</div>
+        <div class="cat-count" id="count-all">— film</div>
+        <span class="cat-tag">Barchasini ko'rish</span>
+      </a>
+
+    </div>
+
+    <!-- Movies section -->
+    <div class="cat-movies-section animate-in" style="transition-delay:0.16s" id="movies-section">
+      <div class="section-header" style="padding:0 30px;margin-bottom:20px">
+        <div class="section-title" id="cat-section-title">Barcha filmlar</div>
+        <span id="cat-section-count" style="font-size:14px;color:rgba(255,255,255,0.45)"></span>
+      </div>
+      <div class="catalog-grid" id="cat-row"></div>
+    </div>
+
+    <!-- All genres listed -->
+    <div style="padding:40px 30px 60px" class="animate-in" style="transition-delay:0.24s">
+      <div class="section-header" style="margin-bottom:20px">
+        <div class="section-title">Barcha janrlar</div>
+      </div>
+      <div style="display:flex;gap:9px;flex-wrap:wrap" id="all-pills"></div>
+    </div>
+
+  </main>
+
+  <script src="../js/data.js"></script>
+  <script src="../js/i18n.js"></script>
+  <script src="../js/app.js"></script>
+  <script src="../js/api.js"></script>
+  <script>
+    App.initNavbar('categories', '../');
+    App.initAnimations();
+
+    const GENRES = ['action','comedy','drama','scifi','fantasy','thriller','historical'];
+    const GENRE_LABELS = { action:'Jangovar', comedy:'Komediya', drama:'Drama', scifi:'Fantastika', fantasy:'Fantaziya', thriller:'Triller', historical:'Tarixiy', all:'Barcha filmlar' };
+
+    let ALL_MOVIES = [];
+
+    function filterGenre(genre) {
+      const movies = genre === 'all' ? ALL_MOVIES : ALL_MOVIES.filter(m => (m.genre || []).includes(genre));
+      const labelText = GENRE_LABELS[genre] || genre;
+      document.getElementById('cat-section-title').textContent = labelText;
+      document.getElementById('cat-section-count').textContent = movies.length + ' ta film';
+      document.getElementById('cat-row').innerHTML = movies.map(m => App.buildCard(m, '../')).join('');
+      document.querySelectorAll('.category-card').forEach(c => {
+        c.style.borderColor = c.dataset.genre === genre ? 'rgba(255,255,255,0.3)' : '';
+        c.style.background  = c.dataset.genre === genre ? 'rgba(255,255,255,0.09)' : '';
+      });
+    }
+
+    (async () => {
+      try {
+        const data = await MoviesAPI.list({ limit: 500 });
+        ALL_MOVIES = (data.data && data.data.length) ? data.data : MOVIES;
+      } catch {
+        ALL_MOVIES = MOVIES;
+      }
+
+      /* Update counts */
+      GENRES.forEach(g => {
+        const count = ALL_MOVIES.filter(m => (m.genre || []).includes(g)).length;
+        const el = document.getElementById('count-' + g);
+        if (el) el.textContent = count + ' ta film';
+      });
+      const countAllEl = document.getElementById('count-all');
+      if (countAllEl) countAllEl.textContent = ALL_MOVIES.length + ' ta film';
+
+      /* Build all-genre pills */
+      const pillsEl = document.getElementById('all-pills');
+      if (pillsEl) {
+        (['all', ...GENRES]).forEach(g => {
+          const btn = document.createElement('button');
+          btn.className = 'genre-pill' + (g === 'all' ? ' active' : '');
+          btn.textContent = GENRE_LABELS[g] || g;
+          btn.dataset.genre = g;
+          btn.onclick = () => {
+            pillsEl.querySelectorAll('.genre-pill').forEach(p => p.classList.remove('active'));
+            btn.classList.add('active');
+            filterGenre(g);
+            document.getElementById('movies-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+          };
+          pillsEl.appendChild(btn);
+        });
+      }
+
+      const paramGenre = App.getParam('genre');
+      filterGenre(paramGenre || 'all');
+    })();
+  </script>
+</body>
+</html>

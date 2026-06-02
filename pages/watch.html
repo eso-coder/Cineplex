@@ -1,0 +1,1372 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tomosha — CINEPLEX</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+  <style>
+    body.watch-page {
+      background: #000000;
+    }
+
+    body.watch-page .ambient-bg {
+      display: none;
+    }
+
+    body.watch-page main {
+      padding-top: var(--navbar-h);
+    }
+
+    .watch-top-bar {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 28px;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(12px);
+    }
+
+    .watch-back {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      color: rgba(255,255,255,0.7);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: color 0.18s;
+    }
+
+    .watch-back:hover {
+      color: #ffffff;
+    }
+
+    .watch-top-title {
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .watch-top-year {
+      font-size: 12px;
+      color: rgba(255,255,255,0.4);
+    }
+
+    /* ═══ CINEPLEX PLAYER ═══ */
+    .player-wrapper {
+      position: relative;
+      width: 100%;
+      background: #000000;
+      aspect-ratio: 16/9;
+      overflow: hidden;
+    }
+    .player-wrapper:fullscreen,
+    .player-wrapper:-webkit-full-screen {
+      aspect-ratio: unset;
+      height: 100vh;
+    }
+    /* Hide cursor when controls are not visible (playing state) */
+    .player-wrapper:not(.show-ui),
+    .player-wrapper:not(.show-ui) * {
+      cursor: none !important;
+    }
+    .player-bg {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      object-fit: cover;
+      filter: blur(50px) brightness(0.25) saturate(1.3);
+      transform: scale(1.1);
+      z-index: 0;
+    }
+    #real-player {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      object-fit: contain; z-index: 1; background: #000000;
+    }
+    .player-poster {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      z-index: 2;
+      transition: opacity 0.5s;
+    }
+    .player-poster.hidden { opacity: 0; pointer-events: none; }
+    .player-poster img {
+      height: 100%; width: auto; max-width: 100%; object-fit: contain;
+      box-shadow: 0 0 80px rgba(0,0,0,0.7);
+    }
+
+    /* Bottom gradient */
+    .player-grad-overlay {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      height: 200px;
+      background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.5) 50%, transparent 100%);
+      z-index: 3;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.25s;
+    }
+    .player-wrapper.show-ui .player-grad-overlay { opacity: 1; }
+
+    /* Center play/pause button */
+    .player-center-btn {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 10;
+      width: 76px; height: 76px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.13);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 2px solid rgba(255,255,255,0.22);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s, opacity 0.3s;
+    }
+    .player-center-btn:hover {
+      background: rgba(255,255,255,0.22);
+      transform: translate(-50%,-50%) scale(1.08);
+    }
+    .player-center-btn.playing {
+      opacity: 0;
+      pointer-events: none;
+    }
+    .player-center-icon { display: flex; align-items: center; justify-content: center; }
+
+    /* Controls bar */
+    .player-controls {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      padding: 0 20px 18px;
+      z-index: 10;
+      opacity: 0;
+      transition: opacity 0.25s;
+    }
+    .player-wrapper.show-ui .player-controls { opacity: 1; }
+
+    /* Progress bar */
+    .player-progress-wrap {
+      width: 100%; height: 4px;
+      background: rgba(255,255,255,0.18);
+      border-radius: 99px;
+      cursor: pointer;
+      margin-bottom: 14px;
+      position: relative;
+      transition: height 0.18s;
+    }
+    .player-progress-wrap:hover { height: 6px; }
+    .player-progress-fill {
+      height: 100%; background: #ffffff;
+      border-radius: 99px; width: 0%;
+      pointer-events: none;
+      position: relative;
+      transition: background 0.2s;
+    }
+    .player-progress-wrap:hover .player-progress-fill { background: #4e4e4e; }
+    .player-progress-fill::after {
+      content: '';
+      position: absolute; right: -6px; top: 50%;
+      transform: translateY(-50%);
+      width: 14px; height: 14px;
+      background: #ffffff; border-radius: 50%;
+      opacity: 0; transition: opacity 0.15s;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+    }
+    .player-progress-wrap:hover .player-progress-fill::after { opacity: 1; }
+
+    /* Buffered bar */
+    .player-progress-buffered {
+      position: absolute; top: 0; left: 0; height: 100%;
+      background: rgba(255,255,255,0.3);
+      border-radius: 99px; pointer-events: none;
+      transition: width 0.5s;
+    }
+
+    /* Control buttons */
+    .player-bar {
+      display: flex; align-items: center; gap: 2px;
+    }
+    .player-ctrl-btn {
+      background: none; border: none;
+      color: rgba(255,255,255,0.82);
+      cursor: pointer; padding: 7px 8px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      transition: color 0.15s, background 0.15s;
+      font-size: 11px; font-weight: 800; letter-spacing: 0.3px;
+    }
+    .player-ctrl-btn:hover { color: #ffffff; background: rgba(255,255,255,0.1); }
+    .player-ctrl-btn.active-ctrl { color: #4e4e4e; }
+    .player-time {
+      font-size: 12px; font-weight: 600;
+      color: rgba(255,255,255,0.65);
+      padding: 0 10px; white-space: nowrap;
+    }
+    .player-spacer { flex: 1; }
+    .player-vol-wrap { display: flex; align-items: center; gap: 6px; }
+    .player-vol-slider {
+      width: 72px; height: 4px;
+      -webkit-appearance: none; appearance: none;
+      background: rgba(255,255,255,0.3);
+      border-radius: 99px; outline: none; cursor: pointer;
+    }
+    .player-vol-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 13px; height: 13px;
+      border-radius: 50%; background: #ffffff; cursor: pointer;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+    }
+    .psd-cc-icon {
+      display: flex; align-items: center; justify-content: center;
+      width: 24px; height: 15px;
+      border: 1.8px solid currentColor; border-radius: 3px;
+      font-size: 9px; font-weight: 800; letter-spacing: 0.2px;
+    }
+    .psd-label-btn { min-width: 40px; justify-content: center; }
+    .psd-group { display: flex; align-items: center; gap: 2px; }
+    .psd-btn-wrap { position: relative; }
+
+    /* Episode list for series */
+    .episode-list {
+      padding: 0 28px;
+    }
+
+    .episode-list-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 14px;
+    }
+
+    .episode-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 11px 14px;
+      border-radius: var(--r-md);
+      background: var(--glass-1);
+      border: 1px solid var(--border);
+      margin-bottom: 8px;
+      cursor: pointer;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      transition: background 0.18s, border-color 0.18s;
+    }
+
+    .episode-item:hover {
+      background: var(--glass-2);
+      border-color: var(--border-h);
+    }
+
+    .episode-item.active {
+      border-color: rgba(255,255,255,0.3);
+      background: rgba(255,255,255,0.07);
+    }
+
+    .ep-num {
+      font-size: 18px;
+      font-weight: 800;
+      color: rgba(255,255,255,0.2);
+      width: 32px;
+      flex-shrink: 0;
+      text-align: center;
+    }
+
+    .ep-thumb {
+      width: 88px;
+      height: 54px;
+      border-radius: 8px;
+      overflow: hidden;
+      flex-shrink: 0;
+      background: #242424;
+    }
+
+    .ep-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .ep-info {
+      flex: 1;
+    }
+
+    .ep-title {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 3px;
+    }
+
+    .ep-duration {
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+
+    .related-section {
+      padding: 28px 28px 0;
+    }
+
+    /* ── Player Settings Dropdowns ── */
+    .psd-group {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .psd-btn-wrap {
+      position: relative;
+    }
+
+    .psd-label-btn {
+      font-size: 10px !important;
+      font-weight: 800 !important;
+      letter-spacing: 0.3px;
+      min-width: 38px;
+      justify-content: center;
+    }
+
+    .psd-cc-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 14px;
+      border: 1.5px solid currentColor;
+      border-radius: 3px;
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: 0.2px;
+      line-height: 1;
+    }
+
+    .player-settings-dd {
+      position: absolute;
+      bottom: calc(100% + 12px);
+      right: 0;
+      min-width: 170px;
+      background: rgba(9,9,9,0.92);
+      backdrop-filter: blur(40px) saturate(180%);
+      -webkit-backdrop-filter: blur(40px) saturate(180%);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 14px;
+      overflow: hidden;
+      z-index: 200;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.65), inset 0 1px 0 rgba(255,255,255,0.07);
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(6px) scale(0.96);
+      transition: opacity 0.2s cubic-bezier(0.16,1,0.3,1), transform 0.2s cubic-bezier(0.16,1,0.3,1);
+    }
+
+    .player-settings-dd.open {
+      opacity: 1;
+      pointer-events: all;
+      transform: translateY(0) scale(1);
+    }
+
+    .psd-head {
+      font-size: 10px;
+      font-weight: 700;
+      color: rgba(255,255,255,0.3);
+      text-transform: uppercase;
+      letter-spacing: 1.1px;
+      padding: 11px 14px 9px;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+
+    .psd-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      font-size: 13px;
+      color: rgba(255,255,255,0.62);
+      cursor: pointer;
+      transition: background 0.14s, color 0.14s;
+    }
+
+    .psd-item:hover { background: rgba(255,255,255,0.07); color: #ffffff; }
+
+    .psd-item.active {
+      color: #ffffff;
+      font-weight: 600;
+    }
+
+    .psd-item.active::after {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.85);
+      flex-shrink: 0;
+    }
+
+    /* ══ Custom Subtitle Overlay ══ */
+    .sub-overlay {
+      position: absolute;
+      bottom: 88px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 8;
+      text-align: center;
+      pointer-events: none;
+      width: max-content;
+      max-width: 78%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      transition: bottom 0.2s ease;
+    }
+    /* Nudge up when controls are visible */
+    .player-wrapper.show-ui .sub-overlay { bottom: 112px; }
+
+    .sub-line {
+      display: inline-block;
+      background: rgba(0,0,0,0.68);
+      backdrop-filter: blur(3px);
+      -webkit-backdrop-filter: blur(3px);
+      color: #ffffff;
+      font-family: 'Outfit', sans-serif;
+      font-size: clamp(13px, 1.9vw, 21px);
+      font-weight: 500;
+      line-height: 1.55;
+      letter-spacing: 0.018em;
+      padding: 4px 20px 5px;
+      border-radius: 6px;
+      text-shadow: 0 1px 6px rgba(0,0,0,0.55);
+      animation: subIn 0.18s cubic-bezier(0.16,1,0.3,1) both;
+    }
+    @keyframes subIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Responsive: tablet ── */
+    @media (max-width: 860px) {
+      .watch-top-bar { padding: 12px 16px; }
+      .related-section { padding: 24px 16px 0; }
+    }
+
+    /* ── Responsive: mobile (≤640px) ── */
+    @media (max-width: 640px) {
+      .watch-top-bar { padding: 10px 12px; gap: 10px; }
+      .watch-top-title { font-size: 13px; }
+      #top-fav-btn { padding: 6px 10px !important; font-size: 11px !important; }
+
+      .player-controls { padding: 0 10px 12px; }
+      .player-progress-wrap { margin-bottom: 10px; }
+      .player-bar { gap: 0; }
+      .player-ctrl-btn { padding: 6px 5px; }
+      .player-ctrl-btn svg { width: 18px; height: 18px; }
+      .player-time { font-size: 11px; padding: 0 6px; }
+      /* Hide the volume slider on phones — keep the mute toggle */
+      .player-vol-slider { display: none; }
+      .player-center-btn { width: 60px; height: 60px; }
+      .player-center-btn svg { width: 22px; height: 22px; }
+      .psd-label-btn { min-width: 30px; font-size: 9px !important; }
+      .player-settings-dd { min-width: 150px; }
+
+      .related-section { padding: 20px 12px 0; }
+      .episode-item { gap: 10px; padding: 9px 10px; }
+      .ep-thumb { width: 68px; height: 42px; }
+      .ep-num { width: 22px; font-size: 15px; }
+      .ep-title { font-size: 12px; }
+      .sub-overlay { max-width: 90%; }
+    }
+
+    /* ── Responsive: small phone (≤400px) ── */
+    @media (max-width: 400px) {
+      /* Drop the +10s/-10s skip buttons to avoid control overflow */
+      .player-bar .player-ctrl-btn[onclick="skipBack()"],
+      .player-bar .player-ctrl-btn[onclick="skipFwd()"] { display: none; }
+      .player-ctrl-btn { padding: 6px 4px; }
+      .watch-top-title { font-size: 12px; }
+    }
+  </style>
+</head>
+
+<body class="watch-page">
+  <div id="navbar-placeholder"></div>
+
+  <main>
+    <!-- ── TOP BAR ── -->
+    <div class="watch-top-bar">
+      <div class="watch-back" onclick="history.back()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="m15 18-6-6 6-6" />
+        </svg>
+        Orqaga
+      </div>
+      <div style="flex:1">
+        <div class="watch-top-title" id="watch-top-title">Yuklanmoqda…</div>
+        <div class="watch-top-year" id="watch-top-year"></div>
+      </div>
+      <button class="btn-secondary" id="top-fav-btn" style="padding:7px 14px;font-size:12px;" onclick="toggleFavAPI()">
+        <span id="top-fav-icon"></span>
+        <span id="top-fav-label">Saqlangan</span>
+      </button>
+    </div>
+
+    <!-- ── PLAYER ── -->
+    <div class="player-wrapper" id="player-wrapper">
+      <img class="player-bg" id="player-bg" src="" alt="">
+      <div class="player-poster" id="player-poster-wrap">
+        <img id="player-poster-img" src="" alt="" style="height:100%;width:auto;max-width:100%;object-fit:contain;">
+      </div>
+      <!-- Real video element — custom controls handle UI -->
+      <video id="real-player" style="display:none;" preload="metadata"></video>
+
+      <!-- Custom subtitle overlay (VTT rendered in JS, not native <track>) -->
+      <div class="sub-overlay" id="sub-overlay"></div>
+
+      <!-- Bottom gradient overlay -->
+      <div class="player-grad-overlay"></div>
+
+      <!-- Center play/pause -->
+      <div class="player-center-btn" id="center-btn" onclick="togglePlay()">
+        <div class="player-center-icon" id="center-icon">
+          <svg id="center-svg" width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M8 5v14l11-7z" />
+          </svg>
+        </div>
+      </div>
+
+      <!-- Controls -->
+      <div class="player-controls" id="player-controls">
+        <div class="player-progress-wrap" id="progress-wrap" onclick="seekTo(event)">
+          <div class="player-progress-buffered" id="progress-buffered" style="width:0%"></div>
+          <div class="player-progress-fill" id="progress-fill"></div>
+        </div>
+        <div class="player-bar">
+          <button class="player-ctrl-btn" onclick="togglePlay()" title="Play/Pause">
+            <svg id="play-icon" width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M8 5v14l11-7z" />
+            </svg>
+          </button>
+          <button class="player-ctrl-btn" onclick="skipBack()" title="-10s">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="1 4 1 10 7 10" />
+              <path d="M3.51 15a9 9 0 1 0 .49-4.08" /><text x="8" y="15" font-size="5" fill="currentColor"
+                stroke="none">10</text>
+            </svg>
+          </button>
+          <button class="player-ctrl-btn" onclick="skipFwd()" title="+10s">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="23 4 23 10 17 10" />
+              <path d="M20.49 15a9 9 0 1 1-.49-4.08" /><text x="8" y="15" font-size="5" fill="currentColor"
+                stroke="none">10</text>
+            </svg>
+          </button>
+          <span class="player-time" id="player-time">0:00 / 0:00</span>
+          <div class="player-spacer"></div>
+          <div class="player-vol-wrap">
+            <button class="player-ctrl-btn" onclick="toggleMute()" id="vol-btn">
+              <svg id="vol-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" />
+              </svg>
+            </button>
+            <input class="player-vol-slider" type="range" min="0" max="100" value="80" id="vol-slider"
+              oninput="setVol(this.value)">
+          </div>
+          <!-- ── Settings: Subtitle / Quality / Audio ── -->
+          <div class="psd-group">
+
+            <!-- Subtitle -->
+            <div class="psd-btn-wrap" id="sub-wrap">
+              <button class="player-ctrl-btn" onclick="togglePsd('sub-dd')" title="Subtitle">
+                <div class="psd-cc-icon">CC</div>
+              </button>
+              <div class="player-settings-dd" id="sub-dd">
+                <div class="psd-head">Subtitle</div>
+                <div class="psd-item active" onclick="selectPsd(this,'sub-dd','sub-lbl','O\'chiq')">O'chiq</div>
+                <div class="psd-item" onclick="selectPsd(this,'sub-dd','sub-lbl','O\'zbek')">O'zbek</div>
+                <div class="psd-item" onclick="selectPsd(this,'sub-dd','sub-lbl','Rus')">Rus</div>
+                <div class="psd-item" onclick="selectPsd(this,'sub-dd','sub-lbl','Ingliz')">Ingliz</div>
+              </div>
+            </div>
+
+            <!-- Quality -->
+            <div class="psd-btn-wrap" id="qual-wrap">
+              <button class="player-ctrl-btn psd-label-btn" onclick="togglePsd('qual-dd')" title="Sifat">
+                <span id="qual-lbl">4K</span>
+              </button>
+              <div class="player-settings-dd" id="qual-dd">
+                <div class="psd-head">Sifat</div>
+                <div class="psd-item" onclick="selectPsd(this,'qual-dd','qual-lbl','Avto')">Avto</div>
+                <div class="psd-item active" onclick="selectPsd(this,'qual-dd','qual-lbl','4K')">Ultra HD 4K</div>
+                <div class="psd-item" onclick="selectPsd(this,'qual-dd','qual-lbl','1080p')">Full HD 1080p</div>
+                <div class="psd-item" onclick="selectPsd(this,'qual-dd','qual-lbl','720p')">HD 720p</div>
+                <div class="psd-item" onclick="selectPsd(this,'qual-dd','qual-lbl','480p')">SD 480p</div>
+              </div>
+            </div>
+
+            <!-- Audio -->
+            <div class="psd-btn-wrap" id="audio-wrap">
+              <button class="player-ctrl-btn" onclick="togglePsd('audio-dd')" title="Audio">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>
+                </svg>
+              </button>
+              <div class="player-settings-dd" id="audio-dd">
+                <div class="psd-head">Audio</div>
+                <div class="psd-item active" onclick="selectPsd(this,'audio-dd','audio-lbl','Asl')">Asl nusxa</div>
+                <div class="psd-item" onclick="selectPsd(this,'audio-dd','audio-lbl','O\'zbek')">O'zbek</div>
+                <div class="psd-item" onclick="selectPsd(this,'audio-dd','audio-lbl','Rus')">Rus</div>
+                <div class="psd-item" onclick="selectPsd(this,'audio-dd','audio-lbl','Ingliz')">Ingliz</div>
+              </div>
+            </div>
+
+          </div>
+
+          <button class="player-ctrl-btn" onclick="toggleFullscreen()" title="Fullscreen">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── MOVIE INFO ── -->
+    <div class="watch-info-section" id="watch-info"></div>
+
+    <!-- ── EPISODES (series only) ── -->
+    <div id="episodes-section"></div>
+
+    <!-- ── RELATED ── -->
+    <div class="related-section" id="related-section"></div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.7/dist/hls.min.js"></script>
+  <script src="../js/data.js"></script>
+  <script src="../js/i18n.js"></script>
+  <script src="../js/app.js"></script>
+  <script src="../js/api.js"></script>
+  <script>
+    App.initNavbar('', '../');
+
+    const id = App.getParam('id');
+    let movie = getMovieById(id);
+    const videoEl = document.getElementById('real-player');
+
+    function renderWatchPage() {
+      if (!movie) {
+        document.getElementById('watch-info').innerHTML = '<p style="padding:40px 28px;color:rgba(255,255,255,0.4)">Film topilmadi. <a href="../index.html" style="color:#ffffff;text-decoration:underline">Bosh sahifaga qaytish</a></p>';
+        return;
+      }
+
+      document.title = 'Tomosha: ' + movie.title + ' — CINEPLEX';
+
+      /* ── Populate header ── */
+      document.getElementById('watch-top-title').textContent = movie.title;
+      document.getElementById('watch-top-year').textContent = movie.year + (movie.type === 'series' ? ` · ${movie.seasons} seasons` : ` · ${(movie.duration || '')}`);
+
+      /* ── Populate player — bannerUrl ustunlik qiladi, aks holda poster ── */
+      const watchPoster = movie.banner_img || movie.bannerUrl || movie.img || '';
+      document.getElementById('player-bg').src = watchPoster;
+      document.getElementById('player-poster-img').src = watchPoster;
+      document.getElementById('player-poster-img').alt = movie.title;
+
+      /* ── Real video: use videoUrl from backend ── */
+      const videoUrl = movie.videoUrl || movie.video_url || '';
+      if (videoUrl) {
+        videoEl.style.display = 'block';
+        initVideo(videoUrl); // handles both MP4 and M3U8/HLS
+      }
+
+      /* ── Movie info section ── */
+      const fav = isFavorite(movie.id);
+      document.getElementById('top-fav-icon').innerHTML = fav ? App.icons.heartFill : App.icons.heart;
+      document.getElementById('top-fav-label').textContent = fav ? 'In Watchlist' : 'Watchlist';
+      document.getElementById('top-fav-btn').classList.toggle('active', fav);
+
+      document.getElementById('watch-info').innerHTML = `
+        <div class="watch-title">${movie.title}</div>
+        <div class="watch-meta">
+          <span>${movie.year || ''}</span><span>·</span>
+          <span style="color:var(--gold);font-weight:600">★ ${movie.rating || 0} IMDB</span><span>·</span>
+          <span>${movie.type === 'series' ? (movie.seasons || 1) + ' mavsum' : (movie.duration || '')}</span>
+          ${(movie.genre || []).map(g => `<span style="background:rgba(255,255,255,0.07);padding:2px 9px;border-radius:50px;font-size:11px">${g}</span>`).join('')}
+        </div>
+        <div class="watch-desc">${movie.description || ''}</div>
+      `;
+
+      /* ── Episodes (series) ── */
+      if (movie.type === 'series' && movie.episodes) {
+        const eps = Array.from({ length: Math.min(movie.episodes, 8) }, (_, i) => i + 1);
+        document.getElementById('episodes-section').innerHTML = `
+          <div class="episode-list">
+            <div class="episode-list-title">Qismlar · 1-Mavsum</div>
+            ${eps.map(n => `
+              <div class="episode-item ${n === 1 ? 'active' : ''}" onclick="playEp(${n})">
+                <div class="ep-num">${n}</div>
+                <div class="ep-thumb"><img src="${movie.img}" alt="Ep ${n}" loading="lazy"></div>
+                <div class="ep-info">
+                  <div class="ep-title">${n}-qism</div>
+                  <div class="ep-duration">42 min</div>
+                </div>
+                ${n === 1 ? `<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="color:rgba(255,255,255,0.5)"><path d="M8 5v14l11-7z"/></svg>` : ''}
+              </div>
+            `).join('')}
+          </div>`;
+      }
+
+      /* ── Related ── */
+      const related = getRelated(movie).slice(0, 6);
+      if (related.length) {
+        document.getElementById('related-section').innerHTML = `
+          <div class="section-header">
+            <div class="section-title">Shunga o'xshash</div>
+            <div class="section-nav">
+              <button class="section-nav-btn" onclick="scrollRow('watch-related',-1)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m15 18-6-6 6-6"/></svg></button>
+              <button class="section-nav-btn" onclick="scrollRow('watch-related',1)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 18 6-6-6-6"/></svg></button>
+            </div>
+          </div>
+          <div class="movies-row" id="watch-related">${related.map(m => App.buildCard(m, '../')).join('')}</div>`;
+      }
+    }
+
+    /* ── Load from API if not found in local data ── */
+    (async () => {
+      if (!movie && typeof MoviesAPI !== 'undefined') {
+        try {
+          const resp = await MoviesAPI.getById(id);
+          movie = resp.movie;
+        } catch {}
+      }
+      renderWatchPage();
+      /* Tashqi VTT subtitle fayllarini darhol yuklash (MP4 va HLS uchun ham) */
+      if (movie?.subtitles?.length) {
+        buildSubtitleMenu([], movie.subtitles);
+      }
+    })();
+
+    /* ═══ PLAYER LOGIC ═══ */
+
+    let hls = null; // HLS.js instance (M3U8 streams)
+
+    /* ── Helpers ── */
+    function hasRealVideo() {
+      return !!(hls) || !!(videoEl && videoEl.src && videoEl.src !== window.location.href && videoEl.src !== '');
+    }
+
+    /* ── URL sanitizer: removes stray " characters that get %22-encoded in HLS segment URLs ── */
+    function sanitizeHlsUrl(url) {
+      if (!url) return url;
+      // Strip surrounding quotes (can appear if videoUrl was saved with quotes in DB)
+      url = url.trim().replace(/^["']+|["']+$/g, '');
+      // Remove any remaining encoded or literal double-quotes in the path
+      // e.g. https://...belle/%22stream_Uzbek/... → https://...belle/stream_Uzbek/...
+      url = url.replace(/%22/gi, '').replace(/"/g, '');
+      return url;
+    }
+
+    /* ── Custom HLS.js loader that sanitizes every segment/playlist URL ──
+       Root cause: HLS.js (especially @latest builds) sometimes fails to strip
+       surrounding quotes from URI="..." attributes in #EXT-X-MEDIA tags,
+       producing URLs like .../belle/%22stream_Uzbek/playlist.m3u8
+       This loader strips %22 before each XHR request fires. ── */
+    function buildSanitizingLoader() {
+      const Base = Hls.DefaultConfig.loader;
+      return class SanitizingLoader extends Base {
+        load(context, config, callbacks) {
+          if (context.url) context.url = sanitizeHlsUrl(context.url);
+          super.load(context, config, callbacks);
+        }
+      };
+    }
+
+    /* ── HLS / MP4 video initializer ── */
+    function initVideo(rawUrl) {
+      // Destroy previous HLS instance if exists
+      if (hls) { hls.destroy(); hls = null; }
+
+      // Strip any surrounding/embedded quotes from the stored videoUrl
+      const url = sanitizeHlsUrl(rawUrl);
+      if (!url) return;
+
+      const isHLS = /\.m3u8/i.test(url) || url.includes('m3u8');
+
+      if (isHLS) {
+        if (typeof Hls !== 'undefined' && Hls.isSupported()) {
+          hls = new Hls({
+            enableWorker: true,
+            startLevel: -1,
+            capLevelToPlayerSize: false,   // o'lcham asosida sifatni cheklamaslik
+            abrEwmaDefaultEstimate: 8e6,   // 8 Mbps deb hisoblaydi → 1080p dan boshlaydi
+            loader: buildSanitizingLoader(),
+          });
+          hls.loadSource(url);
+          hls.attachMedia(videoEl);
+
+          hls.on(Hls.Events.MANIFEST_PARSED, () => {
+            videoEl.volume = 0.8;
+            buildQualityMenu(hls.levels);
+            buildAudioMenu(hls.audioTracks);
+            // HLS ichidagi subtitle treklarini tashqi VTT bilan birlashtirish
+            buildSubtitleMenu(hls.subtitleTracks, movie?.subtitles || []);
+          });
+
+          hls.on(Hls.Events.LEVEL_SWITCHED, (e, data) => {
+            const lvl = hls.levels[data.level];
+            const lbl = document.getElementById('qual-lbl');
+            if (lbl && lvl) lbl.textContent = heightLabel(lvl.height);
+            // Aktiv sifatni menudan ham yangilash
+            document.querySelectorAll('#qual-dd .psd-item[data-lvl]').forEach(el => {
+              el.classList.toggle('active', +el.dataset.lvl === data.level);
+            });
+          });
+
+          hls.on(Hls.Events.ERROR, (e, data) => {
+            if (!data.fatal) return;
+            if (data.type === Hls.ErrorTypes.NETWORK_ERROR) hls.startLoad();
+            else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) hls.recoverMediaError();
+            else { hls.destroy(); hls = null; }
+          });
+
+        } else if (videoEl.canPlayType('application/vnd.apple.mpegurl')) {
+          // Safari native HLS — url is already sanitized above
+          videoEl.src = url;
+          videoEl.volume = 0.8;
+        }
+      } else {
+        // Plain MP4 / direct URL — url is already sanitized above
+        videoEl.src = url;
+        videoEl.volume = 0.8;
+      }
+    }
+
+    /* ── Quality label helper ── */
+    function heightLabel(h) {
+      if (!h) return 'Avto';
+      if (h >= 2160) return '4K';
+      if (h >= 1440) return '1440p';
+      if (h >= 1080) return '1080p';
+      if (h >= 720)  return '720p';
+      if (h >= 480)  return '480p';
+      if (h >= 360)  return '360p';
+      return h + 'p';
+    }
+    function heightFullLabel(h) {
+      if (!h) return 'Avto';
+      if (h >= 2160) return 'Ultra HD 4K';
+      if (h >= 1440) return 'QHD 1440p';
+      if (h >= 1080) return 'Full HD 1080p';
+      if (h >= 720)  return 'HD 720p';
+      if (h >= 480)  return 'SD 480p';
+      return h + 'p';
+    }
+
+    /* ── Build dropdown menus from HLS tracks ── */
+    function buildQualityMenu(levels) {
+      if (!levels || !levels.length) return;
+      const dd  = document.getElementById('qual-dd');
+      const lbl = document.getElementById('qual-lbl');
+      // Sort highest quality first
+      const sorted = levels.map((l, i) => ({ ...l, origIndex: i }))
+                           .sort((a, b) => (b.height || 0) - (a.height || 0));
+      dd.innerHTML = `
+        <div class="psd-head">Sifat</div>
+        <div class="psd-item" onclick="setHlsQuality(-1)">Avto <span style="font-size:9px;opacity:.5">AI tanlaydi</span></div>
+        ${sorted.map(l => `
+          <div class="psd-item" data-lvl="${l.origIndex}" onclick="setHlsQuality(${l.origIndex})">
+            ${heightFullLabel(l.height)}
+            ${l.bitrate ? `<span style="font-size:9px;opacity:.45">${Math.round(l.bitrate/1000)}k</span>` : ''}
+          </div>`).join('')}
+      `;
+      // Default: highest quality
+      hls.currentLevel = sorted[0].origIndex;
+      if (lbl) lbl.textContent = heightLabel(sorted[0].height);
+      dd.querySelectorAll('.psd-item')[1]?.classList.add('active');
+    }
+
+    function buildAudioMenu(tracks) {
+      if (!tracks || !tracks.length) return;
+      const dd = document.getElementById('audio-dd');
+      dd.innerHTML = `
+        <div class="psd-head">Audio</div>
+        ${tracks.map((t, i) => `
+          <div class="psd-item ${i === 0 ? 'active' : ''}" onclick="setHlsAudio(${t.id})">
+            ${t.name || t.lang || 'Audio ' + (i + 1)}
+          </div>`).join('')}
+      `;
+    }
+
+    /* externalSubs = movie.subtitles massivi: [{lang, label, url}, ...] */
+    function buildSubtitleMenu(hlsTracks, externalSubs) {
+      // Avvalgi <track> elementlarni tozalash
+      videoEl.querySelectorAll('track[data-ext-sub]').forEach(t => t.remove());
+
+      // Tashqi VTT fayllarni <track> sifatida qo'shish (hidden holatda)
+      (externalSubs || []).forEach((sub, idx) => {
+        if (!sub.url) return;
+        const tr = document.createElement('track');
+        tr.kind     = 'subtitles';
+        tr.src      = sub.url;
+        tr.srclang  = sub.lang  || 'und';
+        tr.label    = sub.label || sub.lang || ('Sub ' + (idx + 1));
+        tr.dataset.extSub = idx;
+        videoEl.appendChild(tr);
+      });
+
+      const dd = document.getElementById('sub-dd');
+      const hlsItems = (hlsTracks || []).map(t => `
+        <div class="psd-item" data-sub-type="hls" data-sub-id="${t.id}" onclick="setSubtitle('hls',${t.id})">
+          ${t.name || t.lang || 'Sub'}
+        </div>`).join('');
+
+      const extItems = (externalSubs || []).filter(s => s.url).map((s, i) => `
+        <div class="psd-item" data-sub-type="ext" data-sub-id="${i}" onclick="setSubtitle('ext',${i})">
+          ${s.label || s.lang || ('Sub ' + (i + 1))}
+        </div>`).join('');
+
+      dd.innerHTML = `
+        <div class="psd-head">Subtitle</div>
+        <div class="psd-item active" onclick="setSubtitle('off',-1)">O'chiq</div>
+        ${hlsItems}${extItems}
+      `;
+    }
+
+    /* ── HLS switching controls ── */
+    window.setHlsQuality = function(level) {
+      if (!hls) return;
+      hls.currentLevel = level;
+      const lbl = document.getElementById('qual-lbl');
+      const name = level === -1 ? 'Avto' : heightFullLabel(hls.levels[level]?.height);
+      const shortName = level === -1 ? 'Avto' : heightLabel(hls.levels[level]?.height);
+      if (lbl) lbl.textContent = shortName;
+      document.querySelectorAll('#qual-dd .psd-item').forEach((el, i) => {
+        el.classList.toggle('active', level === -1 ? i === 0 : el.dataset.lvl == level);
+      });
+      document.getElementById('qual-dd').classList.remove('open');
+      showToast('Sifat: ' + name);
+    };
+
+    window.setHlsAudio = function(trackId) {
+      if (!hls) return;
+      hls.audioTrack = trackId;
+      document.querySelectorAll('#audio-dd .psd-item').forEach(el => {
+        el.classList.toggle('active', el.getAttribute('onclick')?.includes('(' + trackId + ')'));
+      });
+      document.getElementById('audio-dd').classList.remove('open');
+      const t = hls.audioTracks.find(t => t.id === trackId);
+      showToast('Audio: ' + (t?.name || t?.lang || 'O\'zgartirildi'));
+    };
+
+    /* ══════════════════════════════════════════
+       CUSTOM VTT SUBTITLE ENGINE
+       Native <track> ishlatmaymiz — o'zimiz
+       VTT ni parse qilib, overlay div ga render.
+    ══════════════════════════════════════════ */
+
+    let _subCues    = [];     // [{start, end, text}]
+    let _subOn      = false;
+    let _lastSubKey = '';     // DOM update ni kamaytirish uchun
+
+    /* VTT vaqtini soniyaga aylantirish  "00:01:23.456" */
+    function vttTimeToSec(s) {
+      const p = s.trim().split(':');
+      if (p.length === 3) return +p[0] * 3600 + +p[1] * 60 + parseFloat(p[2]);
+      return +p[0] * 60 + parseFloat(p[1]);
+    }
+
+    /* VTT matnini parse qilish */
+    function parseVTT(raw) {
+      const cues = [];
+      const lines = raw.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split(/\n{2,}/);
+      for (const block of lines) {
+        const rows = block.trim().split('\n');
+        const ti = rows.findIndex(l => /-->/.test(l));
+        if (ti < 0) continue;
+        const [a, b] = rows[ti].split('-->');
+        const start = vttTimeToSec(a);
+        const end   = vttTimeToSec(b.trim().split(/\s/)[0]);
+        const text  = rows.slice(ti + 1).join('\n')
+          .replace(/<[^>]+>/g, '')   // VTT/HTML tag lar
+          .replace(/\{[^}]+\}/g, '') // ASS/SSA override
+          .trim();
+        if (text) cues.push({ start, end, text });
+      }
+      return cues;
+    }
+
+    /* timeupdate da chaqiriladi — overlay ni yangilash */
+    function renderSubtitle() {
+      const overlay = document.getElementById('sub-overlay');
+      if (!overlay) return;
+      if (!_subOn || !_subCues.length) {
+        if (_lastSubKey) { overlay.innerHTML = ''; _lastSubKey = ''; }
+        return;
+      }
+      const t   = videoEl.currentTime;
+      const cue = _subCues.find(c => t >= c.start && t < c.end);
+      const key = cue ? cue.text : '';
+      if (key === _lastSubKey) return;   // o'zgarmagan — DOM ga tegmaymiz
+      _lastSubKey = key;
+      if (!key) { overlay.innerHTML = ''; return; }
+      overlay.innerHTML = key
+        .split('\n')
+        .filter(Boolean)
+        .map(l => `<span class="sub-line">${l}</span>`)
+        .join('');
+    }
+
+    /* Subtitle tanlash (async — VTT fetch qiladi) */
+    window.setSubtitle = async function(type, id) {
+      // Native track larni o'chirish (ishlatmaymiz, lekin xavfsizlik uchun)
+      Array.from(videoEl.textTracks).forEach(t => { t.mode = 'hidden'; });
+      if (hls) hls.subtitleTrack = -1;
+
+      // Overlay ni tozalash
+      _subCues = []; _subOn = false; _lastSubKey = '';
+      const overlay = document.getElementById('sub-overlay');
+      if (overlay) overlay.innerHTML = '';
+
+      let label = "O'chirildi";
+
+      if (type === 'hls' && hls) {
+        // HLS manifest subtitle (TYPE=SUBTITLES) — hls.js o'zi ko'rsatadi
+        hls.subtitleTrack = id;
+        const t = (hls.subtitleTracks || []).find(t => t.id === id);
+        label = t?.name || t?.lang || 'Subtitle';
+
+      } else if (type === 'ext') {
+        const sub = (movie?.subtitles || [])[id];
+        if (sub?.url) {
+          label = sub.label || sub.lang || 'Subtitle';
+          showToast('Subtitle yuklanmoqda…');
+          try {
+            const resp = await fetch(sub.url);
+            if (!resp.ok) throw new Error('HTTP ' + resp.status);
+            const text = await resp.text();
+            _subCues = parseVTT(text);
+            _subOn   = true;
+          } catch (e) {
+            showToast('Subtitle yuklanmadi: ' + e.message);
+            return;
+          }
+        }
+      }
+
+      // Menudagi aktiv holatni yangilash
+      document.querySelectorAll('#sub-dd .psd-item').forEach(el => {
+        const t = el.dataset.subType;
+        const i = el.dataset.subId != null ? +el.dataset.subId : null;
+        el.classList.toggle('active',
+          (type === 'off' && !t) ||
+          (type === 'hls' && t === 'hls' && i === id) ||
+          (type === 'ext' && t === 'ext' && i === id)
+        );
+      });
+      document.getElementById('sub-dd').classList.remove('open');
+      showToast('Subtitle: ' + label);
+    };
+
+    /* Eski nom bilan chaqirishlar uchun alias */
+    window.setHlsSubtitle = (id) => window.setSubtitle(id === -1 ? 'off' : 'hls', id);
+
+    function parseDuration(str) {
+      if (!str) return 5400;
+      const h = str.match(/(\d+)h/), m = str.match(/(\d+)m/);
+      return (h ? +h[1] * 3600 : 0) + (m ? +m[1] * 60 : 0);
+    }
+
+    function fmtTime(s) {
+      s = s || 0;
+      const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = Math.floor(s % 60);
+      return h > 0
+        ? `${h}:${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`
+        : `${m}:${String(sec).padStart(2, '0')}`;
+    }
+
+    /* Fake-simulation state (used only when no real video src) */
+    let playing  = false;
+    let progress = 0;    // 0–100
+    let duration = movie ? parseDuration(movie.duration) : 5400;
+    let raf;
+    let muted = false;
+
+    /* ── UI updater ── */
+    function updateUI() {
+      const fill = document.getElementById('progress-fill');
+      const time = document.getElementById('player-time');
+      const buf  = document.getElementById('progress-buffered');
+
+      if (hasRealVideo() && !isNaN(videoEl.duration)) {
+        const cur = videoEl.currentTime || 0;
+        const dur = videoEl.duration;
+        const pct = dur > 0 ? (cur / dur * 100) : 0;
+        if (fill) fill.style.width = pct + '%';
+        if (time) time.textContent = fmtTime(cur) + ' / ' + fmtTime(dur);
+        if (buf && videoEl.buffered.length > 0) {
+          const buffEnd = videoEl.buffered.end(videoEl.buffered.length - 1);
+          buf.style.width = (buffEnd / dur * 100) + '%';
+        }
+      } else {
+        if (fill) fill.style.width = progress + '%';
+        if (time) time.textContent = fmtTime(progress / 100 * duration) + ' / ' + fmtTime(duration);
+      }
+    }
+
+    /* ── Fake simulation tick (no real video) ── */
+    function tick() {
+      if (!playing || hasRealVideo()) return;
+      progress = Math.min(progress + (100 / (duration * 60)), 100);
+      updateUI();
+      if (progress >= 100) { playing = false; updatePlayIcons(); return; }
+      raf = requestAnimationFrame(tick);
+    }
+
+    function updatePlayIcons() {
+      const playPath  = 'M8 5v14l11-7z';
+      const pausePath = 'M6 19h4V5H6v14zm8-14v14h4V5h-4z';
+      [document.getElementById('play-icon'), document.getElementById('center-svg')].forEach(el => {
+        if (el) el.querySelector('path').setAttribute('d', playing ? pausePath : playPath);
+      });
+      const cb = document.getElementById('center-btn');
+      if (cb) cb.classList.toggle('playing', playing);
+    }
+
+    /* ── Real video event listeners ── */
+    if (videoEl) {
+      videoEl.volume = 0.8;
+
+      videoEl.addEventListener('loadedmetadata', () => {
+        duration = videoEl.duration;
+        updateUI();
+      });
+
+      videoEl.addEventListener('timeupdate', updateUI);
+      videoEl.addEventListener('timeupdate', renderSubtitle); // subtitle sync
+      videoEl.addEventListener('progress',   updateUI); // buffered bar
+
+      videoEl.addEventListener('play', () => {
+        playing = true;
+        updatePlayIcons();
+        // Hide poster overlay once playback starts
+        const poster = document.getElementById('player-poster-wrap');
+        if (poster) poster.classList.add('hidden');
+        // Show controls briefly then auto-hide
+        showControls();
+      });
+
+      videoEl.addEventListener('pause', () => {
+        playing = false;
+        updatePlayIcons();
+        clearTimeout(hideTimer);
+        // Always show controls when paused
+        const _pw = document.getElementById('player-wrapper');
+        if (_pw) _pw.classList.add('show-ui');
+      });
+
+      videoEl.addEventListener('ended', () => {
+        playing = false;
+        updatePlayIcons();
+        clearTimeout(hideTimer);
+        const _pw = document.getElementById('player-wrapper');
+        if (_pw) _pw.classList.add('show-ui');
+      });
+    }
+
+    /* ── Controls ── */
+    window.togglePlay = function () {
+      if (hasRealVideo()) {
+        if (videoEl.paused || videoEl.ended) videoEl.play().catch(() => {});
+        else videoEl.pause();
+      } else {
+        playing = !playing;
+        updatePlayIcons();
+        if (playing) {
+          cancelAnimationFrame(raf);
+          tick();
+          showControls(); // will auto-hide after 3s
+        } else {
+          cancelAnimationFrame(raf);
+          clearTimeout(hideTimer);
+          // Show controls permanently when paused
+          const _pw = document.getElementById('player-wrapper');
+          if (_pw) _pw.classList.add('show-ui');
+        }
+      }
+    };
+
+    window.seekTo = function (e) {
+      const wrap = document.getElementById('progress-wrap');
+      const rect = wrap.getBoundingClientRect();
+      const pct  = Math.max(0, Math.min(100, (e.clientX - rect.left) / rect.width * 100));
+      if (hasRealVideo()) {
+        videoEl.currentTime = pct / 100 * (videoEl.duration || duration);
+      } else {
+        progress = pct;
+        updateUI();
+      }
+      showControls();
+    };
+
+    window.skipBack = function () {
+      if (hasRealVideo()) videoEl.currentTime = Math.max(0, videoEl.currentTime - 10);
+      else { progress = Math.max(0, progress - (10 / duration * 100)); updateUI(); }
+      showControls();
+    };
+
+    window.skipFwd = function () {
+      if (hasRealVideo()) videoEl.currentTime = Math.min(videoEl.duration || duration, videoEl.currentTime + 10);
+      else { progress = Math.min(100, progress + (10 / duration * 100)); updateUI(); }
+      showControls();
+    };
+
+    window.toggleMute = function () {
+      if (hasRealVideo()) { videoEl.muted = !videoEl.muted; muted = videoEl.muted; }
+      else muted = !muted;
+      document.getElementById('vol-icon').style.opacity = muted ? '0.35' : '1';
+      const vs = document.getElementById('vol-slider');
+      if (vs) vs.value = muted ? 0 : 80;
+    };
+
+    window.setVol = function (v) {
+      if (hasRealVideo()) { videoEl.volume = v / 100; videoEl.muted = +v === 0; }
+      muted = +v === 0;
+      document.getElementById('vol-icon').style.opacity = muted ? '0.35' : '1';
+    };
+
+    window.toggleFullscreen = function () {
+      const el = document.getElementById('player-wrapper');
+      if (!document.fullscreenElement) el.requestFullscreen().catch(() => {});
+      else document.exitFullscreen();
+    };
+
+    window.playEp = function (n) {
+      document.querySelectorAll('.episode-item').forEach((el, i) => el.classList.toggle('active', i + 1 === n));
+      if (hasRealVideo()) { videoEl.currentTime = 0; videoEl.play().catch(() => {}); }
+      else { progress = 0; playing = false; updatePlayIcons(); updateUI(); }
+      showToast(n + '-qism boshlanmoqda');
+    };
+
+    /* ── Settings dropdowns ── */
+    window.togglePsd = function (id) {
+      document.querySelectorAll('.player-settings-dd').forEach(dd => {
+        if (dd.id !== id) dd.classList.remove('open');
+      });
+      document.getElementById(id).classList.toggle('open');
+    };
+
+    window.selectPsd = function (el, ddId, lblId, val) {
+      el.parentElement.querySelectorAll('.psd-item').forEach(i => i.classList.remove('active'));
+      el.classList.add('active');
+      const lbl = document.getElementById(lblId);
+      if (lbl) lbl.textContent = val;
+      document.getElementById(ddId).classList.remove('open');
+      const type = ddId === 'sub-dd' ? 'Subtitle' : ddId === 'qual-dd' ? 'Sifat' : 'Audio';
+      showToast(type + ': ' + val);
+    };
+
+    document.addEventListener('click', e => {
+      if (!e.target.closest('.psd-btn-wrap'))
+        document.querySelectorAll('.player-settings-dd').forEach(dd => dd.classList.remove('open'));
+    });
+
+    /* ── Auto-hide controls (show-ui class on wrapper) ── */
+    let hideTimer;
+    function showControls() {
+      const pw = document.getElementById('player-wrapper');
+      if (!pw) return;
+      pw.classList.add('show-ui');
+      clearTimeout(hideTimer);
+      // Playing → auto-hide after 3s of inactivity
+      // Paused  → keep controls visible permanently
+      if (playing) {
+        hideTimer = setTimeout(() => {
+          if (playing) pw.classList.remove('show-ui');
+        }, 3000);
+      }
+    }
+
+    function hideControls() {
+      if (!playing) return; // never hide when paused
+      const pw = document.getElementById('player-wrapper');
+      if (pw) pw.classList.remove('show-ui');
+    }
+
+    const pw = document.getElementById('player-wrapper');
+    if (pw) {
+      // Show controls on page load (video starts paused)
+      pw.classList.add('show-ui');
+
+      pw.addEventListener('mousemove', showControls);
+      pw.addEventListener('mouseleave', () => {
+        if (playing) {
+          clearTimeout(hideTimer);
+          hideTimer = setTimeout(hideControls, 1000);
+        }
+      });
+      // Click on video area (not controls) toggles play
+      pw.addEventListener('click', e => {
+        if (e.target.closest('.player-controls') || e.target.closest('.player-center-btn')) return;
+        if (e.target === pw || e.target === videoEl || e.target.closest('#player-poster-wrap')) togglePlay();
+      });
+    }
+
+    /* ── Keyboard shortcuts ── */
+    document.addEventListener('keydown', e => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      if (e.code === 'Space' || e.code === 'KeyK') { e.preventDefault(); togglePlay(); }
+      else if (e.code === 'ArrowLeft')  { e.preventDefault(); skipBack(); }
+      else if (e.code === 'ArrowRight') { e.preventDefault(); skipFwd(); }
+      else if (e.code === 'KeyM')       { toggleMute(); }
+      else if (e.code === 'KeyF')       { toggleFullscreen(); }
+    });
+
+    /* ── Favorite toggle (local) ── */
+    window.toggleFav = function () {
+      if (!movie) return;
+      const added = typeof toggleWatchlistLocal === 'function'
+        ? toggleWatchlistLocal(movie)
+        : toggleFavorite(movie.id);
+      document.getElementById('top-fav-icon').innerHTML = added ? App.icons.heartFill : App.icons.heart;
+      document.getElementById('top-fav-label').textContent = added ? 'Saqlandi' : 'Saqlangan';
+      document.getElementById('top-fav-btn').classList.toggle('active', added);
+    };
+
+    updateUI();
+
+    /* ── Save watch progress to API periodically ── */
+    if (movie && typeof Auth !== 'undefined' && Auth.isLoggedIn()) {
+      let lastSaved = -1;
+      function currentPct() {
+        if (hasRealVideo() && !isNaN(videoEl.duration) && videoEl.duration > 0)
+          return Math.round(videoEl.currentTime / videoEl.duration * 100);
+        return Math.round(progress);
+      }
+      setInterval(() => {
+        const pct = currentPct();
+        if (pct !== lastSaved && pct > 0) { lastSaved = pct; HistoryAPI.save(movie.id, pct).catch(() => {}); }
+      }, 15000);
+      window.addEventListener('beforeunload', () => {
+        const pct = currentPct();
+        if (pct > 0) HistoryAPI.save(movie.id, pct).catch(() => {});
+      });
+    }
+
+    /* ── Watchlist toggle via API ── */
+    window.toggleFavAPI = async function () {
+      if (!movie) return;
+      if (typeof Auth !== 'undefined' && Auth.isLoggedIn()) {
+        try {
+          const data = await WatchlistAPI.toggle(movie.id);
+          const added = data.added;
+          document.getElementById('top-fav-icon').innerHTML = added ? App.icons.heartFill : App.icons.heart;
+          document.getElementById('top-fav-label').textContent = added ? 'Saqlandi' : 'Saqlangan';
+          document.getElementById('top-fav-btn').classList.toggle('active', added);
+          showToast(data.message);
+        } catch (e) { showToast('Xato: ' + e.message); }
+      } else {
+        window.toggleFav();
+      }
+    };
+  </script>
+</body>
+
+</html>

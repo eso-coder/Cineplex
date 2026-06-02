@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile — CINEPLEX</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+  <link rel="stylesheet" href="../css/auth-modal.css">
+  <style>
+    /* ══════════════════════════════════════════════════
+       PROFILE v2 — Letterboxd-style
+    ══════════════════════════════════════════════════ */
+    :root {
+      --pf-ease: cubic-bezier(0.23, 1, 0.32, 1);
+      --pf-bg: #14181c;
+      --pf-panel: #1b2228;
+      --pf-line: rgba(255,255,255,0.08);
+      --pf-dim: #9ab;
+      --pf-muted: #6b7c89;
+      --pf-green: #00c030;
+      --pf-blue: #40bcf4;
+      --pf-star: #00b020;
+      --pf-cover-h: 340px;
+    }
+
+    body { background: var(--pf-bg); }
+
+    .pf2 { min-height: 100vh; }
+
+    /* ── Cover banner ── */
+    .pf2-cover {
+      position: relative;
+      width: 100%;
+      height: var(--pf-cover-h);
+      overflow: hidden;
+      background:
+        radial-gradient(120% 80% at 70% 10%, rgba(190,210,200,0.55), transparent 60%),
+        radial-gradient(90% 70% at 20% 30%, rgba(120,150,140,0.45), transparent 55%),
+        linear-gradient(180deg, #5d6f64 0%, #46554d 40%, #2c3832 75%, var(--pf-bg) 100%);
+    }
+    .pf2-cover-img {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: none;
+    }
+    .pf2-cover-img.loaded { display: block; }
+    /* gradient blend into the profile section below */
+    .pf2-cover::after {
+      content: '';
+      position: absolute; left: 0; right: 0; bottom: 0;
+      height: 60%;
+      background: linear-gradient(180deg, transparent 0%, rgba(20,24,28,0.55) 55%, var(--pf-bg) 100%);
+      pointer-events: none;
+    }
+    .pf2-cover-edit {
+      position: absolute; top: 60px; right: 38px; z-index: 3;
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 9px 14px;
+      border-radius: 999px;
+      background: rgba(0,0,0,0.5);
+      -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.18);
+      color: #fff; font-size: 12.5px; font-weight: 600;
+      cursor: pointer;
+      transition: background 160ms var(--pf-ease), transform 140ms var(--pf-ease);
+    }
+    .pf2-cover-edit:hover { background: rgba(0,0,0,0.7); }
+    .pf2-cover-edit:active { transform: scale(0.96); }
+
+    /* ── Profile container ── */
+    .pf2-wrap {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 0 24px 80px;
+      position: relative;
+    }
+
+    /* ── Header row (avatar + identity) ── */
+    .pf2-head {
+      position: relative;
+      margin-top: calc(-1 * var(--pf-cover-h) + 200px); /* pull up to overlap cover */
+      display: flex;
+      align-items: flex-end;
+      gap: 22px;
+      padding-bottom: 22px;
+    }
+
+    .pf2-av-wrap { position: relative; flex-shrink: 0; }
+    .pf2-av {
+      width: 118px; height: 118px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #f6d9e4, #e9b6c8);
+      border: 4px solid var(--pf-bg);
+      overflow: hidden;
+      cursor: pointer;
+      position: relative;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+      transition: transform 200ms var(--pf-ease);
+    }
+    .pf2-av img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .pf2-av-fallback {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 40px; font-weight: 800; color: #b85c7e;
+    }
+    .pf2-av-overlay {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+      background: rgba(0,0,0,0.5);
+      color: #fff; font-size: 9px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase;
+      opacity: 0;
+      transition: opacity 180ms var(--pf-ease);
+    }
+    @media (hover: hover) and (pointer: fine) {
+      .pf2-av:hover { transform: scale(1.03); }
+      .pf2-av:hover .pf2-av-overlay { opacity: 1; }
+    }
+
+    .pf2-identity { flex: 1; min-width: 0; padding-bottom: 4px; }
+    .pf2-name-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .pf2-username {
+      font-size: 30px; font-weight: 800; color: #fff; letter-spacing: -0.01em; line-height: 1.1;
+    }
+    .pf2-patron {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 11px; border-radius: 6px;
+      background: var(--pf-blue); color: #06222e;
+      font-size: 11px; font-weight: 800; letter-spacing: 0.8px;
+    }
+    .pf2-meta {
+      display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+      margin-top: 10px;
+      color: var(--pf-dim); font-size: 13.5px;
+    }
+    .pf2-meta a { color: var(--pf-dim); transition: color 160ms var(--pf-ease); }
+    .pf2-meta a:hover { color: #fff; }
+    .pf2-meta-item { display: inline-flex; align-items: center; gap: 6px; }
+    .pf2-meta-item svg { opacity: 0.8; flex-shrink: 0; }
+
+    /* ── Stats ── */
+    .pf2-stats {
+      display: flex; align-items: flex-start; gap: 0;
+      flex-shrink: 0;
+      padding-bottom: 6px;
+    }
+    .pf2-stat {
+      text-align: center;
+      padding: 0 16px;
+      border-left: 1px solid var(--pf-line);
+    }
+    .pf2-stat:first-child { border-left: none; }
+    .pf2-stat-num { font-size: 20px; font-weight: 800; color: #fff; line-height: 1; }
+    .pf2-stat-label {
+      font-size: 9.5px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase;
+      color: var(--pf-muted); margin-top: 5px;
+    }
+
+    /* ── Tabs ── */
+    .pf2-tabs {
+      display: flex; align-items: center; gap: 4px;
+      border-bottom: 1px solid var(--pf-line);
+      margin-bottom: 28px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .pf2-tabs::-webkit-scrollbar { display: none; }
+    .pf2-tab {
+      position: relative;
+      padding: 13px 16px;
+      background: none; border: none;
+      color: var(--pf-dim);
+      font-family: inherit; font-size: 13px; font-weight: 700;
+      letter-spacing: 0.4px; text-transform: uppercase;
+      cursor: pointer; white-space: nowrap;
+      transition: color 160ms var(--pf-ease);
+    }
+    .pf2-tab:hover { color: #fff; }
+    .pf2-tab::after {
+      content: ''; position: absolute; left: 12px; right: 12px; bottom: -1px;
+      height: 2px; border-radius: 2px; background: var(--pf-green);
+      transform: scaleX(0); transform-origin: center;
+      transition: transform 200ms var(--pf-ease);
+    }
+    .pf2-tab.active { color: #fff; }
+    .pf2-tab.active::after { transform: scaleX(1); }
+
+    /* ── Section header ── */
+    .pf2-section { margin-bottom: 40px; }
+    .pf2-sec-head {
+      display: flex; align-items: baseline; justify-content: space-between;
+      border-bottom: 1px solid var(--pf-line);
+      padding-bottom: 8px; margin-bottom: 16px;
+    }
+    .pf2-sec-title {
+      font-size: 12px; font-weight: 700; letter-spacing: 1.1px; text-transform: uppercase;
+      color: var(--pf-dim);
+    }
+    .pf2-sec-link {
+      font-size: 11px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase;
+      color: var(--pf-muted); cursor: pointer; background: none; border: none; font-family: inherit;
+      transition: color 160ms var(--pf-ease);
+    }
+    .pf2-sec-link:hover { color: var(--pf-green); }
+
+    /* ── Poster grids ── */
+    .pf2-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 16px;
+    }
+    .pf2-grid.activity { gap: 14px; }
+
+    /* poster card */
+    .pf2-poster {
+      position: relative;
+      border-radius: 5px;
+      overflow: hidden;
+      aspect-ratio: 2 / 3;
+      background: linear-gradient(150deg, #2a3640, #1d262d);
+      border: 1px solid rgba(255,255,255,0.07);
+      cursor: pointer;
+      transition: transform 220ms var(--pf-ease), box-shadow 220ms var(--pf-ease);
+    }
+    .pf2-poster img { width: 100%; height: 100%; object-fit: cover; display: block; position: relative; z-index: 1; }
+    .pf2-poster-fallback {
+      position: absolute; inset: 0; z-index: 0;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 6px; padding: 14px; text-align: center;
+    }
+    .pf2-poster-fallback .pf-fb-title { font-size: 13px; font-weight: 700; color: #cdd9e0; line-height: 1.25; }
+    .pf2-poster-fallback .pf-fb-year { font-size: 11px; color: var(--pf-muted); }
+    @media (hover: hover) and (pointer: fine) {
+      .pf2-poster:hover { transform: translateY(-4px); box-shadow: 0 14px 30px rgba(0,0,0,0.5); border-color: var(--pf-green); }
+      .pf2-poster:hover .pf2-poster-hover { opacity: 1; transform: translateY(0); }
+    }
+    .pf2-poster-hover {
+      position: absolute; left: 0; right: 0; bottom: 0; z-index: 2;
+      padding: 22px 10px 9px;
+      background: linear-gradient(180deg, transparent, rgba(0,0,0,0.92));
+      color: #fff;
+      opacity: 0; transform: translateY(8px);
+      transition: opacity 200ms var(--pf-ease), transform 200ms var(--pf-ease);
+    }
+    .pf2-poster-hover .ph-title { font-size: 12.5px; font-weight: 700; line-height: 1.25; }
+    .pf2-poster-hover .ph-year { font-size: 11px; color: rgba(255,255,255,0.6); margin-top: 1px; }
+
+    /* "Show more" 5th-card label */
+    .pf2-showmore-wrap { position: relative; }
+    .pf2-showmore {
+      position: absolute; top: -26px; right: 0;
+      font-size: 10.5px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase;
+      color: var(--pf-muted); cursor: pointer; background: none; border: none; font-family: inherit;
+      transition: color 160ms var(--pf-ease);
+    }
+    .pf2-showmore:hover { color: var(--pf-green); }
+
+    /* activity card extras */
+    .pf2-act-card .pf2-meta-under {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-top: 7px; padding: 0 1px;
+    }
+    .pf2-stars { display: inline-flex; gap: 1px; color: var(--pf-star); }
+    .pf2-stars svg { display: block; }
+    .pf2-like { color: #ff5c8a; display: inline-flex; }
+    .pf2-like.off { color: var(--pf-muted); }
+
+    /* enter stagger */
+    .pf2-poster, .pf2-act-card {
+      opacity: 0; transform: translateY(10px);
+      animation: pf2In 360ms var(--pf-ease) forwards;
+    }
+    @keyframes pf2In { to { opacity: 1; transform: translateY(0); } }
+
+    @media (prefers-reduced-motion: reduce) {
+      .pf2-poster, .pf2-act-card { animation: none; opacity: 1; transform: none; }
+      .pf2-poster, .pf2-cover-edit, .pf2-av, .pf2-tab::after { transition: opacity 160ms ease; }
+    }
+
+    /* empty state */
+    .pf2-empty {
+      padding: 48px 0; text-align: center; color: var(--pf-muted);
+      font-size: 14px;
+    }
+
+    .pf2-demo-badge {
+      display: inline-flex; align-items: center; gap: 7px;
+      margin-left: 8px; padding: 4px 10px; border-radius: 999px;
+      background: rgba(64,188,244,0.12); border: 1px solid rgba(64,188,244,0.3);
+      color: var(--pf-blue); font-size: 10.5px; font-weight: 700; letter-spacing: 0.5px;
+      cursor: pointer;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 900px) {
+      .pf2-grid { grid-template-columns: repeat(4, 1fr); }
+      .pf2-head { flex-wrap: wrap; }
+      .pf2-stats { width: 100%; justify-content: flex-start; margin-top: 6px; }
+      .pf2-stat:first-child { padding-left: 0; }
+    }
+    @media (max-width: 640px) {
+      :root { --pf-cover-h: 220px; }
+      .pf2-head { margin-top: calc(-1 * var(--pf-cover-h) + 130px); gap: 16px; }
+      .pf2-av { width: 88px; height: 88px; }
+      .pf2-username { font-size: 24px; }
+      .pf2-grid { grid-template-columns: repeat(3, 1fr); gap: 12px; }
+      .pf2-stat { padding: 0 12px; }
+      .pf2-stat-num { font-size: 17px; }
+    }
+    @media (max-width: 440px) {
+      .pf2-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <div id="navbar-placeholder"></div>
+
+  <!-- hidden upload inputs -->
+  <input type="file" id="pf2-avatar-input" accept="image/*" style="display:none">
+  <input type="file" id="pf2-cover-input" accept="image/*" style="display:none">
+
+  <div class="pf2">
+    <!-- Cover -->
+    <div class="pf2-cover" id="pf2-cover">
+      <img class="pf2-cover-img" id="pf2-cover-img" alt="">
+      <button class="pf2-cover-edit" id="pf2-cover-edit" type="button">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        Edit cover
+      </button>
+    </div>
+
+    <div class="pf2-wrap">
+      <!-- Header -->
+      <div class="pf2-head">
+        <div class="pf2-av-wrap">
+          <div class="pf2-av" id="pf2-avatar" title="Change profile photo">
+            <div class="pf2-av-fallback" id="pf2-av-fallback">L</div>
+            <div class="pf2-av-overlay">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              <span>Edit</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="pf2-identity">
+          <div class="pf2-name-row">
+            <span class="pf2-username" id="pf2-username">—</span>
+            <span class="pf2-patron" id="pf2-patron" style="display:none">PATRON</span>
+            <span class="pf2-demo-badge" id="pf2-demo" style="display:none" title="Sign in to see your own profile">DEMO · Sign in</span>
+          </div>
+          <div class="pf2-meta" id="pf2-meta"></div>
+        </div>
+
+        <div class="pf2-stats" id="pf2-stats"></div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="pf2-tabs" id="pf2-tabs">
+        <button class="pf2-tab active" data-tab="profile">Profile</button>
+        <button class="pf2-tab" data-tab="films">Films</button>
+        <button class="pf2-tab" data-tab="activity">Activity</button>
+        <button class="pf2-tab" data-tab="reviews">Reviews</button>
+        <button class="pf2-tab" data-tab="watchlist">Watchlist</button>
+        <button class="pf2-tab" data-tab="likes">Likes</button>
+      </div>
+
+      <!-- ── PROFILE tab (default) ── -->
+      <div class="pf2-view" id="view-profile">
+        <!-- Favourite Films -->
+        <div class="pf2-section">
+          <div class="pf2-sec-head">
+            <span class="pf2-sec-title">Favourite Films</span>
+          </div>
+          <div class="pf2-grid" id="pf2-fav-grid"></div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="pf2-section">
+          <div class="pf2-sec-head">
+            <span class="pf2-sec-title">Recent Activity</span>
+            <button class="pf2-sec-link" id="pf2-activity-all">All</button>
+          </div>
+          <div class="pf2-grid activity" id="pf2-act-grid"></div>
+        </div>
+      </div>
+
+      <!-- ── Other tabs share a generic grid view ── -->
+      <div class="pf2-view" id="view-generic" style="display:none">
+        <div class="pf2-section">
+          <div class="pf2-sec-head">
+            <span class="pf2-sec-title" id="pf2-generic-title">Films</span>
+          </div>
+          <div class="pf2-grid" id="pf2-generic-grid"></div>
+          <div class="pf2-empty" id="pf2-generic-empty" style="display:none">Nothing here yet.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/data.js"></script>
+  <script src="../js/api.js"></script>
+  <script src="../js/i18n.js"></script>
+  <script src="../js/app.js"></script>
+  <script src="../js/auth-modal.js"></script>
+  <script src="../js/profile.js"></script>
+</body>
+</html>

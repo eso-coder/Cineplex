@@ -1,0 +1,335 @@
+const crypto = require('crypto');
+const User = require('../models/User');
+const Otp = require('../models/Otp');
+const asyncHandler = require('../utils/asyncHandler');
+const ApiError = require('../utils/ApiError');
+const { signAccessToken, signRefreshToken, verifyRefreshToken, REFRESH_COOKIE_OPTIONS } = require('../utils/jwt');
+const { sendSuccess, sendCreated } = require('../utils/response');
+const { generateOtp, sendOtpEmail } = require('../utils/mailer');
+const { uploadImage, deleteImage } = require('../utils/upload');
+const { handleUpload } = require('../middleware/upload.middleware');
+const { imageUpload } = require('../config/s3');
+const { google: googleCfg } = require('../config/env');
+const logger = require('../utils/logger');
+
+const OTP_TTL_MS = 10 * 60 * 1000; // 10 minutes
+
+const generateTokens = async (user) => {
+  const payload = { id: user._id, role: user.role };
+  const accessToken = signAccessToken(payload);
+  const refreshToken = signRefreshToken(payload);
+  user.refreshToken = refreshToken;
+  await user.save({ validateBeforeSave: false });
+  return { accessToken, refreshToken };
+};
+
+const issueSession = async (res, user, message, created = false) => {
+  const { accessToken, refreshToken } = await generateTokens(user);
+  res.cookie('refreshToken', refreshToken, REFRESH_COOKIE_OPTIONS);
+  const fn = created ? sendCreated : sendSuccess;
+  return fn(res, { user: user.toPublic(), accessToken }, message);
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LEGACY: POST /api/auth/register  (name + email + password, immediate session)
+// ─────────────────────────────────────────────────────────────────────────────
+const register = asyncHandler(async (req, res) => {
+  const { name, email, password } = req.body;
+  const existing = await User.findOne({ email });
+  if (existing) throw ApiError.conflict('Email already registered');
+  const user = await User.create({ name, email, password, isVerified: true });
+  return issueSession(res, user, 'Registration successful', true);
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// POST /api/auth/signup  → create/update a pending OTP, send the code by email
+// ─────────────────────────────────────────────────────────────────────────────
+const signup = asyncHandler(async (req, res) => {
+  const { firstName, lastName = '', email, phone = '', password } = req.body;
+
+  const existing = await User.findOne({ email });
+  if (existing && existing.isVerified) {
+    throw ApiError.conflict('An account with this email already exists');
+  }
+
+  const code = generateOtp();
+  const expiresAt = new Date(Date.now() + OTP_TTL_MS);
+
+  // One active OTP per email — replace any prior one.
+  await Otp.deleteMany({ email });
+  await Otp.create({
+    email,
+    code,
+    expiresAt,
+    used: false,
+    payload: { firstName, lastName, phone, password: password || null },
+  });
+
+  const { delivered, devCode } = await sendOtpEmail(email, code);
+
+  return sendCreated(
+    res,
+    { email, otpSent: true, delivered, ...(devCode ? { devCode } : {}) },
+    'Verification code sent'
+  );
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// POST /api/auth/verify-otp  → confirm code, create account, return JWT
+// ─────────────────────────────────────────────────────────────────────────────
+const verifyOtp = asyncHandler(async (req, res) => {
+  const { email, code } = req.body;
+
+  const otp = await Otp.findOne({ email, used: false }).sort({ createdAt: -1 });
+  if (!otp) throw ApiError.badRequest('No pending verification. Please sign up again.');
+  if (otp.expiresAt.getTime() < Date.now()) throw ApiError.badRequest('Code has expired. Request a new one.');
+  if (otp.code !== code) throw ApiError.badRequest('Incorrect code');
+
+  otp.used = true;
+  await otp.save();
+
+  const data = otp.payload || {};
+  const name = `${data.firstName || ''} ${data.lastName || ''}`.trim() || email.split('@')[0];
+
+  let user = await User.findOne({ email });
+  if (user) {
+    user.isVerified = true;
+    if (data.firstName) user.firstName = data.firstName;
+    if (data.lastName) user.lastName = data.lastName;
+    if (data.phone) user.phone = data.phone;
+    if (data.password) user.password = data.password;
+    await user.save();
+  } else {
+    user = await User.create({
+      firstName: data.firstName || '',
+      lastName: data.lastName || '',
+      name,
+      email,
+      phone: data.phone || '',
+      password: data.password || undefined,
+      isVerified: true,
+      provider: 'local',
+    });
+  }
+
+  await Otp.deleteMany({ email });
+  return issueSession(res, user, 'Account verified', true);
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// POST /api/auth/resend-otp
+// ─────────────────────────────────────────────────────────────────────────────
+const resendOtp = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+  const prev = await Otp.findOne({ email }).sort({ createdAt: -1 });
+  if (!prev) throw ApiError.badRequest('No pending signup for this email');
+
+  const code = generateOtp();
+  await Otp.deleteMany({ email });
+  await Otp.create({
+    email,
+    code,
+    expiresAt: new Date(Date.now() + OTP_TTL_MS),
+    used: false,
+    payload: prev.payload,
+  });
+
+  const { delivered, devCode } = await sendOtpEmail(email, code);
+  return sendSuccess(res, { email, delivered, ...(devCode ? { devCode } : {}) }, 'New code sent');
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// POST /api/auth/signin  (alias of login)  — email + password
+// ─────────────────────────────────────────────────────────────────────────────
+const signin = asyncHandler(async (req, res) => {
+  const { email, password } = req.body;
+  const user = await User.findOne({ email }).select('+password');
+  if (!user || !(await user.comparePassword(password))) {
+    throw ApiError.unauthorized('Invalid email or password');
+  }
+  if (!user.isActive) throw ApiError.forbidden('Account has been deactivated');
+  return issueSession(res, user, 'Login successful');
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// OAuth helpers (Google / Apple)
+// Real verification runs when credentials + SDKs are present; otherwise we accept
+// a provided email so the flow is testable in stub mode.
+// ─────────────────────────────────────────────────────────────────────────────
+const verifyGoogleToken = async (token) => {
+  if (!token || !googleCfg.clientId) return null;
+  try {
+    const { OAuth2Client } = require('google-auth-library');
+    const client = new OAuth2Client(googleCfg.clientId);
+    const ticket = await client.verifyIdToken({ idToken: token, audience: googleCfg.clientId });
+    const p = ticket.getPayload();
+    return { email: p.email, firstName: p.given_name || '', lastName: p.family_name || '', avatar: p.picture };
+  } catch (err) {
+    logger.warn(`[auth] Google token verify failed: ${err.message}`);
+    return null;
+  }
+};
+
+const verifyAppleToken = async (token) => {
+  if (!token) return null;
+  try {
+    const appleSignin = require('apple-signin-auth');
+    const p = await appleSignin.verifyIdToken(token, {});
+    return { email: p.email, firstName: '', lastName: '' };
+  } catch (err) {
+    logger.warn(`[auth] Apple token verify failed: ${err.message}`);
+    return null;
+  }
+};
+
+const oauthLogin = (provider, verifier) =>
+  asyncHandler(async (req, res) => {
+    const { token, credential, email: bodyEmail, firstName = '', lastName = '' } = req.body;
+    const idToken = token || credential;
+
+    let profile = await verifier(idToken);
+    if (!profile) {
+      // Stub fallback (no configured credentials / SDK): trust provided email.
+      if (!bodyEmail) {
+        throw ApiError.badRequest(`${provider} sign-in is not configured. Provide an email to continue in stub mode.`);
+      }
+      profile = { email: bodyEmail, firstName, lastName, avatar: '' };
+    }
+
+    let user = await User.findOne({ email: profile.email });
+    if (!user) {
+      const name = `${profile.firstName || ''} ${profile.lastName || ''}`.trim() || profile.email.split('@')[0];
+      user = await User.create({
+        firstName: profile.firstName || '',
+        lastName: profile.lastName || '',
+        name,
+        email: profile.email,
+        provider,
+        isVerified: true,
+        password: crypto.randomBytes(24).toString('hex'), // unusable random password
+        avatar: profile.avatar ? { url: profile.avatar, public_id: '' } : undefined,
+      });
+    }
+    return issueSession(res, user, `${provider} sign-in successful`);
+  });
+
+const googleAuth = oauthLogin('google', verifyGoogleToken);
+const appleAuth = oauthLogin('apple', verifyAppleToken);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// POST /api/auth/logout
+// ─────────────────────────────────────────────────────────────────────────────
+const logout = asyncHandler(async (req, res) => {
+  await User.findByIdAndUpdate(req.user._id, { refreshToken: '' });
+  res.clearCookie('refreshToken');
+  sendSuccess(res, null, 'Logged out successfully');
+});
+
+// POST /api/auth/refresh-token
+const refreshToken = asyncHandler(async (req, res) => {
+  const token = req.cookies?.refreshToken;
+  if (!token) throw ApiError.unauthorized('Refresh token required');
+  let decoded;
+  try {
+    decoded = verifyRefreshToken(token);
+  } catch {
+    throw ApiError.unauthorized('Invalid or expired refresh token');
+  }
+  const user = await User.findById(decoded.id).select('+refreshToken');
+  if (!user || user.refreshToken !== token) {
+    throw ApiError.unauthorized('Refresh token revoked');
+  }
+  const { accessToken, refreshToken: newRefresh } = await generateTokens(user);
+  res.cookie('refreshToken', newRefresh, REFRESH_COOKIE_OPTIONS);
+  sendSuccess(res, { accessToken }, 'Token refreshed');
+});
+
+// GET /api/auth/me
+const getMe = asyncHandler(async (req, res) => {
+  sendSuccess(res, req.user.toPublic ? req.user.toPublic() : req.user);
+});
+
+// PATCH /api/auth/update-profile
+const updateProfile = asyncHandler(async (req, res) => {
+  const { name, email, firstName, lastName, location, website, socialHandle, phone } = req.body;
+  if (email && email !== req.user.email) {
+    const exists = await User.findOne({ email });
+    if (exists) throw ApiError.conflict('Email already in use');
+  }
+
+  const user = await User.findById(req.user._id);
+  if (firstName !== undefined) user.firstName = firstName;
+  if (lastName !== undefined) user.lastName = lastName;
+  if (name !== undefined) user.name = name;
+  if (email !== undefined) user.email = email;
+  if (location !== undefined) user.location = location;
+  if (website !== undefined) user.website = website;
+  if (socialHandle !== undefined) user.socialHandle = socialHandle;
+  if (phone !== undefined) user.phone = phone;
+  // Keep display name coherent if first/last changed but name not explicitly set.
+  if ((firstName !== undefined || lastName !== undefined) && name === undefined) {
+    const composed = `${user.firstName || ''} ${user.lastName || ''}`.trim();
+    if (composed) user.name = composed;
+  }
+  await user.save({ validateBeforeSave: true });
+
+  sendSuccess(res, user.toPublic(), 'Profile updated');
+});
+
+// PATCH /api/auth/change-password
+const changePassword = asyncHandler(async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+  const user = await User.findById(req.user._id).select('+password');
+  if (!user.password || !(await user.comparePassword(currentPassword))) {
+    throw ApiError.badRequest('Current password is incorrect');
+  }
+  user.password = newPassword;
+  await user.save();
+  sendSuccess(res, null, 'Password changed successfully');
+});
+
+// POST /api/auth/upload-avatar  (Cloudinary if configured, else local disk)
+const uploadAvatar = [
+  handleUpload(imageUpload.single('avatar')),
+  asyncHandler(async (req, res) => {
+    if (!req.file) throw ApiError.badRequest('Avatar file required');
+    const user = await User.findById(req.user._id);
+    if (user.avatar?.public_id) await deleteImage(user.avatar.public_id);
+    const { url, public_id } = await uploadImage(req.file.buffer, 'avatars', req.file.originalname);
+    user.avatar = { url, public_id };
+    await user.save({ validateBeforeSave: false });
+    sendSuccess(res, { avatar: user.avatar, avatarUrl: url }, 'Avatar uploaded');
+  }),
+];
+
+// POST /api/auth/upload-cover
+const uploadCover = [
+  handleUpload(imageUpload.single('cover')),
+  asyncHandler(async (req, res) => {
+    if (!req.file) throw ApiError.badRequest('Cover file required');
+    const user = await User.findById(req.user._id);
+    if (user.coverImage?.public_id) await deleteImage(user.coverImage.public_id);
+    const { url, public_id } = await uploadImage(req.file.buffer, 'covers', req.file.originalname);
+    user.coverImage = { url, public_id };
+    await user.save({ validateBeforeSave: false });
+    sendSuccess(res, { coverImage: user.coverImage, coverImageUrl: url }, 'Cover uploaded');
+  }),
+];
+
+module.exports = {
+  register,
+  signup,
+  verifyOtp,
+  resendOtp,
+  signin,
+  login: signin, // keep /login working
+  googleAuth,
+  appleAuth,
+  logout,
+  refreshToken,
+  getMe,
+  updateProfile,
+  changePassword,
+  uploadAvatar,
+  uploadCover,
+};

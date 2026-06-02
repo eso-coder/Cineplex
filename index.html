@@ -1,0 +1,575 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CINEPLEX — Premium Strim</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/main.css" />
+  </head>
+  <body class="home-page">
+    <!-- ── INTRO ── -->
+    <div id="intro-overlay">
+      <div class="intro-logo-name">CINEPLEX</div>
+      <div class="intro-logo-sub">Premium Strim</div>
+      <div class="intro-line"></div>
+    </div>
+
+    <div class="ambient-bg"></div>
+    <div id="navbar-placeholder"></div>
+
+    <main>
+      <!-- ── HERO ── -->
+      <section class="hero-section animate-in" id="hero-section">
+        <div class="hero-featured" id="hero-card">
+          <!-- Poster fallback -->
+          <img
+            class="hero-featured-img"
+            id="hero-img"
+            src=""
+            alt=""
+          />
+          <!-- YouTube trailer — autoplays muted in background -->
+          <iframe
+            class="hero-bg-iframe"
+            id="hero-iframe"
+            src=""
+            frameborder="0"
+            allow="autoplay; encrypted-media"
+            allowfullscreen
+          ></iframe>
+          <!-- S3 / direct video trailer — autoplays muted (shown instead of iframe for non-YouTube trailers) -->
+          <video
+            class="hero-bg-iframe"
+            id="hero-video"
+            autoplay muted loop playsinline
+            style="display:none;object-fit:cover;"
+          ></video>
+          <div class="hero-grad"></div>
+          <div class="hero-grad-b"></div>
+
+          <!-- Next navigation only -->
+          <button class="hero-nav-btn hero-btn-next" onclick="event.stopPropagation();stepHero(1)" title="Next">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 18 6-6-6-6"/></svg>
+          </button>
+
+          <!-- Film progress indicators -->
+          <div class="hero-indicators" id="hero-indicators" onclick="event.stopPropagation()"></div>
+
+          <!-- Volume toggle -->
+          <button class="hero-volume-btn" id="hero-vol-btn" onclick="event.stopPropagation();toggleHeroVolume()" title="Toggle volume">
+            <svg id="vol-icon-muted" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>
+            </svg>
+            <svg id="vol-icon-sound" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+            </svg>
+          </button>
+
+          <div class="hero-content" id="hero-content">
+            <div class="hero-year" id="hero-year"></div>
+            <div class="hero-film-logo">
+              <span class="logo-main" id="hero-logo-main"></span>
+              <span class="logo-sub" id="hero-logo-sub"></span>
+            </div>
+            <div class="hero-meta">
+              <div class="hero-meta-item hero-imdb">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <span id="hero-imdb">—</span>
+              </div>
+              <div class="hero-meta-item" id="hero-views"></div>
+              <div class="hero-meta-item" id="hero-age"></div>
+              <div class="hero-meta-item" id="hero-duration"></div>
+            </div>
+            <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+              <button class="hero-play-btn" id="hero-play-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                <span data-i18n="btn.watch">Ko'rish</span>
+              </button>
+              <button class="hero-trailer-btn" id="hero-info-btn" data-i18n="btn.details">
+                Batafsil
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── TRENDING ── -->
+      <section
+        class="content-section animate-in"
+        style="transition-delay: 0.14s"
+      >
+        <div class="section-header">
+          <div class="section-title" data-i18n="sec.trending">Trendda</div>
+          <a href="pages/movies.html" class="section-link" data-i18n="btn.seeall">Barchasini ko'rish</a>
+        </div>
+        <div class="catalog-grid" id="trending-row" style="padding: 0"></div>
+      </section>
+
+      <!-- ── NEW ── -->
+      <section
+        class="content-section animate-in"
+        style="transition-delay: 0.22s"
+      >
+        <div class="section-header">
+          <div class="section-title" data-i18n="sec.new">Yangi chiqmalar</div>
+          <a href="pages/new.html" class="section-link" data-i18n="btn.seeall">Barchasini ko'rish</a>
+        </div>
+        <div class="catalog-grid" id="new-row" style="padding: 0"></div>
+      </section>
+
+      <!-- ── STUDIO LOGOS ── -->
+      <section
+        class="studios-section animate-in"
+        style="transition-delay: 0.3s"
+      >
+        <div class="studios-label" id="studios-label" data-i18n="sec.studios">Dunyoning yetakchi studiyalaridan strim</div>
+        <div class="studios-track">
+          <div class="studios-inner" id="studios-inner"></div>
+        </div>
+      </section>
+    </main>
+
+    <!-- ── FOOTER ── -->
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <div class="footer-top">
+          <div class="footer-brand">
+            <div class="footer-logo">
+              <span class="logo-wordmark"
+                >CINE<span class="thin">PLEX</span></span
+              >
+            </div>
+            <div class="footer-tagline">
+              Filmlar va seriallar uchun premium platforma. Istalgan joyda,
+              istalgan vaqtda tomosha qiling.
+            </div>
+          </div>
+          <div>
+            <div class="footer-col-title">Ko'rish</div>
+            <div class="footer-links">
+              <a href="pages/movies.html">Filmlar</a>
+              <a href="pages/series.html">Seriallar</a>
+              <a href="pages/new.html">Yangi chiqmalar</a>
+              <a href="pages/category.html">Janrlar</a>
+            </div>
+          </div>
+          <div>
+            <div class="footer-col-title">Hisob</div>
+            <div class="footer-links">
+              <a href="pages/profile.html">Profilim</a>
+              <a href="pages/profile.html">Saqlangan</a>
+              <a
+                href="#"
+                onclick="
+                  showToast('Sozlamalar tez kunda');
+                  return false;
+                "
+                >Sozlamalar</a
+              >
+              <a
+                href="#"
+                onclick="
+                  showToast('Yordam markazi tez kunda');
+                  return false;
+                "
+                >Yordam</a
+              >
+            </div>
+          </div>
+          <div>
+            <div class="footer-col-title">Huquqiy</div>
+            <div class="footer-links">
+              <a
+                href="#"
+                onclick="
+                  showToast('Maxfiylik siyosati');
+                  return false;
+                "
+                >Maxfiylik siyosati</a
+              >
+              <a
+                href="#"
+                onclick="
+                  showToast('Foydalanish shartlari');
+                  return false;
+                "
+                >Foydalanish shartlari</a
+              >
+              <a
+                href="#"
+                onclick="
+                  showToast('Cookie siyosati');
+                  return false;
+                "
+                >Cookie siyosati</a
+              >
+              <a
+                href="#"
+                onclick="
+                  showToast('Biz haqimizda');
+                  return false;
+                "
+                >Biz haqimizda</a
+              >
+            </div>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <div class="footer-copy">© 2026 CINEPLEX. Barcha huquqlar himoyalangan.</div>
+          <div class="footer-socials">
+            <a
+              class="footer-social"
+              href="#"
+              onclick="
+                showToast('Twitter/X');
+                return false;
+              "
+              title="X"
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path
+                  d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"
+                />
+              </svg>
+            </a>
+            <a
+              class="footer-social"
+              href="#"
+              onclick="
+                showToast('Instagram');
+                return false;
+              "
+              title="Instagram"
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <rect x="2" y="2" width="20" height="20" rx="5" />
+                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+              </svg>
+            </a>
+            <a
+              class="footer-social"
+              href="#"
+              onclick="
+                showToast('YouTube');
+                return false;
+              "
+              title="YouTube"
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path
+                  d="M22.54 6.42a2.78 2.78 0 0 0-1.94-1.96C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 1.96A29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58A2.78 2.78 0 0 0 3.4 19.54C5.12 20 12 20 12 20s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-1.96A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z"
+                />
+                <polygon
+                  points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02"
+                  fill="#060606"
+                />
+              </svg>
+            </a>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <script src="js/data.js"></script>
+    <script src="js/i18n.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/api.js"></script>
+    <script>
+      App.initNavbar("home", "");
+      const _isReload = (performance.getEntriesByType?.('navigation')?.[0]?.type === 'reload') || (performance.navigation?.type === 1);
+      if (_isReload) {
+        App.initCinematicIntro(2600);
+      } else {
+        const _ov = document.getElementById('intro-overlay');
+        if (_ov) { _ov.style.transition = 'none'; _ov.style.display = 'none'; }
+      }
+      App.initAnimations();
+
+      (async function loadHomeMovies() {
+        try {
+          const [trending, newMovies] = await Promise.all([
+            MoviesAPI.trending(),
+            MoviesAPI.newMovies()
+          ]);
+          document.getElementById("trending-row").innerHTML =
+            (trending.length ? trending : getTrending()).map(m => App.buildCard(m, "")).join("");
+          document.getElementById("new-row").innerHTML =
+            (newMovies.length ? newMovies : getNew()).map(m => App.buildCard(m, "")).join("");
+        } catch {
+          document.getElementById("trending-row").innerHTML = getTrending().map(m => App.buildCard(m, "")).join("");
+          document.getElementById("new-row").innerHTML = getNew().map(m => App.buildCard(m, "")).join("");
+        }
+      })();
+
+      /* ── HERO MULTI-FILM PLAYER ── */
+      var heroMuted     = true;
+      var heroIdx       = 0;
+      var heroFadeTimer = null;
+      var heroAutoTimer = null;
+      var HERO_DURATION = 22000; /* ms per film */
+
+      /* Hero filmlarni admin paneldan o'qish, aks holda default */
+      var _DEFAULT_HERO_FILMS = [];
+      try {
+        var _savedHero = localStorage.getItem('cp_hero_config');
+        var heroFilms = _savedHero ? JSON.parse(_savedHero) : _DEFAULT_HERO_FILMS;
+        if (!Array.isArray(heroFilms)) heroFilms = _DEFAULT_HERO_FILMS;
+      } catch(_e) { var heroFilms = _DEFAULT_HERO_FILMS; }
+
+      /* S3 / to'g'ridan-to'g'ri video URL ekanligini tekshirish */
+      function isS3Trailer(url) {
+        if (!url) return false;
+        if (url.includes('youtube') || url.includes('youtu.be')) return false;
+        return /^https?:\/\//.test(url);
+      }
+
+      /* Handle empty hero state */
+      function handleHeroEmpty() {
+        var heroSection = document.getElementById('hero-section');
+        if (heroSection) heroSection.style.display = heroFilms.length ? '' : 'none';
+      }
+
+      /* Build indicator dots */
+      function buildIndicators() {
+        var wrap = document.getElementById('hero-indicators');
+        if (!wrap || !heroFilms.length) return;
+        wrap.innerHTML = heroFilms.map(function(_, i) {
+          return '<div class="hero-ind" data-idx="' + i + '" onclick="setHero(' + i + ')">'
+               + '<div class="hero-ind-fill"></div></div>';
+        }).join('');
+      }
+
+      function updateIndicators() {
+        var inds = document.querySelectorAll('.hero-ind');
+        inds.forEach(function(ind, i) {
+          var fill = ind.querySelector('.hero-ind-fill');
+          ind.classList.remove('active', 'done');
+          fill.style.animation = 'none';
+          void fill.offsetWidth; /* reflow */
+          if (i < heroIdx) {
+            ind.classList.add('done');
+          } else if (i === heroIdx) {
+            ind.classList.add('active');
+            fill.style.animationDuration = (HERO_DURATION / 1000) + 's';
+            fill.style.animation = 'heroFill ' + (HERO_DURATION / 1000) + 's linear forwards';
+          }
+        });
+      }
+
+      function startHeroTimer() {
+        clearTimeout(heroAutoTimer);
+        heroAutoTimer = setTimeout(function() { stepHero(1); }, HERO_DURATION);
+        updateIndicators();
+      }
+
+      function setHero(idx) {
+        if (!heroFilms.length) return;
+        heroIdx = ((idx % heroFilms.length) + heroFilms.length) % heroFilms.length;
+        var d      = heroFilms[heroIdx];
+        var img    = document.getElementById('hero-img');
+        var iframe = document.getElementById('hero-iframe');
+
+        /* Fade out */
+        img.style.opacity = '0';
+        iframe.classList.remove('visible');
+        clearTimeout(heroFadeTimer);
+
+        startHeroTimer();
+
+        setTimeout(function() {
+          img.src  = d.img || '';
+          img.alt  = d.logoMain || '';
+          img.style.opacity = '1';
+
+          document.getElementById('hero-logo-main').textContent = d.logoMain || '';
+          document.getElementById('hero-logo-sub').textContent  = d.logoSub  || '';
+          document.getElementById('hero-year').textContent      = d.year     || '';
+          document.getElementById('hero-imdb').textContent      = d.imdb ? d.imdb + ' IMDB' : '';
+          document.getElementById('hero-views').textContent     = d.views ? d.views + " ta ko'rish" : '';
+          document.getElementById('hero-age').textContent       = d.age      || '';
+          document.getElementById('hero-duration').textContent  = d.duration || '';
+
+          var heroClickable = localStorage.getItem('cp_hero_clickable') !== '0';
+          var heroCardEl = document.getElementById('hero-card');
+          heroCardEl.onclick = heroClickable ? function() { App.go('pages/movie.html?id=' + d.id); } : null;
+          heroCardEl.style.cursor = heroClickable ? 'pointer' : 'default';
+          document.getElementById('hero-play-btn').onclick = function(e) {
+            e.stopPropagation(); App.go('pages/watch.html?id=' + d.id);
+          };
+          document.getElementById('hero-info-btn').onclick = function(e) {
+            e.stopPropagation();
+            if (heroClickable) App.go('pages/movie.html?id=' + d.id);
+            else App.go('pages/watch.html?id=' + d.id);
+          };
+
+          /* Load trailer — S3 yoki YouTube */
+          var heroVideo = document.getElementById('hero-video');
+          if (d.trailer && isS3Trailer(d.trailer)) {
+            /* S3 / to'g'ridan-to'g'ri video */
+            iframe.src = '';
+            iframe.classList.remove('visible');
+            if (heroVideo) {
+              heroVideo.src = d.trailer;
+              heroVideo.style.display = 'block';
+              heroVideo.muted = true;
+              heroVideo.play().catch(function(){});
+              heroFadeTimer = setTimeout(function() {
+                heroVideo.classList.add('visible');
+              }, 400);
+            }
+          } else if (d.trailer) {
+            /* YouTube */
+            if (heroVideo) { heroVideo.src = ''; heroVideo.style.display = 'none'; heroVideo.classList.remove('visible'); }
+            iframe.src = 'https://www.youtube-nocookie.com/embed/' + d.trailer
+              + '?autoplay=1&mute=1&controls=0&loop=1&playlist=' + d.trailer
+              + '&rel=0&playsinline=1&enablejsapi=1&origin=' + window.location.origin;
+            heroFadeTimer = setTimeout(function() {
+              iframe.classList.add('visible');
+            }, 2500);
+          } else {
+            iframe.src = '';
+            if (heroVideo) { heroVideo.src = ''; heroVideo.style.display = 'none'; heroVideo.classList.remove('visible'); }
+          }
+        }, 280);
+      }
+
+      function stepHero(dir) { setHero(heroIdx + dir); }
+
+      /* Render hero using whatever is currently in heroFilms */
+      function bootHero() {
+        handleHeroEmpty();
+        if (!heroFilms.length) return;
+        buildIndicators();
+        setHero(0);
+      }
+
+      /* Initial: use admin-configured hero (localStorage) if present,
+         otherwise pull real movies from the backend so the hero shows on
+         ANY device — not only the one where admin set it up. */
+      if (heroFilms.length) {
+        bootHero();
+      } else {
+        (async function loadHeroFromBackend() {
+          try {
+            var list = await MoviesAPI.newMovies();
+            if (list && list.length) {
+              heroFilms = list.slice(0, 5).map(function(m) {
+                var age = m.age ? String(m.age) : '';
+                if (age && age.indexOf('+') < 0) age += '+';
+                return {
+                  id:       m.id,
+                  trailer:  m.trailer_id || m.trailerS3Url || '',
+                  img:      m.banner_img || m.img || '',
+                  logoMain: m.title || '',
+                  logoSub:  '',
+                  year:     m.year || '',
+                  imdb:     m.rating || '',
+                  age:      age,
+                  duration: m.duration || '',
+                  views:    m.views || ''
+                };
+              });
+            }
+          } catch (e) { /* backend unavailable — hero stays hidden */ }
+          bootHero();
+        })();
+      }
+
+      function toggleHeroVolume() {
+        heroMuted = !heroMuted;
+        var iframe = document.getElementById('hero-iframe');
+        var heroVideo = document.getElementById('hero-video');
+        /* YouTube iframe */
+        if (iframe && iframe.src) {
+          if (heroMuted) {
+            iframe.contentWindow.postMessage('{"event":"command","func":"mute","args":""}', '*');
+          } else {
+            iframe.contentWindow.postMessage('{"event":"command","func":"unMute","args":""}', '*');
+            iframe.contentWindow.postMessage('{"event":"command","func":"setVolume","args":[80]}', '*');
+          }
+        }
+        /* S3 video */
+        if (heroVideo && heroVideo.src) {
+          heroVideo.muted = heroMuted;
+          if (!heroMuted) heroVideo.volume = 0.8;
+        }
+        document.getElementById('vol-icon-muted').style.display = heroMuted ? '' : 'none';
+        document.getElementById('vol-icon-sound').style.display = heroMuted ? 'none' : '';
+      }
+      /* ── STUDIOS SECTION ── */
+      var _DEFAULT_STUDIOS = [
+        { id:1,  name:'Netflix',     logoUrl:'https://cdn.simpleicons.org/netflix',       active:true },
+        { id:2,  name:'HBO Max',     logoUrl:'https://cdn.simpleicons.org/hbomax',        active:true },
+        { id:3,  name:'Disney+',     logoUrl:'https://cdn.simpleicons.org/disneyplus',    active:true },
+        { id:4,  name:'Marvel',      logoUrl:'https://cdn.simpleicons.org/marvel',        active:true },
+        { id:5,  name:'Apple TV+',   logoUrl:'https://cdn.simpleicons.org/appletv',       active:true },
+        { id:6,  name:'Prime Video', logoUrl:'https://cdn.simpleicons.org/primevideo',    active:true },
+        { id:7,  name:'Warner',      logoUrl:'https://cdn.simpleicons.org/warnerbros',    active:true },
+        { id:8,  name:'Paramount+',  logoUrl:'https://cdn.simpleicons.org/paramountplus', active:true },
+        { id:9,  name:'Sony',        logoUrl:'https://cdn.simpleicons.org/sony',          active:true },
+        { id:10, name:'A24',         logoUrl:'',                                          active:true },
+        { id:11, name:'Universal',   logoUrl:'https://cdn.simpleicons.org/universalpictures', active:true },
+        { id:12, name:'Lionsgate',   logoUrl:'',                                          active:true },
+      ];
+
+      (function renderStudios() {
+        var studios;
+        try {
+          var _s = localStorage.getItem('cp_studios_config');
+          studios = _s ? JSON.parse(_s) : _DEFAULT_STUDIOS;
+          if (!Array.isArray(studios) || !studios.length) studios = _DEFAULT_STUDIOS;
+        } catch(_) { studios = _DEFAULT_STUDIOS; }
+
+        var active = studios.filter(function(s){ return s.active !== false; });
+        if (!active.length) return;
+
+        var inner = document.getElementById('studios-inner');
+        if (!inner) return;
+
+        /* Label override */
+        var lblSaved = localStorage.getItem('cp_studios_label');
+        if (lblSaved) {
+          var lblEl = document.getElementById('studios-label');
+          if (lblEl) lblEl.textContent = lblSaved;
+        }
+
+        function buildItem(s) {
+          if (s.logoUrl) {
+            return '<span class="studio-item studio-logo-item" title="' + s.name + '">'
+              + '<img src="' + s.logoUrl + '" class="studio-logo-img" alt="' + s.name + '" loading="lazy">'
+              + '</span>';
+          }
+          return '<span class="studio-item studio-text-item">' + s.name + '</span>';
+        }
+
+        var html = active.map(buildItem).join('');
+        /* Duplicate for seamless infinite scroll */
+        inner.innerHTML = html + html;
+      })();
+    </script>
+  </body>
+</html>

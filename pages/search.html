@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Qidiruv — CINEPLEX</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+  <style>
+    .popular-tags { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
+    .popular-tag {
+      padding: 6px 14px; border-radius: 50px;
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.09);
+      font-size: 12.5px; color: rgba(255,255,255,0.55); cursor: pointer;
+      transition: all 0.18s;
+    }
+    .popular-tag:hover { background: rgba(255,255,255,0.1); color: #ffffff; border-color: rgba(255,255,255,0.18); }
+  </style>
+</head>
+<body>
+  <div class="ambient-bg"></div>
+  <div id="navbar-placeholder"></div>
+
+  <main>
+    <div class="search-header animate-in">
+      <div class="search-big-wrap">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input class="search-big-input" id="search-input" type="text" placeholder="Film, serial, janr qidiring…" autocomplete="off" autofocus>
+        <button id="clear-btn" style="background:none;border:none;color:rgba(255,255,255,0.3);cursor:pointer;padding:2px;display:none;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <!-- Popular tags -->
+      <div id="popular-section">
+        <div style="font-size:12px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;">Mashhur qidiruvlar</div>
+        <div class="popular-tags">
+          <span class="popular-tag" onclick="setQuery('action')">Jangovar</span>
+          <span class="popular-tag" onclick="setQuery('scifi')">Fantastika</span>
+          <span class="popular-tag" onclick="setQuery('drama')">Drama</span>
+          <span class="popular-tag" onclick="setQuery('Dune')">Dune</span>
+          <span class="popular-tag" onclick="setQuery('John Wick')">John Wick</span>
+          <span class="popular-tag" onclick="setQuery('Avatar')">Avatar</span>
+          <span class="popular-tag" onclick="setQuery('Marvel')">Marvel</span>
+          <span class="popular-tag" onclick="setQuery('Mission')">Mission</span>
+          <span class="popular-tag" onclick="setQuery('Batman')">Batman</span>
+          <span class="popular-tag" onclick="setQuery('fantasy')">Fantaziya</span>
+        </div>
+      </div>
+
+      <div id="results-label" class="search-results-label" style="display:none;margin-top:20px;"></div>
+    </div>
+
+    <!-- Results -->
+    <div id="results-container" class="catalog-grid" style="display:none;padding-left:var(--px,30px);padding-right:var(--px,30px);margin-top:24px;"></div>
+  </main>
+
+  <script src="../js/data.js"></script>
+  <script src="../js/i18n.js"></script>
+  <script src="../js/app.js"></script>
+  <script src="../js/api.js"></script>
+  <script>
+    App.initNavbar('', '../');
+    App.initAnimations();
+
+    const inp   = document.getElementById('search-input');
+    const label = document.getElementById('results-label');
+    const cont  = document.getElementById('results-container');
+    const popSec = document.getElementById('popular-section');
+    const clearBtn = document.getElementById('clear-btn');
+
+    /* Pre-fill from URL param */
+    const urlQ = App.getParam('q');
+    if (urlQ) { inp.value = urlQ; runSearch(urlQ); }
+
+    inp.addEventListener('input', () => { runSearch(inp.value); });
+    inp.addEventListener('keydown', e => { if (e.key === 'Escape') { inp.value = ''; runSearch(''); } });
+    clearBtn.addEventListener('click', () => { inp.value = ''; runSearch(''); inp.focus(); });
+
+    window.setQuery = q => { inp.value = q; runSearch(q); inp.focus(); };
+
+    let searchTimer;
+    function runSearch(q) {
+      clearBtn.style.display = q ? 'block' : 'none';
+
+      if (!q.trim()) {
+        label.style.display = 'none';
+        popSec.style.display = 'block';
+        cont.style.display = 'none';
+        cont.innerHTML = '';
+        return;
+      }
+
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(async () => {
+        popSec.style.display = 'none';
+        label.style.display = 'block';
+
+        let results = [];
+        try {
+          const data = await MoviesAPI.search(q);
+          results = data.data || data || [];
+          /* Merge with static results not yet in DB */
+          const staticResults = searchMovies(q);
+          const ids = new Set(results.map(m => m.id));
+          staticResults.forEach(m => { if (!ids.has(m.id)) results.push(m); });
+        } catch {
+          results = searchMovies(q);
+        }
+
+        label.innerHTML = results.length
+          ? `"<strong>${escHtml(q)}</strong>" bo'yicha <strong>${results.length}</strong> ta natija topildi`
+          : `"<strong>${escHtml(q)}</strong>" bo'yicha natija topilmadi`;
+
+        if (!results.length) {
+          cont.style.display = 'block';
+          cont.innerHTML = `
+            <div class="search-empty" style="grid-column:1/-1">
+              <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+              <h3>Hech narsa topilmadi</h3>
+              <p>Boshqa nom, janr yoki aktyor nomi bilan qidiring</p>
+            </div>`;
+          return;
+        }
+
+        cont.style.display = 'grid';
+        cont.innerHTML = results.map(m => App.buildCard(m, '../')).join('');
+      }, 300);
+    }
+
+    function highlight(text, q) {
+      if (!q) return escHtml(text);
+      const re = new RegExp('(' + escRe(q) + ')', 'gi');
+      return escHtml(text).replace(re, '<mark style="background:rgba(255,255,255,0.2);color:#ffffff;border-radius:2px;padding:0 1px">$1</mark>');
+    }
+    function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+    function escRe(s) { return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); }
+  </script>
+</body>
+</html>

@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ro'yxatdan o'tish — CINEPLEX</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/main.css">
+  <style>
+    /* ── Page wrapper ── */
+    .reg-page {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 16px;
+      position: relative;
+    }
+
+    /* Ambient glow — same purple/pink as other pages */
+    .reg-page::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 70% 60% at 20% 30%, rgba(255,255,255,0.18) 0%, transparent 55%),
+        radial-gradient(ellipse 50% 50% at 80% 70%, rgba(255,255,255,0.12) 0%, transparent 55%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── Card ── */
+    .reg-card {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 480px;
+      background: var(--glass-1);
+      border: 1px solid var(--border);
+      border-radius: var(--r-xl);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      padding: 44px 40px 40px;
+      box-shadow: 0 32px 80px rgba(0,0,0,0.5);
+    }
+
+    /* ── Brand logo at top ── */
+    .reg-brand {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .reg-brand-name {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: 5px;
+      text-transform: uppercase;
+      color: #ffffff;
+    }
+    .reg-brand-name span { color: var(--gold); }
+
+    .reg-brand-tagline {
+      font-size: 11px;
+      color: rgba(255,255,255,0.3);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+
+    /* ── Header ── */
+    .reg-header {
+      margin-bottom: 28px;
+    }
+
+    .reg-title {
+      font-size: 26px;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 6px;
+      line-height: 1.2;
+    }
+
+    .reg-sub {
+      font-size: 13px;
+      color: rgba(255,255,255,0.38);
+      line-height: 1.6;
+    }
+    .reg-sub a {
+      color: var(--gold);
+      text-decoration: none;
+      font-weight: 600;
+      transition: opacity 0.18s;
+    }
+    .reg-sub a:hover { opacity: 0.75; }
+
+    /* ── Divider line ── */
+    .reg-divider {
+      height: 1px;
+      background: var(--border);
+      margin-bottom: 28px;
+    }
+
+    /* ── Form fields ── */
+    .field {
+      margin-bottom: 18px;
+    }
+
+    .field-label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.45);
+      margin-bottom: 8px;
+    }
+
+    .field-input-wrap {
+      position: relative;
+    }
+
+    .field-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: rgba(255,255,255,0.22);
+      pointer-events: none;
+      transition: color 0.2s;
+      display: flex;
+    }
+
+    .field-input {
+      width: 100%;
+      background: var(--glass-2);
+      border: 1px solid var(--border);
+      border-radius: var(--r-md);
+      padding: 13px 44px 13px 42px;
+      color: #ffffff;
+      font-family: 'Outfit', sans-serif;
+      font-size: 14px;
+      font-weight: 400;
+      outline: none;
+      transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+      -webkit-appearance: none;
+    }
+
+    .field-input::placeholder { color: rgba(255,255,255,0.18); }
+
+    .field-input:focus {
+      border-color: var(--border-h);
+      background: rgba(255,255,255,0.06);
+      box-shadow: 0 0 0 3px rgba(193,193,193,0.08);
+    }
+    .field-input:focus + .field-icon { color: rgba(193,193,193,0.55); }
+
+    .field-input.valid   { border-color: rgba(155,155,155,0.45); }
+    .field-input.invalid { border-color: rgba(104,104,104,0.45); }
+
+    .field-toggle-pw {
+      position: absolute;
+      right: 13px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: rgba(255,255,255,0.25);
+      cursor: pointer;
+      padding: 4px;
+      display: flex;
+      transition: color 0.18s;
+    }
+    .field-toggle-pw:hover { color: rgba(193,193,193,0.7); }
+
+    .field-err {
+      font-size: 11px;
+      color: rgba(104,104,104,0.85);
+      margin-top: 5px;
+      padding-left: 2px;
+      display: none;
+    }
+    .field-err.visible { display: block; }
+
+    /* ── Password strength ── */
+    .pw-strength {
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .pw-bars {
+      display: flex;
+      gap: 4px;
+      flex: 1;
+    }
+    .pw-bar {
+      height: 3px;
+      flex: 1;
+      border-radius: 2px;
+      background: rgba(255,255,255,0.08);
+      transition: background 0.3s;
+    }
+    .pw-bar.weak   { background: rgba(104,104,104,0.75); }
+    .pw-bar.medium { background: rgba(193,193,193,0.75); }
+    .pw-bar.strong { background: rgba(155,155,155,0.75); }
+    .pw-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.3);
+      min-width: 48px;
+      text-align: right;
+      transition: color 0.3s;
+    }
+
+    /* ── Terms ── */
+    .terms-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 24px;
+      margin-top: 6px;
+    }
+    .terms-cb {
+      width: 17px;
+      height: 17px;
+      border-radius: 5px;
+      border: 1px solid var(--border-h);
+      background: var(--glass-2);
+      cursor: pointer;
+      flex-shrink: 0;
+      margin-top: 1px;
+      appearance: none;
+      -webkit-appearance: none;
+      transition: background 0.18s, border-color 0.18s;
+      position: relative;
+    }
+    .terms-cb:checked {
+      background: var(--gold);
+      border-color: var(--gold);
+    }
+    .terms-cb:checked::after {
+      content: '';
+      position: absolute;
+      left: 4px; top: 2px;
+      width: 5px; height: 8px;
+      border: 2px solid #000000;
+      border-top: none; border-left: none;
+      transform: rotate(45deg);
+    }
+    .terms-text {
+      font-size: 12px;
+      color: rgba(255,255,255,0.32);
+      line-height: 1.65;
+    }
+    .terms-text a { color: var(--gold); text-decoration: none; }
+
+    /* ── Alerts ── */
+    .reg-alert {
+      background: rgba(104,104,104,0.08);
+      border: 1px solid rgba(104,104,104,0.22);
+      border-radius: var(--r-md);
+      padding: 12px 14px;
+      font-size: 13px;
+      color: rgba(141,141,141,0.95);
+      margin-bottom: 18px;
+      display: none;
+    }
+    .reg-alert.visible { display: block; }
+
+    .reg-success {
+      background: rgba(155,155,155,0.08);
+      border: 1px solid rgba(155,155,155,0.2);
+      border-radius: var(--r-md);
+      padding: 12px 14px;
+      font-size: 13px;
+      color: rgba(183,183,183,0.95);
+      margin-bottom: 18px;
+      display: none;
+    }
+    .reg-success.visible { display: block; }
+
+    /* ── Submit button — uses site's gold CTA style ── */
+    .reg-submit {
+      width: 100%;
+      padding: 15px;
+      border-radius: var(--r-md);
+      background: var(--gold);
+      color: #000000;
+      font-family: 'Outfit', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      letter-spacing: 0.3px;
+      transition: opacity 0.18s, transform 0.18s, box-shadow 0.18s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .reg-submit:hover:not(:disabled) {
+      opacity: 0.9;
+      transform: translateY(-1px);
+      box-shadow: 0 10px 32px rgba(193,193,193,0.28);
+    }
+    .reg-submit:active:not(:disabled) { transform: translateY(0); }
+    .reg-submit:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .reg-submit .spinner {
+      display: none;
+      width: 16px; height: 16px;
+      border: 2px solid rgba(0,0,0,0.3);
+      border-top-color: #000000;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    .reg-submit.loading .spinner { display: block; }
+    .reg-submit.loading .btn-text { opacity: 0.6; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Back to home link ── */
+    .reg-back {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 20px;
+      font-size: 12px;
+      color: rgba(255,255,255,0.3);
+      text-decoration: none;
+      transition: color 0.18s;
+    }
+    .reg-back:hover { color: rgba(255,255,255,0.6); }
+
+    /* ── Responsive ── */
+    @media (max-width: 520px) {
+      .reg-card { padding: 32px 22px 28px; }
+      .reg-title { font-size: 22px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="reg-page">
+    <div class="reg-card">
+
+      <!-- Brand -->
+      <div class="reg-brand">
+        <div class="reg-brand-name">CINE<span>PLEX</span></div>
+        <div class="reg-brand-tagline">Premium Streaming</div>
+      </div>
+
+      <!-- Header -->
+      <div class="reg-header">
+        <h1 class="reg-title">Akkaunt yarating</h1>
+        <p class="reg-sub">
+          Allaqachon akkountingiz bormi?
+          <a href="./login.html" id="go-login-link">Kirish</a>
+        </p>
+      </div>
+
+      <div class="reg-divider"></div>
+
+      <!-- Alerts -->
+      <div class="reg-alert" id="reg-alert"></div>
+      <div class="reg-success" id="reg-success"></div>
+
+      <!-- Form -->
+      <form id="reg-form" novalidate autocomplete="off">
+
+        <!-- Name -->
+        <div class="field">
+          <label class="field-label" for="reg-name">To'liq ism</label>
+          <div class="field-input-wrap">
+            <input class="field-input" type="text" id="reg-name" name="name"
+              placeholder="Ismingizni kiriting" autocomplete="name" spellcheck="false">
+            <span class="field-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+            </span>
+          </div>
+          <div class="field-err" id="err-name">Ism kamida 2 ta harf bo'lishi kerak</div>
+        </div>
+
+        <!-- Email -->
+        <div class="field">
+          <label class="field-label" for="reg-email">Elektron pochta</label>
+          <div class="field-input-wrap">
+            <input class="field-input" type="email" id="reg-email" name="email"
+              placeholder="email@example.com" autocomplete="email" spellcheck="false">
+            <span class="field-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+            </span>
+          </div>
+          <div class="field-err" id="err-email">Yaroqli elektron pochta manzili kiriting</div>
+        </div>
+
+        <!-- Password -->
+        <div class="field">
+          <label class="field-label" for="reg-password">Parol</label>
+          <div class="field-input-wrap">
+            <input class="field-input" type="password" id="reg-password" name="password"
+              placeholder="Kamida 8 ta belgi" autocomplete="new-password">
+            <button type="button" class="field-toggle-pw" id="toggle-pw" aria-label="Parolni ko'rsatish">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="pw-eye-icon"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+          <div class="field-err" id="err-password">Kamida 8 ta belgi bo'lishi kerak</div>
+          <div class="pw-strength" id="pw-strength" style="display:none">
+            <div class="pw-bars">
+              <div class="pw-bar" id="pw-b1"></div>
+              <div class="pw-bar" id="pw-b2"></div>
+              <div class="pw-bar" id="pw-b3"></div>
+            </div>
+            <span class="pw-label" id="pw-label"></span>
+          </div>
+        </div>
+
+        <!-- Confirm password -->
+        <div class="field">
+          <label class="field-label" for="reg-confirm">Parolni tasdiqlang</label>
+          <div class="field-input-wrap">
+            <input class="field-input" type="password" id="reg-confirm" name="confirm"
+              placeholder="Parolni qayta kiriting" autocomplete="new-password">
+            <button type="button" class="field-toggle-pw" id="toggle-pw2" aria-label="Parolni ko'rsatish">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+          <div class="field-err" id="err-confirm">Parollar mos emas</div>
+        </div>
+
+        <!-- Terms -->
+        <div class="terms-row">
+          <input type="checkbox" class="terms-cb" id="terms-cb">
+          <label class="terms-text" for="terms-cb">
+            <a href="#">Foydalanish shartlari</a> va
+            <a href="#">Maxfiylik siyosati</a>ga roziman
+          </label>
+        </div>
+
+        <!-- Submit -->
+        <button type="submit" class="reg-submit" id="reg-submit" disabled>
+          <div class="spinner"></div>
+          <span class="btn-text">Akkaunt yaratish</span>
+        </button>
+
+      </form>
+
+      <!-- Back link -->
+      <a href="../index.html" class="reg-back">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        Bosh sahifaga qaytish
+      </a>
+
+    </div>
+  </div>
+
+  <script src="../js/api.js"></script>
+  <script>
+    // ── Auto-redirect if already logged in ──
+    if (typeof Auth !== 'undefined' && Auth.isLoggedIn()) {
+      window.location.href = './profile.html';
+    }
+
+    // ── Password visibility toggles ──
+    function setupToggle(btnId, inputId) {
+      const btn = document.getElementById(btnId);
+      const inp = document.getElementById(inputId);
+      if (!btn || !inp) return;
+      btn.addEventListener('click', function() {
+        const show = inp.type === 'password';
+        inp.type = show ? 'text' : 'password';
+        btn.querySelector('svg').innerHTML = show
+          ? '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>'
+          : '<path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/>';
+      });
+    }
+    setupToggle('toggle-pw',  'reg-password');
+    setupToggle('toggle-pw2', 'reg-confirm');
+
+    // ── Validation helpers ──
+    function setField(inputId, errId, valid, msg) {
+      const inp = document.getElementById(inputId);
+      const err = document.getElementById(errId);
+      if (!inp || !err) return;
+      inp.classList.toggle('valid',   valid === true);
+      inp.classList.toggle('invalid', valid === false);
+      if (valid === false) { err.textContent = msg || err.textContent; err.classList.add('visible'); }
+      else                 { err.classList.remove('visible'); }
+    }
+
+    function validateName() {
+      const v = document.getElementById('reg-name').value.trim();
+      if (!v) { setField('reg-name','err-name',false,"Ism bo'sh bo'lishi mumkin emas"); return false; }
+      if (v.length < 2) { setField('reg-name','err-name',false,'Ism kamida 2 ta harf bo\'lishi kerak'); return false; }
+      setField('reg-name','err-name',true); return true;
+    }
+
+    function validateEmail() {
+      const v = document.getElementById('reg-email').value.trim();
+      const ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+      setField('reg-email','err-email', ok ? true : false, 'Yaroqli elektron pochta manzili kiriting');
+      return ok;
+    }
+
+    function validatePassword() {
+      const v = document.getElementById('reg-password').value;
+      const ok = v.length >= 8;
+      setField('reg-password','err-password', ok ? true : false, 'Kamida 8 ta belgi bo\'lishi kerak');
+      updateStrength(v);
+      return ok;
+    }
+
+    function validateConfirm() {
+      const pw = document.getElementById('reg-password').value;
+      const cf = document.getElementById('reg-confirm').value;
+      const ok = cf.length > 0 && pw === cf;
+      setField('reg-confirm','err-confirm', ok ? true : (cf.length ? false : null), 'Parollar mos emas');
+      return ok;
+    }
+
+    // ── Password strength ──
+    function updateStrength(pw) {
+      const wrap  = document.getElementById('pw-strength');
+      const b1    = document.getElementById('pw-b1');
+      const b2    = document.getElementById('pw-b2');
+      const b3    = document.getElementById('pw-b3');
+      const label = document.getElementById('pw-label');
+      if (!pw) { wrap.style.display = 'none'; return; }
+      wrap.style.display = 'flex';
+      const hasUpper = /[A-Z]/.test(pw);
+      const hasNum   = /\d/.test(pw);
+      const hasSpec  = /[^A-Za-z0-9]/.test(pw);
+      const score    = (pw.length >= 8 ? 1 : 0) + (hasUpper ? 1 : 0) + (hasNum ? 1 : 0) + (hasSpec ? 1 : 0);
+      [b1, b2, b3].forEach(b => b.className = 'pw-bar');
+      if (score <= 1)      { b1.classList.add('weak');   label.textContent = 'Zaif';     label.style.color = 'rgba(104,104,104,0.75)'; }
+      else if (score <= 2) { b1.classList.add('medium'); b2.classList.add('medium'); label.textContent = "O'rtacha"; label.style.color = 'rgba(193,193,193,0.75)'; }
+      else                 { b1.classList.add('strong'); b2.classList.add('strong'); b3.classList.add('strong'); label.textContent = 'Kuchli'; label.style.color = 'rgba(155,155,155,0.75)'; }
+    }
+
+    // ── Enable submit when terms checked ──
+    const termsCb = document.getElementById('terms-cb');
+    const submitBtn = document.getElementById('reg-submit');
+    termsCb.addEventListener('change', function() {
+      submitBtn.disabled = !this.checked;
+    });
+
+    // ── Live validation ──
+    document.getElementById('reg-name').addEventListener('blur', validateName);
+    document.getElementById('reg-email').addEventListener('blur', validateEmail);
+    document.getElementById('reg-password').addEventListener('input', function() {
+      validatePassword();
+      if (document.getElementById('reg-confirm').value) validateConfirm();
+    });
+    document.getElementById('reg-confirm').addEventListener('blur', validateConfirm);
+
+    // ── Form submit ──
+    document.getElementById('reg-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      const alertEl   = document.getElementById('reg-alert');
+      const successEl = document.getElementById('reg-success');
+      alertEl.classList.remove('visible');
+      successEl.classList.remove('visible');
+
+      const ok1 = validateName();
+      const ok2 = validateEmail();
+      const ok3 = validatePassword();
+      const ok4 = validateConfirm();
+      if (!ok1 || !ok2 || !ok3 || !ok4) return;
+
+      const name     = document.getElementById('reg-name').value.trim();
+      const email    = document.getElementById('reg-email').value.trim();
+      const password = document.getElementById('reg-password').value;
+
+      submitBtn.classList.add('loading');
+      submitBtn.disabled = true;
+
+      try {
+        const res = await AuthAPI.register(name, email, password);
+
+        if (res && res.success) {
+          successEl.textContent = "Akkaunt muvaffaqiyatli yaratildi! Profilingizga o'tkazilmoqda…";
+          successEl.classList.add('visible');
+          setTimeout(() => { window.location.href = './profile.html'; }, 1200);
+        } else {
+          const msg = res && res.message ? res.message : 'Ro\'yxatdan o\'tishda xato yuz berdi';
+          const isDup = msg.toLowerCase().includes('exist') || msg.toLowerCase().includes('duplicate') || msg.toLowerCase().includes('band');
+          alertEl.textContent = isDup
+            ? 'Bu elektron pochta allaqachon ro\'yxatdan o\'tgan. Kirish sahifasiga o\'ting.'
+            : msg;
+          alertEl.classList.add('visible');
+          submitBtn.classList.remove('loading');
+          submitBtn.disabled = false;
+        }
+      } catch (err) {
+        alertEl.textContent = err.message || 'Server bilan ulanishda xato. Qayta urinib ko\'ring.';
+        alertEl.classList.add('visible');
+        submitBtn.classList.remove('loading');
+        submitBtn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

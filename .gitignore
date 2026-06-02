@@ -1,0 +1,30 @@
+# AWS Credentials - NEVER commit these
+cine-plex-production_accessKeys.csv
+*.csv
+
+# Environment files
+.env
+.env.local
+.env.production
+.env.*
+
+# Node modules
+node_modules/
+
+# HAR files (may contain sensitive session data)
+*.har
+
+# Claude internal files
+.claude/
+
+# Logs
+*.log
+logs/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Build outputs
+dist/
+build/
