@@ -417,6 +417,35 @@ const StatsAPI = {
   myStats() { return Promise.resolve({ watchlist: 0, watched: 0, minutes: 0 }); }
 };
 
+/* ─── Watchlist toggle — localStorage cp_watchlist + backend if logged in ─── */
+async function toggleWatchlistCard(btn) {
+  const id    = btn.dataset.id;
+  const title = btn.dataset.title || '';
+  const img   = btn.dataset.img   || '';
+  const year  = btn.dataset.year  || '';
+  const movie = { id: String(id), title, img, year, posterUrl: img };
+
+  // Always save to localStorage so profile Watchlist tab sees it instantly
+  const added = toggleWatchlistLocal(movie);
+  btn.classList.toggle('active', added);
+
+  // Also sync to backend if logged in (best-effort)
+  if (Auth.isLoggedIn()) {
+    WatchlistAPI.toggle(id).catch(() => {});
+  }
+}
+
+/* ─── Like toggle — always localStorage (shown in profile likes tab) ─── */
+function toggleLikeCard(btn) {
+  const id    = btn.dataset.id;
+  const title = btn.dataset.title || '';
+  const img   = btn.dataset.img   || '';
+  const year  = btn.dataset.year  || '';
+  const movie = { id: String(id), title, img, year, posterUrl: img };
+  const added = toggleLike(movie);
+  btn.classList.toggle('active', added);
+}
+
 /* ─── Smart toggleFavorite — backend if logged in, localStorage fallback ─── */
 async function toggleFavoriteAPI(id) {
   if (Auth.isLoggedIn()) {

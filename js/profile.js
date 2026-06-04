@@ -230,8 +230,32 @@
     if (!current) return [];
     if (tab === 'films') return current.films || allFavourites;
     if (tab === 'activity') return (current.activity || []);
-    if (tab === 'watchlist') return current.watchlist || [];
-    if (tab === 'likes') return (current.activity || []).filter(function (f) { return f.liked; });
+
+    if (tab === 'watchlist') {
+      // localStorage watchlist (cp_watchlist) — to'liq kino obyektlari saqlanadi
+      var wlStored = [];
+      try { wlStored = JSON.parse(localStorage.getItem('cp_watchlist') || '[]'); } catch (e) {}
+      if (wlStored.length) {
+        return wlStored.map(function (m) {
+          return { id: m.id || m._id, title: m.title, year: m.year, posterUrl: m.posterUrl || m.img || m.poster || '' };
+        });
+      }
+      // backend watchlist fallback
+      return (current.watchlist || []);
+    }
+
+    if (tab === 'likes') {
+      var likeStored = [];
+      try { likeStored = JSON.parse(localStorage.getItem('cp_likes') || '[]'); } catch (e) {}
+      if (likeStored.length) {
+        return likeStored.map(function (m) {
+          return { id: m.id, title: m.title, year: m.year, posterUrl: m.posterUrl || m.img || '' };
+        });
+      }
+      // demo mode fallback: activity liked items
+      return (current.activity || []).filter(function (f) { return f.liked; });
+    }
+
     if (tab === 'reviews') return [];
     return [];
   }

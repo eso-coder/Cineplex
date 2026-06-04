@@ -22,18 +22,18 @@ const uploadToCloudinary = (buffer, options = {}) =>
 const imageMemory = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 5 * 1024 * 1024 },
-  fileFilter: (req, file, cb) => {
-    if (/^image\/(jpeg|png|webp)$/.test(file.mimetype)) return cb(null, true);
-    cb(new Error('Only jpg, png, webp images are allowed'), false);
+  fileFilter: async (req, file) => {
+    if (/^image\/(jpeg|png|webp)$/.test(file.mimetype)) return true;
+    throw new Error('Only jpg, png, webp images are allowed');
   },
 });
 
 const videoMemory = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 100 * 1024 * 1024 },
-  fileFilter: (req, file, cb) => {
-    if (/^video\//.test(file.mimetype)) return cb(null, true);
-    cb(new Error('Only video files are allowed'), false);
+  fileFilter: async (req, file) => {
+    if (/^video\//.test(file.mimetype)) return true;
+    throw new Error('Only video files are allowed');
   },
 });
 

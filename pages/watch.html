@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Tomosha — CINEPLEX</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -514,8 +514,16 @@
       <div class="player-poster" id="player-poster-wrap">
         <img id="player-poster-img" src="" alt="" style="height:100%;width:auto;max-width:100%;object-fit:contain;">
       </div>
-      <!-- Real video element — custom controls handle UI -->
-      <video id="real-player" style="display:none;" preload="metadata"></video>
+      <!-- Real video element — playsinline: iOS da fullscreen chiqmaydi -->
+      <video id="real-player"
+        style="display:none;"
+        preload="metadata"
+        playsinline
+        webkit-playsinline
+        x5-playsinline
+        x5-video-player-type="h5"
+        x5-video-player-fullscreen="false">
+      </video>
 
       <!-- Custom subtitle overlay (VTT rendered in JS, not native <track>) -->
       <div class="sub-overlay" id="sub-overlay"></div>
@@ -933,7 +941,10 @@
     /* ── HLS switching controls ── */
     window.setHlsQuality = function(level) {
       if (!hls) return;
-      hls.currentLevel = level;
+      // Video holatini saqlab qolish — to'xtatmasdan sifat o'zgartirish
+      const wasPlaying = !videoEl.paused;
+      const curTime = videoEl.currentTime;
+      hls.nextLevel = level;   // nextLevel = joriy segment tugagach o'zgartiradi (to'xtatmaydi)
       const lbl = document.getElementById('qual-lbl');
       const name = level === -1 ? 'Avto' : heightFullLabel(hls.levels[level]?.height);
       const shortName = level === -1 ? 'Avto' : heightLabel(hls.levels[level]?.height);
@@ -1016,7 +1027,9 @@
 
     /* Subtitle tanlash (async — VTT fetch qiladi) */
     window.setSubtitle = async function(type, id) {
-      // Native track larni o'chirish (ishlatmaymiz, lekin xavfsizlik uchun)
+      // Video davom etayotganini saqlab qolish
+      const wasPlaying = !videoEl.paused;
+      // Native track larni o'chirish (to'xtatmasdan)
       Array.from(videoEl.textTracks).forEach(t => { t.mode = 'hidden'; });
       if (hls) hls.subtitleTrack = -1;
 
@@ -1044,8 +1057,11 @@
             const text = await resp.text();
             _subCues = parseVTT(text);
             _subOn   = true;
+            // Fetch paytida video to'xtagan bo'lsa — qayta boshlash
+            if (wasPlaying && videoEl.paused) videoEl.play().catch(() => {});
           } catch (e) {
             showToast('Subtitle yuklanmadi: ' + e.message);
+            if (wasPlaying && videoEl.paused) videoEl.play().catch(() => {});
             return;
           }
         }
@@ -1232,11 +1248,42 @@
       document.getElementById('vol-icon').style.opacity = muted ? '0.35' : '1';
     };
 
-    window.toggleFullscreen = function () {
+    window.toggleFullscreen = async function () {
       const el = document.getElementById('player-wrapper');
-      if (!document.fullscreenElement) el.requestFullscreen().catch(() => {});
-      else document.exitFullscreen();
+      if (!document.fullscreenElement) {
+        try {
+          // Fullscreen so'rash
+          await (el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen).call(el);
+          // Telefon landscape burilsin
+          if (screen.orientation && screen.orientation.lock) {
+            await screen.orientation.lock('landscape').catch(() => {});
+          } else if (window.screen && window.screen.lockOrientation) {
+            window.screen.lockOrientation('landscape');
+          }
+        } catch(e) {}
+      } else {
+        // Fullscreendan chiqish
+        (document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen).call(document);
+        // Orientatsiyani qaytarish
+        if (screen.orientation && screen.orientation.unlock) {
+          screen.orientation.unlock();
+        } else if (window.screen && window.screen.unlockOrientation) {
+          window.screen.unlockOrientation();
+        }
+      }
     };
+
+    // Fullscreendan tashqaridan chiqilganda ham orientatsiyani qaytarish
+    document.addEventListener('fullscreenchange', function () {
+      if (!document.fullscreenElement) {
+        if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock();
+      }
+    });
+    document.addEventListener('webkitfullscreenchange', function () {
+      if (!document.webkitFullscreenElement) {
+        if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock();
+      }
+    });
 
     window.playEp = function (n) {
       document.querySelectorAll('.episode-item').forEach((el, i) => el.classList.toggle('active', i + 1 === n));

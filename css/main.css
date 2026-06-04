@@ -1754,7 +1754,40 @@ main {
 .mco-top {
   display: flex;
   justify-content: flex-end;
+  gap: 5px;
   padding: 8px 8px 0;
+}
+
+.mco-like-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.85);
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s;
+}
+
+.mco-like-btn:hover {
+  background: rgba(255, 255, 255, 0.26);
+  color: #ffffff;
+}
+
+.mco-like-btn.active {
+  background: rgba(255, 255, 255, 0.22);
+  border-color: rgba(255, 255, 255, 0.35);
+  color: #ffffff;
+}
+
+.mco-like-btn.active svg {
+  fill: #ffffff;
+  stroke: #ffffff;
 }
 
 .mco-wl-btn {
@@ -4101,7 +4134,28 @@ video.hero-bg-iframe {
     --card-w: 140px;
   }
 
-  /* Navbar */
+  /* Navbar — boshqa sahifalarda doim orqa fon ko'rinadi */
+  .navbar {
+    background: rgba(9, 9, 9, 0.82) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border-bottom-color: rgba(255, 255, 255, 0.06) !important;
+  }
+
+  /* Bosh sahifada (home-page) — scroll qilinmasa transparent */
+  body.home-page .navbar:not(.scrolled) {
+    background: transparent !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border-bottom-color: transparent !important;
+  }
+  body.home-page .navbar.scrolled {
+    background: rgba(9, 9, 9, 0.88) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border-bottom-color: rgba(255, 255, 255, 0.06) !important;
+  }
+
   .navbar-inner {
     padding: 0 14px;
     gap: 8px;
@@ -4179,8 +4233,26 @@ video.hero-bg-iframe {
   .hero-volume-btn {
     width: 40px;
     height: 40px;
-    bottom: 16px;
+    bottom: 26px;
     right: 16px;
+  }
+
+  /* Hero indicators — volume btn dan chap tomonda */
+  .hero-indicators {
+    bottom: 36px;
+    right: 128px;
+    max-width: calc(100vw - 144px); /* volume btn bilan to'qnashmaydi */
+    flex-wrap: nowrap;
+    overflow: hidden;
+  }
+
+  /* 4 va undan ortiq indicator bo'lsa — har bir bar torroq */
+  .hero-indicators .hero-ind:nth-child(n+4) ~ .hero-ind,
+  .hero-indicators:has(.hero-ind:nth-child(4)) .hero-ind {
+    width: 22px;
+  }
+  .hero-indicators:has(.hero-ind:nth-child(4)) .hero-ind.active {
+    width: 34px;
   }
   .hero-nav-btn {
     width: 36px;

@@ -14,9 +14,13 @@ const SORT_MAP = {
 
 // GET /api/movies
 const getMovies = asyncHandler(async (req, res) => {
-  const { page, limit, genre, year, sort, search } = req.query;
+  const { page, limit, genre, year, sort, search, type } = req.query;
 
   const filter = {};
+
+  if (type && ['movie', 'series'].includes(type)) {
+    filter.type = type;
+  }
 
   if (search) {
     filter.$text = { $search: search };

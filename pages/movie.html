@@ -1,104 +1,1018 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Film — CINEPLEX</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" href="../css/main.css">
   <style>
-    /* ══════════════════════════════════════
-       CAST — real photos
-    ══════════════════════════════════════ */
-    .dp-cast-card img.dp-cast-photo {
-      width: 72px; height: 72px;
-      border-radius: 50%;
-      object-fit: cover; object-position: top;
-      display: block;
-      margin: 0 auto 10px;
-      border: 2px solid rgba(255,255,255,0.09);
-      transition: transform 0.22s, border-color 0.22s;
+    /* ═══════════════════════════════════════════════════
+       MOVIE DETAIL — iOS Cinema Design (Mobile-first)
+    ═══════════════════════════════════════════════════ */
+
+    /* ── Fixed blurred poster background ── */
+    #movie-bg-blur {
+      position: fixed;
+      inset: 0;
+      z-index: -1; /* barcha kontentdan orqada turadi */
+      background-size: cover;
+      background-position: center top;
+      filter: blur(32px) brightness(0.28) saturate(1.3);
+      transform: scale(1.12);
+      transition: background-image 0.6s ease;
     }
-    .dp-cast-card:hover img.dp-cast-photo {
-      transform: scale(1.07);
-      border-color: rgba(255,255,255,0.25);
+
+    body.movie-page {
+      background: #080808;
+      min-height: 100vh;
     }
 
     /* ── Actor Modal ── */
     .actor-modal-overlay {
-      position: fixed; inset: 0; z-index: 8000;
-      background: rgba(0,0,0,0.72);
-      backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
-      display: flex; align-items: center; justify-content: center;
-      opacity: 0; pointer-events: none;
-      transition: opacity 0.25s cubic-bezier(0.16,1,0.3,1);
+      position: fixed;
+      inset: 0;
+      z-index: 8000;
+      background: rgba(0, 0, 0, 0.72);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1);
       padding: 20px;
     }
-    .actor-modal-overlay.open { opacity: 1; pointer-events: all; }
-    .actor-modal {
-      background: rgba(9,9,9,0.78);
-      backdrop-filter: blur(52px) saturate(180%); -webkit-backdrop-filter: blur(52px) saturate(180%);
-      border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 24px; padding: 0;
-      width: 100%; max-width: 560px; max-height: 88vh;
-      overflow: hidden; overflow-y: auto;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 32px 80px rgba(0,0,0,0.75);
-      transform: translateY(18px) scale(0.97);
-      transition: transform 0.28s cubic-bezier(0.16,1,0.3,1);
+
+    .actor-modal-overlay.open {
+      opacity: 1;
+      pointer-events: all;
     }
-    .actor-modal-overlay.open .actor-modal { transform: translateY(0) scale(1); }
-    .actor-modal::-webkit-scrollbar { width: 4px; }
-    .actor-modal::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+
+    .actor-modal {
+      background: rgba(9, 9, 9, 0.88);
+      backdrop-filter: blur(52px) saturate(180%);
+      -webkit-backdrop-filter: blur(52px) saturate(180%);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 24px;
+      padding: 0;
+      width: 100%;
+      max-width: 560px;
+      max-height: 88vh;
+      overflow: hidden;
+      overflow-y: auto;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 32px 80px rgba(0, 0, 0, 0.75);
+      transform: translateY(18px) scale(0.97);
+      transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .actor-modal-overlay.open .actor-modal {
+      transform: translateY(0) scale(1);
+    }
+
+    .actor-modal::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .actor-modal::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 2px;
+    }
+
     .actor-modal-header {
       position: relative;
       padding: 28px 28px 24px;
-      background: linear-gradient(135deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.09) 100%);
-      border-bottom: 1px solid rgba(255,255,255,0.07);
-      display: flex; align-items: center; gap: 18px;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.06));
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      display: flex;
+      align-items: center;
+      gap: 18px;
     }
+
     .actor-modal-close {
-      position: absolute; top: 16px; right: 16px;
-      width: 32px; height: 32px; border-radius: 9px;
-      background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.09);
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer; color: rgba(255,255,255,0.6);
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      width: 32px;
+      height: 32px;
+      border-radius: 9px;
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: rgba(255, 255, 255, 0.6);
       transition: background 0.18s;
     }
-    .actor-modal-close:hover { background: rgba(255,255,255,0.14); color: #ffffff; }
-    .actor-modal-avatar {
-      width: 72px; height: 72px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 24px; font-weight: 900; color: #ffffff;
-      flex-shrink: 0;
-      box-shadow: 0 0 28px rgba(255,255,255,0.35);
+
+    .actor-modal-close:hover {
+      background: rgba(255, 255, 255, 0.14);
+      color: #ffffff;
     }
-    .actor-modal-name { font-size: 22px; font-weight: 800; margin-bottom: 4px; }
-    .actor-modal-role { font-size: 13px; color: rgba(255,255,255,0.42); }
-    .actor-modal-body { padding: 22px 28px 28px; }
+
+    .actor-modal-avatar {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      font-weight: 900;
+      color: #ffffff;
+      flex-shrink: 0;
+      box-shadow: 0 0 28px rgba(255, 255, 255, 0.25);
+      overflow: hidden;
+    }
+
+    .actor-modal-name {
+      font-size: 22px;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+
+    .actor-modal-role {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.42);
+    }
+
+    .actor-modal-body {
+      padding: 22px 28px 28px;
+    }
+
     .actor-modal-bio {
-      font-size: 14px; line-height: 1.65;
-      color: rgba(255,255,255,0.6);
+      font-size: 14px;
+      line-height: 1.65;
+      color: rgba(255, 255, 255, 0.6);
       margin-bottom: 24px;
     }
+
     .actor-modal-films-label {
-      font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.3);
-      text-transform: uppercase; letter-spacing: 1.2px;
+      font-size: 11px;
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.3);
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
       margin-bottom: 14px;
     }
+
     .actor-modal-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
       gap: 16px 10px;
     }
+
     .actor-modal-empty {
-      text-align: center; padding: 28px 0;
-      color: rgba(255,255,255,0.3); font-size: 14px;
+      text-align: center;
+      padding: 28px 0;
+      color: rgba(255, 255, 255, 0.3);
+      font-size: 14px;
+    }
+
+    /* ══════════════════════════════════
+       MOBILE CINEMA LAYOUT  ≤ 640px
+    ══════════════════════════════════ */
+    @media (max-width: 640px) {
+
+      /* Mobilada z-index olib tashlanadi */
+      #movie-bg-blur {
+        z-index: unset;
+      }
+
+      /* ── Page wrapper ── */
+      .mob-page {
+        max-width: 430px;
+        margin: 0 auto;
+        min-height: 100vh;
+        position: relative;
+        overflow-x: hidden;
+        padding-bottom: 60px;
+      }
+
+      /* ── Sticky top nav — main navbar pastida ── */
+      .mob-nav {
+        position: sticky;
+        top: 70px;
+        z-index: 100;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 16px;
+      }
+
+      .mob-back-btn {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        background: rgba(0, 0, 0, 0.445);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 50px;
+        color: #fff;
+        font-size: 13px;
+        font-weight: 600;
+        padding: 10px 25px;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: background 0.18s;
+      }
+
+      .mob-back-btn:hover {
+        background: rgba(255, 255, 255, 0.18);
+      }
+
+      .mob-nav-pills {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-left: auto;
+        flex-shrink: 0;
+      }
+
+      .mob-pill {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 20px;
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 11.5px;
+        font-weight: 600;
+        padding: 5px 10px;
+        white-space: nowrap;
+      }
+
+      .mob-pill-rating {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      /* ── Hero poster ── */
+      .mob-hero {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 3 / 4;
+        overflow: visible;
+        /* gradient pastga chiqishi uchun */
+        z-index: 1;
+      }
+
+      .mob-hero-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center top;
+        display: block;
+        position: relative;
+        z-index: 1;
+        overflow: hidden;
+        border-radius: 0;
+      }
+
+      /* ── Gradient blur: hero ham mob-info ni qoplaydi ── */
+      .mob-hero-gradient {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: -200px;
+        /* hero ichida pastdan + mob-info ichiga (-margin qancha bo'lsa) */
+        height: calc(65% + 140px);
+        pointer-events: none;
+        z-index: 3;
+        /* hero-img (1) dan yuqori, mob-info (5) dan past */
+      }
+
+      .mob-hero-gradient::before,
+      .mob-hero-gradient::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+      }
+
+      /* Qatlam 1 — o'rta: engil blur */
+      .mob-hero-gradient::before {
+    
+        -webkit-backdrop-filter: blur(5px);
+        -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 40%, black 65%, transparent 100%);
+        mask-image: linear-gradient(to bottom, transparent 0%, black 40%, black 65%, transparent 100%);
+      }
+
+      /* Qatlam 2 — quyi qism: kuchli blur, mob-info gacha yetadi */
+      .mob-hero-gradient::after {
+        backdrop-filter: blur(145px) brightness(0.6);
+        -webkit-backdrop-filter: blur(22px) brightness(0.5);
+        -webkit-mask-image: linear-gradient(to bottom, transparent 20%, black 55%, black 100%);
+        mask-image: linear-gradient(to bottom, transparent 20%, black 55%, black 100%);
+      }
+
+      .mob-hero-trailer-btn {
+        position: absolute;
+        z-index: 33;
+        top: 9px;
+        right: 15px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(10, 10, 10, 0.489);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 999px;
+        color: #fff;
+        font-size: 13px;
+        font-weight: 700;
+        padding: 9px 16px 9px 10px;
+        cursor: pointer;
+        transition: background 0.2s, transform 0.15s;
+      }
+
+      .mob-hero-trailer-btn:hover {
+        background: rgba(30, 30, 30, 0.9);
+        transform: scale(1.03);
+      }
+
+      .mob-hero-trailer-btn:active {
+        transform: scale(0.97);
+      }
+
+      .mob-play-circle svg {
+        color: #ffffff;
+        width: 18px;
+        height: 18px;
+      }
+
+      /* Trailer overlay (full-screen on mobile) */
+      .mob-trailer-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 9000;
+        background: #000;
+        display: none;
+        flex-direction: column;
+      }
+
+      .mob-trailer-overlay.open {
+        display: flex;
+      }
+
+      .mob-trailer-close {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        z-index: 2;
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.12);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        cursor: pointer;
+      }
+
+      .mob-trailer-frame {
+        width: 100%;
+        height: 100%;
+        border: none;
+      }
+
+      /* ══════════════════════════════════
+         MOB-INFO  —  Cinema Card Redesign
+      ══════════════════════════════════ */
+      @keyframes mobSlideUp {
+        from { opacity: 0; transform: translateY(28px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes posterPop {
+        from { opacity: 0; transform: translateY(14px) scale(0.95); }
+        to   { opacity: 1; transform: translateY(0) scale(1); }
+      }
+
+      .mob-info {
+        position: relative;
+        z-index: 5;
+        margin-top: -130px;
+        padding: 0 20px 0;
+        animation: mobSlideUp 0.5s cubic-bezier(0.16,1,0.3,1) 0.08s both;
+      }
+
+      .mob-info-row {
+        display: flex;
+        gap: 16px;
+        align-items: flex-end;
+        margin-bottom: 18px;
+      }
+
+      .mob-info-poster {
+        flex-shrink: 0;
+        width: 112px;
+        position: relative;
+        z-index: 2;
+        animation: posterPop 0.55s cubic-bezier(0.16,1,0.3,1) 0.05s both;
+      }
+      .mob-info-poster img {
+        width: 100%;
+        aspect-ratio: 2/3;
+        object-fit: cover;
+        border-radius: 14px;
+        display: block;
+        border: 1.5px solid rgba(255,255,255,0.16);
+        box-shadow: 0 16px 40px rgba(0,0,0,0.7), 0 4px 12px rgba(0,0,0,0.5);
+      }
+
+      .mob-info-content {
+        flex: 1;
+        min-width: 0;
+        padding-bottom: 4px;
+      }
+
+      .mob-title {
+        font-size: 26px;
+        font-weight: 900;
+        color: #fff;
+        line-height: 1.08;
+        letter-spacing: -0.03em;
+        margin-bottom: 10px;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+
+      .mob-title-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        margin-bottom: 8px;
+      }
+      .mob-title-rating {
+        display: inline-flex; align-items: center; gap: 5px;
+        color: #f5c518; font-size: 13px; font-weight: 800;
+      }
+      .mob-title-dur {
+        display: inline-flex; align-items: center; gap: 5px;
+        color: rgba(255,255,255,0.45); font-size: 12px; font-weight: 600;
+      }
+
+      .mob-meta-row {
+        display: flex; align-items: center; flex-wrap: wrap; gap: 0;
+        font-size: 11.5px; font-weight: 500;
+        color: rgba(255,255,255,0.38);
+        text-transform: uppercase; letter-spacing: 0.03em;
+        margin-bottom: 0;
+      }
+      .mob-meta-dot { margin: 0 5px; opacity: 0.3; font-size: 8px; }
+      .mob-imdb-badge { display: none; }
+
+      .mob-desc-wrap { margin-bottom: 20px; }
+      .mob-desc {
+        font-size: 13.5px; line-height: 1.72;
+        color: rgba(255,255,255,0.52);
+        display: -webkit-box;
+        -webkit-line-clamp: 4;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+      .mob-desc.expanded { display: block; -webkit-line-clamp: unset; }
+      .mob-read-more {
+        margin-top: 7px;
+        display: inline-flex; align-items: center; gap: 4px;
+        font-size: 11.5px; font-weight: 700;
+        color: rgba(255,255,255,0.42);
+        background: none; border: none; padding: 0;
+        cursor: pointer; font-family: inherit;
+        letter-spacing: 0.05em; text-transform: uppercase;
+        transition: color 0.18s;
+      }
+      .mob-read-more:hover { color: rgba(255,255,255,0.8); }
+
+      .mob-actions {
+        display: flex; flex-direction: column; gap: 9px; margin-bottom: 28px;
+      }
+      .mob-actions-row {
+        display: flex; gap: 9px;
+      }
+      .mob-btn-play {
+        width: 100%;
+        display: flex; align-items: center; justify-content: center; gap: 9px;
+        background: #fff; color: #0a0a0a;
+        font-size: 14.5px; font-weight: 800;
+        border: none; border-radius: 14px; padding: 15px 20px;
+        cursor: pointer; font-family: inherit; letter-spacing: -0.01em;
+        box-shadow: 0 4px 20px rgba(255,255,255,0.1);
+        transition: background 0.18s, transform 0.12s;
+      }
+      .mob-btn-play:active { transform: scale(0.98); }
+      .mob-btn-play:hover  { background: rgba(255,255,255,0.9); }
+      .mob-btn-secondary {
+        flex: 1;
+        display: flex; align-items: center; justify-content: center; gap: 7px;
+        background: rgba(255,255,255,0.07);
+        border: 1px solid rgba(255,255,255,0.12);
+        color: rgba(255,255,255,0.8); font-size: 13px; font-weight: 700;
+        border-radius: 14px; padding: 13px 14px;
+        cursor: pointer; font-family: inherit;
+        backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+        transition: background 0.18s;
+      }
+      .mob-btn-secondary:hover  { background: rgba(255,255,255,0.13); }
+      .mob-btn-secondary:active { transform: scale(0.97); }
+      .mob-btn-secondary.active {
+        background: rgba(255,255,255,0.14);
+        border-color: rgba(255,255,255,0.26); color: #fff;
+      }
+      /* Like aktiv holati */
+      #mob-like-btn.active {
+        background: rgba(255,255,255,0.14);
+        border-color: rgba(255,255,255,0.26);
+        color: #fff;
+      }
+      #mob-like-btn.active svg {
+        fill: #fff;
+        stroke: #fff;
+      }
+
+      /* ── Section header ── */
+      .mob-section {
+        padding: 0 18px;
+        margin-bottom: 24px;
+        animation: mobSlideUp 0.45s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
+      }
+
+      .mob-section-title {
+        font-size: 18px;
+        font-weight: 800;
+        color: #fff;
+        margin-bottom: 14px;
+      }
+
+      /* ── Cast scroll ── */
+      .mob-cast-scroll {
+        display: flex;
+        gap: 12px;
+        overflow-x: auto;
+        padding-bottom: 4px;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        scroll-snap-type: x mandatory;
+      }
+
+      .mob-cast-scroll::-webkit-scrollbar {
+        display: none;
+      }
+
+      /* ── View All tugmasi ── */
+      .mob-view-all-btn {
+        font-size: 11.5px; font-weight: 700;
+        color: rgba(255,255,255,0.45);
+        background: none; border: none; padding: 0;
+        cursor: pointer; font-family: inherit;
+        letter-spacing: 0.06em; text-transform: uppercase;
+        transition: color 0.15s;
+      }
+      .mob-view-all-btn:hover { color: rgba(255,255,255,0.85); }
+
+      /* ── Gallery scroll ── */
+      .mob-gallery-scroll {
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        scroll-snap-type: x mandatory;
+        padding-bottom: 4px;
+      }
+      .mob-gallery-scroll::-webkit-scrollbar { display: none; }
+      .mob-gallery-item {
+        flex-shrink: 0;
+        width: 160px;
+        height: 105px;
+        border-radius: 10px;
+        overflow: hidden;
+        scroll-snap-align: start;
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.08);
+        cursor: pointer;
+      }
+      .mob-gallery-item img {
+        width: 100%; height: 100%;
+        object-fit: cover;
+        display: block;
+        transition: transform 0.2s;
+      }
+      .mob-gallery-item:hover img { transform: scale(1.05); }
+
+      .mob-cast-card {
+        flex-shrink: 0;
+        width: 88px;
+        text-align: center;
+        scroll-snap-align: start;
+        cursor: pointer;
+      }
+
+      .mob-cast-photo-wrap {
+        width: 80px;
+        height: 80px;
+        border-radius: 12px;
+        overflow: hidden;
+        margin: 0 auto 8px;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        transition: transform 0.2s, border-color 0.2s;
+      }
+
+      .mob-cast-card:hover .mob-cast-photo-wrap {
+        transform: scale(1.05);
+        border-color: rgba(255, 255, 255, 0.22);
+      }
+
+      .mob-cast-photo-wrap img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: top;
+      }
+
+      .mob-cast-photo-fallback {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+        font-weight: 900;
+        color: rgba(255, 255, 255, 0.6);
+      }
+
+      .mob-cast-name {
+        font-size: 11.5px;
+        font-weight: 700;
+        color: #fff;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin-bottom: 2px;
+      }
+
+      .mob-cast-char {
+        font-size: 10.5px;
+        color: rgba(255, 255, 255, 0.4);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      /* ── Genre pills row ── */
+      .mob-genres {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+        margin-bottom: 24px;
+        padding: 0 18px;
+      }
+
+      .mob-genre-pill {
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 20px;
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 12px;
+        font-weight: 600;
+        padding: 5px 12px;
+      }
+
+      /* ── Related grid (2-col) ── */
+      .mob-related-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        padding: 0 18px;
+      }
+
+      .mob-related-card {
+        border-radius: 10px;
+        overflow: hidden;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        cursor: pointer;
+        transition: transform 0.2s;
+      }
+
+      .mob-related-card:hover {
+        transform: scale(1.02);
+      }
+
+      .mob-related-img {
+        width: 100%;
+        aspect-ratio: 2/3;
+        object-fit: cover;
+        display: block;
+      }
+
+      .mob-related-info {
+        padding: 8px 10px 10px;
+      }
+
+      .mob-related-title {
+        font-size: 12.5px;
+        font-weight: 700;
+        color: #fff;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin-bottom: 3px;
+      }
+
+      .mob-related-meta {
+        font-size: 11px;
+        color: rgba(255, 255, 255, 0.4);
+      }
+
+      /* ── Reviews ── */
+      .mob-reviews {
+        padding: 0 18px;
+      }
+
+      .mob-reviews-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 14px;
+      }
+
+      .mob-review-card {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.07);
+        border-radius: 14px;
+        padding: 14px 16px;
+        margin-bottom: 10px;
+      }
+
+      .mob-review-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 8px;
+      }
+
+      .mob-review-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        font-weight: 700;
+        color: #fff;
+        flex-shrink: 0;
+        overflow: hidden;
+      }
+
+      .mob-review-name {
+        font-size: 13px;
+        font-weight: 700;
+        color: #fff;
+      }
+
+      .mob-review-date {
+        font-size: 11px;
+        color: rgba(255, 255, 255, 0.4);
+      }
+
+      .mob-review-text {
+        font-size: 13px;
+        line-height: 1.6;
+        color: rgba(255, 255, 255, 0.65);
+      }
+
+      /* Review write */
+      .mob-review-write {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.09);
+        border-radius: 14px;
+        padding: 14px 16px;
+        margin-bottom: 14px;
+      }
+
+      .mob-review-textarea {
+        width: 100%;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        padding: 10px 12px;
+        color: #fff;
+        font-size: 14px;
+        font-family: inherit;
+        resize: none;
+        min-height: 80px;
+        margin: 10px 0;
+        outline: none;
+      }
+
+      .mob-review-textarea::placeholder {
+        color: rgba(255, 255, 255, 0.3);
+      }
+
+      .mob-review-stars {
+        display: flex;
+        gap: 4px;
+        margin-bottom: 4px;
+      }
+
+      .mob-star-btn {
+        font-size: 22px;
+        background: none;
+        border: none;
+        color: rgba(255, 255, 255, 0.2);
+        cursor: pointer;
+        padding: 0;
+        transition: color 0.15s;
+      }
+
+      .mob-star-btn.active {
+        color: #f5c518;
+      }
+
+      .mob-submit-btn {
+        width: 100%;
+        background: #fff;
+        color: #000;
+        font-size: 14px;
+        font-weight: 800;
+        font-family: inherit;
+        border: none;
+        border-radius: 10px;
+        padding: 12px;
+        cursor: pointer;
+        transition: background 0.18s;
+      }
+
+      .mob-submit-btn:hover {
+        background: rgba(255, 255, 255, 0.88);
+      }
+
+      /* ── Divider ── */
+      .mob-divider {
+        height: 1px;
+        background: rgba(255, 255, 255, 0.07);
+        margin: 0 18px 24px;
+      }
+
+      /* ── Hide original desktop layout on mobile ── */
+      .dp-hero,
+      .dp-info-section,
+      .dp-gallery,
+      .dp-cast-section,
+      .dp-related-section,
+      .reviews-section,
+      #detail-root>* {
+        display: none !important;
+      }
+
+      .mob-page {
+        display: block !important;
+      }
+    }
+
+    /* ── Gallery "View All" modal ── */
+    .gallery-modal {
+      position: fixed; inset: 0; z-index: 9400;
+      background: rgba(0,0,0,0.97);
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      display: none; flex-direction: column;
+      overflow-y: auto;
+    }
+    .gallery-modal.open { display: flex; }
+    .gallery-modal-head {
+      position: sticky; top: 0; z-index: 2;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 20px;
+      background: rgba(0,0,0,0.75);
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      flex-shrink: 0;
+    }
+    .gallery-modal-title { font-size: 15px; font-weight: 700; color: #fff; }
+    .gallery-modal-close {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.14);
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; cursor: pointer; transition: background 0.15s;
+    }
+    .gallery-modal-close:hover { background: rgba(255,255,255,0.2); }
+    .gallery-modal-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 3px; padding: 3px;
+    }
+    .gallery-modal-item {
+      aspect-ratio: 1; overflow: hidden;
+      cursor: pointer; background: rgba(255,255,255,0.04);
+    }
+    .gallery-modal-item img {
+      width: 100%; height: 100%;
+      object-fit: cover; display: block;
+      transition: transform 0.22s;
+    }
+    .gallery-modal-item:hover img { transform: scale(1.06); }
+
+    /* ── Lightbox (har ikkala formatda) ── */
+    .img-lightbox {
+      position: fixed; inset: 0; z-index: 9500;
+      background: rgba(0,0,0,0.94);
+      display: none; align-items: center; justify-content: center;
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    }
+    .img-lightbox.open { display: flex; }
+    .img-lightbox-img {
+      max-width: 94vw; max-height: 88vh;
+      object-fit: contain; border-radius: 10px;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.7);
+      animation: lbIn 0.22s cubic-bezier(0.16,1,0.3,1);
+    }
+    @keyframes lbIn {
+      from { opacity:0; transform: scale(0.93); }
+      to   { opacity:1; transform: scale(1); }
+    }
+    .img-lightbox-close {
+      position: absolute; top: 18px; right: 18px;
+      width: 40px; height: 40px; border-radius: 50%;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.18);
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; cursor: pointer; font-size: 18px;
+      transition: background 0.15s;
+    }
+    .img-lightbox-close:hover { background: rgba(255,255,255,0.22); }
+    .img-lightbox-nav {
+      position: absolute; top: 50%; transform: translateY(-50%);
+      width: 40px; height: 40px; border-radius: 50%;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.15);
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; cursor: pointer; transition: background 0.15s;
+    }
+    .img-lightbox-nav:hover { background: rgba(255,255,255,0.22); }
+    .img-lightbox-prev { left: 14px; }
+    .img-lightbox-next { right: 14px; }
+    .img-lightbox-counter {
+      position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%);
+      font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.5);
+      letter-spacing: 0.05em;
+    }
+
+    /* ══════════════════════════════════
+       DESKTOP: keep existing styles,
+       hide mobile layout
+    ══════════════════════════════════ */
+    @media (min-width: 641px) {
+      .mob-page {
+        display: none !important;
+      }
+
+      .mob-trailer-overlay {
+        display: none !important;
+      }
+    }
+
+    /* Cast photo on desktop detail page */
+    .dp-cast-card img.dp-cast-photo {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      object-fit: cover;
+      object-position: top;
+      display: block;
+      margin: 0 auto 10px;
+      border: 2px solid rgba(255, 255, 255, 0.09);
+      transition: transform 0.22s, border-color 0.22s;
+    }
+
+    .dp-cast-card:hover img.dp-cast-photo {
+      transform: scale(1.07);
+      border-color: rgba(255, 255, 255, 0.25);
     }
   </style>
 </head>
+
 <body class="movie-page">
+
+  <!-- Dynamic blurred background -->
+  <div id="movie-bg-blur"></div>
+
   <!-- Actor Modal -->
   <div class="actor-modal-overlay" id="actor-modal-overlay" onclick="closeActorModal(event)">
     <div class="actor-modal" id="actor-modal">
@@ -108,8 +1022,12 @@
           <div class="actor-modal-name" id="am-name"></div>
           <div class="actor-modal-role">Actor</div>
         </div>
-        <button class="actor-modal-close" onclick="document.getElementById('actor-modal-overlay').classList.remove('open')">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        <button class="actor-modal-close"
+          onclick="document.getElementById('actor-modal-overlay').classList.remove('open')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
         </button>
       </div>
       <div class="actor-modal-body">
@@ -120,9 +1038,166 @@
     </div>
   </div>
 
+  <!-- Gallery "View All" modal -->
+  <div class="gallery-modal" id="gallery-modal">
+    <div class="gallery-modal-head">
+      <span class="gallery-modal-title" id="gallery-modal-title">Gallereya</span>
+      <button class="gallery-modal-close" onclick="closeGalleryModal()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="gallery-modal-grid" id="gallery-modal-grid"></div>
+  </div>
+
+  <!-- Lightbox -->
+  <div class="img-lightbox" id="img-lightbox" onclick="lbClickOutside(event)">
+    <button class="img-lightbox-close" onclick="closeLightbox()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <button class="img-lightbox-nav img-lightbox-prev" onclick="lbNav(-1)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m15 18-6-6 6-6"/></svg>
+    </button>
+    <img class="img-lightbox-img" id="lb-img" src="" alt="">
+    <button class="img-lightbox-nav img-lightbox-next" onclick="lbNav(1)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 18 6-6-6-6"/></svg>
+    </button>
+    <div class="img-lightbox-counter" id="lb-counter"></div>
+  </div>
+
+  <!-- Trailer full-screen overlay (mobile) -->
+  <div class="mob-trailer-overlay" id="mob-trailer-overlay">
+    <button class="mob-trailer-close" onclick="closeMobTrailer()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <line x1="18" y1="6" x2="6" y2="18" />
+        <line x1="6" y1="6" x2="18" y2="18" />
+      </svg>
+    </button>
+  </div>
+
+  <!-- ══════════ MOBILE LAYOUT ══════════ -->
+  <div class="mob-page" id="mob-page" style="display:none">
+
+    <!-- Sticky Nav -->
+    <nav class="mob-nav" id="mob-nav">
+      <button class="mob-back-btn" onclick="history.back()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="m15 18-6-6 6-6" />
+        </svg>
+        Back
+      </button>
+      <button class="mob-hero-trailer-btn" id="mob-trailer-btn" style="display:none" onclick="openMobTrailer()">
+        <div class="mob-play-circle">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M8 5v14l11-7z" />
+          </svg>
+        </div>
+        Watch Trailer
+      </button>
+      <div class="mob-nav-pills" id="mob-nav-pills">
+        <!-- pills injected by JS -->
+      </div>
+    </nav>
+
+    <!-- Hero poster -->
+    <div class="mob-hero" id="mob-hero">
+      <img class="mob-hero-img" id="mob-hero-img" src="" alt="">
+      <div class="mob-hero-gradient"></div>
+      
+    </div>
+
+    <!-- Info -->
+    <div class="mob-info" id="mob-info">
+      <!-- Poster chap + kontent o'ng -->
+      <div class="mob-info-row">
+        <div class="mob-info-poster">
+          <img id="mob-info-poster-img" src="" alt="">
+        </div>
+        <div class="mob-info-content">
+          <h1 class="mob-title" id="mob-title"></h1>
+          <!-- Rating + Duration — title tagida -->
+          <div class="mob-title-meta" id="mob-title-meta"></div>
+          <div class="mob-meta-row" id="mob-meta-row"></div>
+        </div>
+      </div>
+      <!-- Tavsif -->
+      <div class="mob-desc-wrap">
+        <div class="mob-desc" id="mob-desc"></div>
+        <button class="mob-read-more" id="mob-read-more" onclick="toggleReadMore()">Read More</button>
+      </div>
+      <!-- Tugmalar: Ko'rish full-width, keyin Saqlash+Share qatori -->
+      <div class="mob-actions">
+        <!-- 1. Ko'rish — to'liq kenglik -->
+        <button class="mob-btn-play" id="mob-watch-btn" onclick="">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          Ko'rish
+        </button>
+        <!-- 2. Saqlash + Ulashish — yon-yoniga -->
+        <div class="mob-actions-row">
+          <!-- Like -->
+          <button class="mob-btn-secondary" id="mob-like-btn" onclick="mobToggleLike()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="mob-like-icon"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            <span id="mob-like-label">Yoqdimi</span>
+          </button>
+          <!-- Saqlash -->
+          <button class="mob-btn-secondary" id="mob-fav-btn" onclick="mobToggleFav()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="mob-fav-icon"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+            <span id="mob-fav-label">Saqlash</span>
+          </button>
+          <!-- Ulashish -->
+          <button class="mob-btn-secondary" onclick="shareMovie()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Genres -->
+    <div class="mob-genres" id="mob-genres"></div>
+
+    <div class="mob-divider"></div>
+
+    <!-- Cast -->
+    <div class="mob-section" id="mob-cast-section" style="display:none">
+      <div class="mob-section-title">Cast</div>
+      <div class="mob-cast-scroll" id="mob-cast-scroll"></div>
+    </div>
+
+    <div class="mob-divider" id="mob-cast-divider" style="display:none"></div>
+
+    <!-- Gallery -->
+    <div class="mob-section" id="mob-gallery-section" style="display:none">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <div class="mob-section-title" style="margin-bottom:0">Gallereya</div>
+        <button class="mob-view-all-btn" onclick="openGalleryAll()">View All</button>
+      </div>
+      <div class="mob-gallery-scroll" id="mob-gallery-scroll"></div>
+    </div>
+
+    <div class="mob-divider" id="mob-gallery-divider" style="display:none"></div>
+
+    <!-- More Like This -->
+    <div class="mob-section" id="mob-related-section" style="display:none">
+      <div class="mob-section-title">More Like This</div>
+    </div>
+    <div class="mob-related-grid" id="mob-related-grid" style="display:none"></div>
+
+    <div class="mob-divider" id="mob-related-divider" style="display:none"></div>
+
+    <!-- Reviews -->
+    <div class="mob-reviews" id="mob-reviews">
+      <div class="mob-reviews-header">
+        <div class="mob-section-title" style="margin-bottom:0">Sharhlar</div>
+        <span style="font-size:12px;color:rgba(255,255,255,0.4)" id="mob-review-count"></span>
+      </div>
+      <div id="mob-review-write-area"></div>
+      <div id="mob-reviews-list"></div>
+    </div>
+
+  </div>
+
+  <!-- ══════════ DESKTOP (original layout) ══════════ -->
   <div class="ambient-bg"></div>
   <div id="navbar-placeholder"></div>
-
   <main>
     <div id="detail-root"></div>
   </main>
@@ -133,16 +1208,22 @@
   <script src="../js/app.js"></script>
   <script src="../js/api.js"></script>
   <script>
+    /* ─── Detect mobile ─── */
+    const isMobile = () => window.innerWidth <= 640;
+
     App.initNavbar('', '../');
     App.initAnimations();
 
     const id = App.getParam('id');
     let movie = getMovieById(id);
     let _apiRelated = null;
+    let _mobTrailerInfo = null;
+    let selectedStars = 0;
 
-    /* Reviews come exclusively from real, logged-in accounts (backend). */
-    const MOCK_REVIEWS = [];
+    /* ─── Gradient palette for cast avatars ─── */
+    const CAST_GRADS = Array(8).fill('linear-gradient(135deg,#3a3a3a,#121212)');
 
+    /* ─── Stars builder ─── */
     function buildStars(n, total = 5) {
       let html = '<div class="review-stars">';
       for (let i = 1; i <= total; i++) {
@@ -155,451 +1236,771 @@
 
     function buildReviews(reviews) {
       if (!reviews.length) {
-        return `<div class="reviews-empty" style="text-align:center;padding:32px 0;color:rgba(255,255,255,0.4);font-size:14px">
-          Hozircha sharhlar yo'q. Birinchi bo'lib fikr bildiring!
-        </div>`;
+        return `<div style="text-align:center;padding:24px 0;color:rgba(255,255,255,0.35);font-size:14px">
+          Hozircha sharhlar yo'q. Birinchi bo'lib fikr bildiring!</div>`;
       }
       return reviews.map(r => {
-        const avatar = r.avatar
-          ? `<div class="review-avatar" style="overflow:hidden"><img src="${r.avatar}" alt="${r.name}" style="width:100%;height:100%;object-fit:cover;border-radius:50%"></div>`
-          : `<div class="review-avatar" style="background:${r.color}">${r.initials}</div>`;
-        return `
-        <div class="review-card" data-id="${r.id}">
-          <div class="review-card-header">
-            <div class="review-user">
-              ${avatar}
-              <div>
-                <div class="review-name">${r.name}</div>
-                <div class="review-date">${r.date}</div>
-              </div>
+        const av = r.avatar
+          ? `<div class="mob-review-avatar"><img src="${r.avatar}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%"></div>`
+          : `<div class="mob-review-avatar">${(r.initials || '?')}</div>`;
+        return `<div class="mob-review-card">
+          <div class="mob-review-header">
+            ${av}
+            <div>
+              <div class="mob-review-name">${r.name}</div>
+              <div class="mob-review-date">${r.date}</div>
             </div>
             ${r.rating ? buildStars(r.rating) : ''}
           </div>
-          <div class="review-text">${r.text}</div>
-          <div class="review-footer">
-            <button class="review-helpful" onclick="markHelpful('${r.id}', this)">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/><path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
-              <span class="helpful-count">${r.helpful}</span> foydali
-            </button>
-            <span class="review-badge">Tasdiqlangan</span>
-          </div>
+          <div class="mob-review-text">${r.text}</div>
         </div>`;
       }).join('');
     }
 
-    /* Gradient palette for cast avatars */
-    const CAST_GRADS = [
-      'linear-gradient(135deg,#3a3a3a,#121212)',
-      'linear-gradient(135deg,#3a3a3a,#121212)',
-      'linear-gradient(135deg,#3a3a3a,#121212)',
-      'linear-gradient(135deg,#3a3a3a,#121212)',
-      'linear-gradient(135deg,#3a3a3a,#121212)',
-      'linear-gradient(135deg,#3a3a3a,#121212)',
-      'linear-gradient(135deg,#3a3a3a,#121212)',
-      'linear-gradient(135deg,#3a3a3a,#121212)',
-    ];
+    /* ─── Trailer helpers ─── */
+    window.openMobTrailer = function () {
+      const ov = document.getElementById('mob-trailer-overlay');
+      if (!ov || !_mobTrailerInfo) return;
+      ov.classList.add('open');
+      // Remove old frame if any
+      const old = ov.querySelector('iframe,video');
+      if (old) old.remove();
+      if (_mobTrailerInfo.type === 'youtube') {
+        const fr = document.createElement('iframe');
+        fr.className = 'mob-trailer-frame';
+        fr.src = `https://www.youtube-nocookie.com/embed/${_mobTrailerInfo.id}?autoplay=1&controls=1&rel=0`;
+        fr.allow = 'autoplay; fullscreen; encrypted-media';
+        fr.allowFullscreen = true;
+        ov.appendChild(fr);
+      } else if (_mobTrailerInfo.type === 'video') {
+        const v = document.createElement('video');
+        v.className = 'mob-trailer-frame';
+        v.src = _mobTrailerInfo.src;
+        v.controls = true; v.autoplay = true;
+        ov.appendChild(v);
+      }
+    };
 
-    (async () => {
-    /* Try API if not in static data */
-    if (!movie && typeof MoviesAPI !== 'undefined') {
-      try {
-        const resp = await MoviesAPI.getById(id);
-        movie = resp.movie;
-        _apiRelated = resp.related || [];
-        /* Normalize: API uses isTrending/isNew booleans, cast/genre as arrays */
-        if (movie) {
-          movie.genre = movie.genre || [];
-          movie.cast  = movie.cast  || [];
-          movie.description = movie.description || '';
-          const _castOv = JSON.parse(localStorage.getItem('cp_cast_overrides') || '{}');
-          if (_castOv[movie.id] && _castOv[movie.id].length) movie.cast = _castOv[movie.id];
-        }
-      } catch {}
-    }
+    window.closeMobTrailer = function () {
+      const ov = document.getElementById('mob-trailer-overlay');
+      ov.classList.remove('open');
+      const fr = ov.querySelector('iframe,video');
+      if (fr) fr.remove();
+    };
 
-    if (!movie) {
-      document.getElementById('detail-root').innerHTML = `
-        <div style="text-align:center;padding:120px 20px;color:rgba(255,255,255,0.4);">
-          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin:0 auto 16px;display:block;opacity:0.3"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
-          <h2 style="font-size:20px;font-weight:700;color:rgba(255,255,255,0.5);margin-bottom:8px;">Film topilmadi</h2>
-          <a href="../index.html" style="color:#ffffff;font-size:14px;text-decoration:underline;">Bosh sahifaga qaytish</a>
-        </div>`;
-      return;
-    }
-    {
-      document.title = movie.title + ' — CINEPLEX';
-      const fav = isFavorite(movie.id);
+    /* ─── Read More toggle ─── */
+    window.toggleReadMore = function () {
+      const desc = document.getElementById('mob-desc');
+      const btn = document.getElementById('mob-read-more');
+      if (!desc) return;
+      const expanded = desc.classList.toggle('expanded');
+      btn.textContent = expanded ? 'Show Less' : 'Read More';
+    };
 
-      const durationOrSeries = movie.type === 'series'
-        ? `${movie.seasons} Seasons · ${movie.episodes} Episodes`
-        : movie.duration;
-
-      /* Gallery: prefer movie.gallery array, fall back to related movies' images */
-      let galleryHTML;
-      if (movie.gallery && movie.gallery.length) {
-        galleryHTML = movie.gallery.map(url => `
-          <div class="dp-gallery-item">
-            <img src="${url}" alt="" loading="lazy">
-          </div>`).join('');
+    /* ─── Share ─── */
+    window.shareMovie = function () {
+      if (navigator.share) {
+        navigator.share({ title: movie ? movie.title : '', url: window.location.href });
       } else {
-        const galleryMovies = (_apiRelated && _apiRelated.length ? _apiRelated : (typeof getRelated === 'function' ? getRelated(movie) : [])).slice(0, 6);
-        while (galleryMovies.length < 6) galleryMovies.push(movie);
-        galleryHTML = galleryMovies.map(m => `
-          <div class="dp-gallery-item" onclick="App.go('../pages/movie.html?id=${m.id}')">
-            <img src="${m.img}" alt="${m.title}" loading="lazy">
-          </div>`).join('');
+        navigator.clipboard.writeText(window.location.href).then(() => showToast('Link copied!'));
+      }
+    };
+
+    /* ─── Main boot ─── */
+    (async () => {
+      if (!movie && typeof MoviesAPI !== 'undefined') {
+        try {
+          const resp = await MoviesAPI.getById(id);
+          movie = resp.movie;
+          _apiRelated = resp.related || [];
+          if (movie) {
+            movie.genre = movie.genre || [];
+            movie.cast = movie.cast || [];
+            movie.description = movie.description || '';
+            const _castOv = JSON.parse(localStorage.getItem('cp_cast_overrides') || '{}');
+            if (_castOv[movie.id] && _castOv[movie.id].length) movie.cast = _castOv[movie.id];
+          }
+        } catch { }
       }
 
-      /* Cast cards — with real IMDB photos when available */
-      const castHTML = movie.cast.map((name, i) => {
-        const inits = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
-        const grad  = CAST_GRADS[i % CAST_GRADS.length];
-        const actorData = typeof ACTORS_DATA !== 'undefined'
-          ? ACTORS_DATA.find(a => a.name.toLowerCase() === name.toLowerCase())
-          : null;
-        const actorId = actorData ? actorData.id : null;
-        const photo   = actorData && actorData.photo ? actorData.photo : null;
-
-        const avatarEl = photo
-          ? `<img class="dp-cast-photo" src="${photo}" alt="${name}"
-               onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
-               loading="lazy">
-             <div class="dp-cast-avatar" style="background:${grad};display:none">${inits}</div>`
-          : `<div class="dp-cast-avatar" style="background:${grad}">${inits}</div>`;
-
-        const clickTarget = actorId
-          ? `App.go('../pages/actor-profile.html?id=${actorId}')`
-          : `openActorModal('${name.replace(/'/g,"\\'")}', '${grad}')`;
-
-        return `
-          <div class="dp-cast-card" onclick="${clickTarget}" style="cursor:pointer">
-            ${avatarEl}
-            <div class="dp-cast-name">${name}</div>
-          </div>`;
-      }).join('');
-
-      /* Related row */
-      const related = _apiRelated && _apiRelated.length ? _apiRelated : (typeof getRelated === 'function' ? getRelated(movie) : []);
-      const relatedHTML = related.length ? `
-        <div class="dp-related-section animate-in">
-          <div class="dp-section-label">SHUNGA O'XSHASH</div>
-          <div class="section-header" style="padding:0;margin-bottom:16px">
-            <div></div>
-            <div class="section-nav">
-              <button class="section-nav-btn" onclick="scrollRow('related-row',-1)">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m15 18-6-6 6-6"/></svg>
-              </button>
-              <button class="section-nav-btn" onclick="scrollRow('related-row',1)">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 18 6-6-6-6"/></svg>
-              </button>
-            </div>
-          </div>
-          <div class="movies-row" id="related-row" style="padding:30px 0">
-            ${related.map(m => App.buildCard(m, '../')).join('')}
-          </div>
-        </div>
-      ` : '';
-
-      /* ── Banner trailer info (single source — no separate trailer section) ── */
-      const _heroTrailerInfo = (function () {
-        if (movie.trailerS3Url) {
-          return {
-            type: 'video',
-            src: movie.trailerS3Url,
-            html: `<video class="dp-hero-trailer" id="dp-trailer" src="${movie.trailerS3Url}" autoplay muted loop playsinline></video>`
-          };
+      if (!movie) {
+        if (isMobile()) {
+          document.getElementById('mob-page').style.display = 'block';
+          document.getElementById('mob-info').innerHTML = `
+            <div style="text-align:center;padding:80px 0;color:rgba(255,255,255,0.4)">
+              <p style="font-size:18px;font-weight:700;margin-bottom:12px">Film topilmadi</p>
+              <a href="../index.html" style="color:#fff;font-size:14px">Bosh sahifaga qaytish</a>
+            </div>`;
+        } else {
+          document.getElementById('detail-root').innerHTML = `
+            <div style="text-align:center;padding:120px 20px;color:rgba(255,255,255,0.4);">
+              <h2 style="font-size:20px;font-weight:700;color:rgba(255,255,255,0.5);margin-bottom:8px;">Film topilmadi</h2>
+              <a href="../index.html" style="color:#fff;font-size:14px;text-decoration:underline">Bosh sahifaga qaytish</a>
+            </div>`;
         }
-        const _rawHtid = (typeof TRAILER_IDS !== 'undefined' && TRAILER_IDS[movie.id]) || movie.trailer_id || movie.trailerUrl || movie.trailer_url;
-        const htid = _rawHtid && typeof extractYouTubeId === 'function' ? (extractYouTubeId(_rawHtid) || _rawHtid) : _rawHtid;
-        if (!htid) return { type: 'none', html: '' };
-        const _org = window.location.origin;
-        return {
-          type: 'youtube',
-          id: htid,
-          html: `<iframe class="dp-hero-trailer" id="dp-trailer" src="https://www.youtube-nocookie.com/embed/${htid}?autoplay=1&mute=1&controls=0&loop=1&playlist=${htid}&rel=0&playsinline=1&origin=${_org}&enablejsapi=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>`
-        };
+        return;
+      }
+
+      document.title = movie.title + ' — CINEPLEX';
+
+      /* ─── Trailer info ─── */
+      _mobTrailerInfo = (function () {
+        if (movie.trailerS3Url) return { type: 'video', src: movie.trailerS3Url };
+        const raw = (typeof TRAILER_IDS !== 'undefined' && TRAILER_IDS[movie.id]) || movie.trailer_id || movie.trailerUrl || movie.trailer_url;
+        const ytid = raw && typeof extractYouTubeId === 'function' ? extractYouTubeId(raw) : null;
+        if (ytid) return { type: 'youtube', id: ytid };
+        return { type: 'none' };
       })();
 
-      document.getElementById('detail-root').innerHTML = `
+      /* ─── Set blurred background ─── */
+      const bgEl = document.getElementById('movie-bg-blur');
+      if (bgEl) bgEl.style.backgroundImage = `url('${movie.banner_img || movie.img}')`;
 
-        <!-- ── HERO ── -->
-        <div class="dp-hero animate-in">
-          <img class="dp-hero-img" src="${movie.banner_img || movie.img}" alt="${movie.title}">
-          ${_heroTrailerInfo.html}
-          <div class="dp-hero-overlay"></div>
-          <div class="dp-hero-fade"></div>
-          <a class="detail-back" onclick="history.back();return false;" href="#">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m15 18-6-6 6-6"/></svg>
-          </a>
-          ${_heroTrailerInfo.type !== 'none' ? `
-          <div class="dp-hero-controls" id="dp-hero-controls">
-            <button class="dp-hero-ctrl-btn" id="dp-vol-btn" type="button" onclick="toggleHeroTrailerMute()" title="Ovoz / ovozsiz">
-              <svg id="dp-vol-muted" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
-              <svg id="dp-vol-on" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
-            </button>
-            <button class="dp-hero-ctrl-btn" id="dp-fs-btn" type="button" onclick="expandHeroTrailer()" title="To'liq ekran">
-              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
-            </button>
-          </div>` : ''}
-          <div class="dp-hero-content">
-            <h1 class="dp-hero-title">${movie.title}</h1>
-            <div class="dp-hero-rating">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-              ${movie.rating}
-              <span class="rating-denom">/10</span>
-            </div>
-            <div class="dp-hero-meta">
-              <span>${movie.year}</span>
-              <span class="dp-hero-meta-sep">|</span>
-              <span>${durationOrSeries}</span>
-              <span class="dp-hero-meta-sep">|</span>
-              <span>${movie.age}+ Rating</span>
-              <span class="dp-hero-meta-sep">|</span>
-              <span>${movie.genre.map(g => g.charAt(0).toUpperCase()+g.slice(1)).join(', ')}</span>
-            </div>
-          </div>
-        </div>
+      /* ══════════════════════════
+         MOBILE LAYOUT RENDER
+      ══════════════════════════ */
+      if (isMobile()) {
+        document.getElementById('mob-page').style.display = 'block';
 
-        <!-- ── INFO ROW ── -->
-        <div class="dp-info-section animate-in" style="transition-delay:0.06s">
-          <div class="dp-poster">
-            <img src="${movie.img}" alt="${movie.title}">
-          </div>
-          <div class="dp-details">
-            <div class="dp-detail-line">
-              <strong>Cast:</strong> <span>${movie.cast.join(', ')}</span>
-            </div>
-            <div class="dp-synopsis">${movie.description}</div>
-            <div class="dp-genres">
-              ${movie.genre.map(g => `<span class="dp-genre-pill">${g.charAt(0).toUpperCase()+g.slice(1)}</span>`).join('')}
-            </div>
-            <div class="dp-actions">
-              <button class="btn-play" onclick="App.go('../pages/watch.html?id=${movie.id}')">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-                Ko'rish
-              </button>
-              <button class="btn-secondary" id="fav-btn" onclick="toggleFav()">
-                <span id="fav-icon">${fav ? App.icons.heartFill : App.icons.heart}</span>
-                <span id="fav-label">${fav ? 'Saqlandi' : 'Saqlash'}</span>
-              </button>
-              <button class="btn-secondary" onclick="shareMovie()">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-                Ulashish
-              </button>
-            </div>
-          </div>
-        </div>
+        /* Nav — faqat Back, pills yo'q */
+        document.getElementById('mob-nav-pills').innerHTML = '';
 
-        <!-- ── GALLERY ── -->
-        <div class="dp-gallery animate-in" style="transition-delay:0.1s">
-          <div class="dp-section-label">GALLEREYA</div>
-          <div class="dp-gallery-grid">${galleryHTML}</div>
-        </div>
+        /* Duration/genre (mob-info uchun) */
+        const genre1 = movie.genre && movie.genre[0]
+          ? movie.genre[0].charAt(0).toUpperCase() + movie.genre[0].slice(1) : '';
+        const dur = movie.type === 'series'
+          ? `${movie.seasons || 0} Mavsum`
+          : (movie.duration || '');
 
-        <!-- ── CAST ── -->
-        <div class="dp-cast-section animate-in" style="transition-delay:0.14s">
-          <div class="dp-section-label">AKTYORLAR</div>
-          <div class="dp-cast-scroll">${castHTML}</div>
-        </div>
+        /* Hero image (banner) */
+        const heroImg = document.getElementById('mob-hero-img');
+        heroImg.src = movie.banner_img || movie.img;
+        heroImg.alt = movie.title;
 
-        <!-- ── RELATED ── -->
-        ${relatedHTML}
+        /* Info poster (kichik poster chap tomonda) */
+        const infoPosterImg = document.getElementById('mob-info-poster-img');
+        infoPosterImg.src = movie.img;
+        infoPosterImg.alt = movie.title;
 
-        <!-- ── REVIEWS ── -->
-        <section class="reviews-section animate-in" style="transition-delay:0.18s">
-          <div class="reviews-header">
-            <div class="reviews-title">Sharhlar va Izohlar</div>
-            <div class="reviews-count" id="review-count">${MOCK_REVIEWS.length} ta sharh</div>
-          </div>
+        /* Trailer button */
+        if (_mobTrailerInfo.type !== 'none') {
+          document.getElementById('mob-trailer-btn').style.display = 'flex';
+        }
 
-          ${(function () {
-            const u = (typeof Auth !== 'undefined') ? Auth.getUser() : null;
-            const loggedIn = (typeof Auth !== 'undefined') && Auth.isLoggedIn() && u;
-            if (!loggedIn) {
-              return `<div class="review-write-card review-login-prompt">
-                <div class="review-write-label">Sharh qoldirish uchun hisobingizga kiring.</div>
-                <a class="review-submit-btn" href="/pages/login.html" style="display:inline-block;text-decoration:none;margin-top:14px">Kirish</a>
-              </div>`;
-            }
-            const name = u.name || 'Foydalanuvchi';
-            const initials = name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2);
-            const avUrl = u.avatar ? (typeof u.avatar === 'object' ? u.avatar.url : u.avatar) : '';
-            const av = avUrl
-              ? `<div class="review-write-avatar" style="overflow:hidden;background:none;padding:0"><img src="${avUrl}" alt="${name}" style="width:100%;height:100%;object-fit:cover;border-radius:50%"></div>`
-              : `<div class="review-write-avatar">${initials}</div>`;
-            return `<div class="review-write-card">
-              <div class="review-write-top">
-                ${av}
-                <div class="review-write-label">${name}, fikringizni yozing…</div>
+        /* Title */
+        document.getElementById('mob-title').textContent = movie.title;
+
+        /* Rating + Duration — title tagida */
+        document.getElementById('mob-title-meta').innerHTML = `
+          ${movie.rating ? `<span class="mob-title-rating">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            ${movie.rating} IMDB
+          </span>` : ''}
+          ${dur ? `<span class="mob-title-dur">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            ${dur}
+          </span>` : ''}`;
+
+        /* Meta row (year, age, genre) */
+        const metaItems = [
+          movie.year,
+          movie.age ? `${movie.age}+` : '',
+          genre1,
+        ].filter(Boolean);
+        document.getElementById('mob-meta-row').innerHTML =
+          metaItems.map((t, i) => `<span>${t}</span>${i < metaItems.length - 1 ? '<span class="mob-meta-dot">•</span>' : ''}`).join('');
+
+        /* Description */
+        document.getElementById('mob-desc').textContent = movie.description;
+        if (!movie.description || movie.description.length < 120) {
+          document.getElementById('mob-read-more').style.display = 'none';
+        }
+
+        /* Watch btn */
+        document.getElementById('mob-watch-btn').onclick = () => App.go(`../pages/watch.html?id=${movie.id}`);
+
+        /* Like holati */
+        if (typeof isLiked === 'function' && isLiked(movie.id)) {
+          document.getElementById('mob-like-btn').classList.add('active');
+          document.getElementById('mob-like-icon').setAttribute('fill', 'currentColor');
+          document.getElementById('mob-like-label').textContent = 'Yoqdi';
+        }
+
+        /* Watchlist state */
+        const inWL = isInWatchlist(movie.id);
+        if (inWL) {
+          document.getElementById('mob-fav-btn').classList.add('active');
+          document.getElementById('mob-fav-icon').innerHTML = '<path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" fill="currentColor"/>';
+          document.getElementById('mob-fav-label').textContent = 'Saqlandi';
+        }
+
+        /* Genres */
+        document.getElementById('mob-genres').innerHTML =
+          (movie.genre || []).map(g => `<span class="mob-genre-pill">${g.charAt(0).toUpperCase() + g.slice(1)}</span>`).join('');
+
+        /* Cast */
+        if (movie.cast && movie.cast.length) {
+          document.getElementById('mob-cast-section').style.display = '';
+          document.getElementById('mob-cast-divider').style.display = '';
+          document.getElementById('mob-cast-scroll').innerHTML = movie.cast.map(name => {
+            const inits = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+            const actorData = typeof ACTORS_DATA !== 'undefined'
+              ? ACTORS_DATA.find(a => a.name.toLowerCase() === name.toLowerCase()) : null;
+            const photo = actorData && actorData.photo ? actorData.photo : null;
+            const actorId = actorData ? actorData.id : null;
+            const clickFn = actorId
+              ? `App.go('../pages/actor-profile.html?id=${actorId}')`
+              : `openActorModal('${name.replace(/'/g,"\\'")}', 'linear-gradient(135deg,#3a3a3a,#121212)')`;
+            return `<div class="mob-cast-card" onclick="${clickFn}">
+              <div class="mob-cast-photo-wrap">
+                ${photo ? `<img src="${photo}" alt="${name}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">` : ''}
+                <div class="mob-cast-photo-fallback" style="${photo ? 'display:none' : ''}">${inits}</div>
               </div>
-              <div class="review-stars-input" id="star-input">
-                <button class="review-star-btn" data-s="1">★</button>
-                <button class="review-star-btn" data-s="2">★</button>
-                <button class="review-star-btn" data-s="3">★</button>
-                <button class="review-star-btn" data-s="4">★</button>
-                <button class="review-star-btn" data-s="5">★</button>
-              </div>
-              <textarea class="review-textarea" id="review-input" placeholder="Sharhingizni yozing…"></textarea>
-              <button class="review-submit-btn" onclick="submitReview()">Sharh qoldirish</button>
+              <div class="mob-cast-name">${name}</div>
+              <div class="mob-cast-char">${actorData && actorData.character ? actorData.character : ''}</div>
             </div>`;
-          })()}
+          }).join('');
+        }
 
-          <div class="reviews-list" id="reviews-list">
-            ${buildReviews(MOCK_REVIEWS)}
-          </div>
-        </section>
-      `;
+        /* Gallery */
+        const galleryUrls = movie.gallery && movie.gallery.length
+          ? movie.gallery
+          : (_apiRelated && _apiRelated.length
+              ? _apiRelated.slice(0, 6).map(m => m.img)
+              : [movie.img]).filter(Boolean);
+        if (galleryUrls.length) {
+          document.getElementById('mob-gallery-section').style.display = '';
+          document.getElementById('mob-gallery-divider').style.display = '';
+          window._galleryUrls = galleryUrls;
+          document.getElementById('mob-gallery-scroll').innerHTML = galleryUrls.map((url, i) =>
+            `<div class="mob-gallery-item" onclick="openLightbox(${i})">
+              <img src="${url}" alt="" loading="lazy">
+            </div>`
+          ).join('');
+        }
 
-      App.initAnimations();
+        /* Related */
+        const related = (_apiRelated && _apiRelated.length)
+          ? _apiRelated : (typeof getRelated === 'function' ? getRelated(movie) : []);
+        if (related.length) {
+          document.getElementById('mob-related-section').style.display = '';
+          document.getElementById('mob-related-grid').style.display    = 'grid';
+          document.getElementById('mob-related-divider').style.display = '';
+          document.getElementById('mob-related-grid').innerHTML = related.slice(0, 6).map(m =>
+            `<div class="mob-related-card" onclick="App.go('../pages/movie.html?id=${m.id}')">
+              <img class="mob-related-img" src="${m.img || ''}" alt="${m.title}" loading="lazy">
+              <div class="mob-related-info">
+                <div class="mob-related-title">${m.title}</div>
+                <div class="mob-related-meta">★ ${m.rating} · ${m.year}</div>
+              </div>
+            </div>`
+          ).join('');
+        }
 
-      /* Expose trailer info to the banner mute/fullscreen handlers */
-      window._cpHeroTrailer = _heroTrailerInfo;
-      window._cpHeroMuted   = true;
-
-      /* ── Fade in detail hero trailer (iframe = YouTube, video = S3) ── */
-      const dpTrailer = document.getElementById('dp-trailer');
-      if (dpTrailer) {
-        const delay = dpTrailer.tagName === 'VIDEO' ? 400 : 2500;
-        setTimeout(() => { if (dpTrailer.style.display !== 'none') dpTrailer.classList.add('visible'); }, delay);
-      }
-
-      /* ── Star input ── */
-      let selectedStars = 0;
-      const starInput = document.getElementById('star-input');
-      if (starInput) {
-        starInput.addEventListener('click', e => {
-          const btn = e.target.closest('.review-star-btn');
-          if (!btn) return;
-          selectedStars = +btn.dataset.s;
-          document.querySelectorAll('.review-star-btn').forEach((b, i) => {
-            b.classList.toggle('active', i < selectedStars);
+        /* Reviews write area */
+        const u = typeof Auth !== 'undefined' ? Auth.getUser() : null;
+        const loggedIn = typeof Auth !== 'undefined' && Auth.isLoggedIn() && u;
+        if (loggedIn) {
+          const name = u.name || 'Foydalanuvchi';
+          const inits = name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+          const avUrl = u.avatar ? (typeof u.avatar === 'object' ? u.avatar.url : u.avatar) : '';
+          const avEl = avUrl
+            ? `<div class="mob-review-avatar"><img src="${avUrl}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%"></div>`
+            : `<div class="mob-review-avatar">${inits}</div>`;
+          document.getElementById('mob-review-write-area').innerHTML = `
+            <div class="mob-review-write">
+              <div class="mob-review-header" style="margin-bottom:10px">
+                ${avEl}
+                <span style="font-size:13px;color:rgba(255,255,255,0.55)">${name}, fikringizni yozing…</span>
+              </div>
+              <div class="mob-review-stars" id="mob-star-input">
+                ${[1,2,3,4,5].map(s => `<button class="mob-star-btn" data-s="${s}">★</button>`).join('')}
+              </div>
+              <textarea class="mob-review-textarea" id="mob-review-input" placeholder="Sharhingizni yozing…"></textarea>
+              <button class="mob-submit-btn" onclick="mobSubmitReview()">Sharh qoldirish</button>
+            </div>`;
+          document.getElementById('mob-star-input').addEventListener('click', e => {
+            const btn = e.target.closest('.mob-star-btn');
+            if (!btn) return;
+            selectedStars = +btn.dataset.s;
+            document.querySelectorAll('.mob-star-btn').forEach((b, i) => {
+              b.classList.toggle('active', i < selectedStars);
+            });
           });
-        });
-        starInput.addEventListener('mouseover', e => {
-          const btn = e.target.closest('.review-star-btn');
-          if (!btn) return;
-          const h = +btn.dataset.s;
-          document.querySelectorAll('.review-star-btn').forEach((b, i) => {
-            b.style.color = i < h ? '#ffffff' : '';
-          });
-        });
-        starInput.addEventListener('mouseleave', () => {
-          document.querySelectorAll('.review-star-btn').forEach(b => { b.style.color = ''; });
-        });
-      }
-
-      /* ── Load real reviews from API ── */
-      async function loadReviews() {
-        if (typeof ReviewsAPI === 'undefined') return;
-        try {
-          const data = await ReviewsAPI.getByMovie(movie.id);
-          if (data.total > 0) {
-            const apiReviews = data.data.map(r => ({
-              id: r.id,
-              name: r.user_name,
-              initials: (r.user_name || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2),
-              avatar: r.user_avatar || '',
-              color: 'linear-gradient(135deg,#3a3a3a,#121212)',
-              rating: r.rating,
-              date: r.created_at.slice(0,10),
-              text: r.body,
-              helpful: r.helpful
-            }));
-            document.getElementById('reviews-list').innerHTML = buildReviews(apiReviews);
-            document.getElementById('review-count').textContent = data.total + ' ta sharh';
-          }
-        } catch {}
-      }
-      loadReviews();
-
-      /* ── Submit review ── */
-      window.submitReview = async function() {
-        if (typeof Auth === 'undefined' || !Auth.isLoggedIn()) {
-          showToast('Sharh qoldirish uchun hisobingizga kiring');
-          setTimeout(() => { window.location.href = '/pages/login.html'; }, 1200);
-          return;
-        }
-        const input = document.getElementById('review-input');
-        const text = input ? input.value.trim() : '';
-        if (!text) { showToast('Avval sharh yozing'); return; }
-        if (!selectedStars) { showToast('Yulduz reytingini tanlang'); return; }
-
-        try {
-          await ReviewsAPI.create(movie.id, selectedStars, text);
-          showToast('Sharh qo\'shildi!');
-          loadReviews();
-        } catch(e) { showToast('Xato: ' + e.message); return; }
-
-        input.value = '';
-        selectedStars = 0;
-        document.querySelectorAll('.review-star-btn').forEach(b => b.classList.remove('active'));
-      };
-
-      /* ── Helpful ── */
-      window.markHelpful = async function(id, btn) {
-        if (typeof Auth !== 'undefined' && Auth.isLoggedIn()) {
-          try {
-            await ReviewsAPI.helpful(id);
-          } catch {}
-        }
-        const countEl = btn.querySelector('.helpful-count');
-        countEl.textContent = parseInt(countEl.textContent) + 1;
-        btn.style.color = 'rgba(255,255,255,0.7)';
-        btn.style.pointerEvents = 'none';
-        showToast('Foydali deb belgilandi');
-      };
-
-      /* ── Watchlist toggle ── */
-      window.toggleFav = async function() {
-        if (typeof Auth !== 'undefined' && Auth.isLoggedIn()) {
-          try {
-            const data = await WatchlistAPI.toggle(movie.id);
-            document.getElementById('fav-icon').innerHTML  = data.added ? App.icons.heartFill : App.icons.heart;
-            document.getElementById('fav-label').textContent = data.added ? 'Saqlandi' : 'Saqlash';
-            document.getElementById('fav-btn').classList.toggle('active', data.added);
-            showToast(data.message);
-            return;
-          } catch(_) {
-            /* API failed (e.g. static movie with non-ObjectId) — fall through to localStorage */
-          }
-        }
-        /* localStorage path: not logged in OR API call failed */
-        const added = typeof toggleWatchlistLocal === 'function'
-          ? toggleWatchlistLocal(movie)
-          : toggleFavorite(movie.id);
-        document.getElementById('fav-icon').innerHTML  = added ? App.icons.heartFill : App.icons.heart;
-        document.getElementById('fav-label').textContent = added ? 'Saqlandi' : 'Saqlash';
-        document.getElementById('fav-btn').classList.toggle('active', added);
-      };
-
-      /* ── Share ── */
-      window.shareMovie = function() {
-        if (navigator.share) {
-          navigator.share({ title: movie.title, text: movie.description, url: window.location.href });
         } else {
-          navigator.clipboard.writeText(window.location.href).then(() => showToast('Link copied!'));
+          document.getElementById('mob-review-write-area').innerHTML = `
+            <div class="mob-review-write" style="text-align:center">
+              <p style="font-size:13px;color:rgba(255,255,255,0.45);margin-bottom:12px">Sharh qoldirish uchun hisobingizga kiring</p>
+              <a href="/pages/login.html" style="display:inline-block;background:#fff;color:#000;font-weight:700;font-size:13px;border-radius:8px;padding:10px 22px;text-decoration:none">Kirish</a>
+            </div>`;
         }
-      };
-    }
+
+        loadMobReviews();
+      }
+
+      /* ══════════════════════════
+         DESKTOP LAYOUT RENDER
+      ══════════════════════════ */
+      if (!isMobile()) {
+        const fav   = isFavorite(movie.id);
+        const liked = typeof isLiked === 'function' ? isLiked(movie.id) : false;
+        const durationOrSeries = movie.type === 'series'
+          ? `${movie.seasons} Seasons · ${movie.episodes} Episodes`
+          : movie.duration;
+
+        let dpGalleryUrls = [];
+        let galleryHTML;
+        if (movie.gallery && movie.gallery.length) {
+          dpGalleryUrls = movie.gallery;
+          galleryHTML = movie.gallery.map((url, i) =>
+            `<div class="dp-gallery-item" onclick="openLightbox(${i})" style="cursor:pointer"><img src="${url}" alt="" loading="lazy"></div>`).join('');
+        } else {
+          const gMovies = (_apiRelated && _apiRelated.length
+            ? _apiRelated : (typeof getRelated === 'function' ? getRelated(movie) : [])).slice(0, 6);
+          while (gMovies.length < 6) gMovies.push(movie);
+          dpGalleryUrls = gMovies.map(m => m.img);
+          galleryHTML = gMovies.map((m, i) =>
+            `<div class="dp-gallery-item" onclick="openLightbox(${i})" style="cursor:pointer">
+              <img src="${m.img}" alt="${m.title}" loading="lazy"></div>`).join('');
+        }
+        window._galleryUrls = dpGalleryUrls;
+
+        const castHTML = movie.cast.map((name, i) => {
+          const inits = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+          const grad = CAST_GRADS[i % CAST_GRADS.length];
+          const actorData = typeof ACTORS_DATA !== 'undefined'
+            ? ACTORS_DATA.find(a => a.name.toLowerCase() === name.toLowerCase()) : null;
+          const actorId = actorData ? actorData.id : null;
+          const photo = actorData && actorData.photo ? actorData.photo : null;
+          const avatarEl = photo
+            ? `<img class="dp-cast-photo" src="${photo}" alt="${name}"
+                 onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" loading="lazy">
+               <div class="dp-cast-avatar" style="background:${grad};display:none">${inits}</div>`
+            : `<div class="dp-cast-avatar" style="background:${grad}">${inits}</div>`;
+          const clickTarget = actorId
+            ? `App.go('../pages/actor-profile.html?id=${actorId}')`
+            : `openActorModal('${name.replace(/'/g, "\\'")}', '${grad}')`;
+          return `<div class="dp-cast-card" onclick="${clickTarget}" style="cursor:pointer">
+            ${avatarEl}<div class="dp-cast-name">${name}</div></div>`;
+        }).join('');
+
+        const related = _apiRelated && _apiRelated.length
+          ? _apiRelated : (typeof getRelated === 'function' ? getRelated(movie) : []);
+        const relatedHTML = related.length ? `
+          <div class="dp-related-section animate-in">
+            <div class="dp-section-label">SHUNGA O'XSHASH</div>
+            <div class="section-header" style="padding:0;margin-bottom:16px">
+              <div></div>
+              <div class="section-nav">
+                <button class="section-nav-btn" onclick="scrollRow('related-row',-1)">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m15 18-6-6 6-6"/></svg>
+                </button>
+                <button class="section-nav-btn" onclick="scrollRow('related-row',1)">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 18 6-6-6-6"/></svg>
+                </button>
+              </div>
+            </div>
+            <div class="movies-row" id="related-row" style="padding:30px 0">
+              ${related.map(m => App.buildCard(m, '../')).join('')}
+            </div>
+          </div>` : '';
+
+        const heroTrailerInfo = (function () {
+          if (movie.trailerS3Url) return {
+            type: 'video',
+            html: `<video class="dp-hero-trailer" id="dp-trailer" src="${movie.trailerS3Url}" autoplay muted loop playsinline></video>`
+          };
+          const raw = (typeof TRAILER_IDS !== 'undefined' && TRAILER_IDS[movie.id]) || movie.trailer_id || movie.trailerUrl || movie.trailer_url;
+          const htid = raw && typeof extractYouTubeId === 'function' ? (extractYouTubeId(raw) || raw) : raw;
+          if (!htid) return { type: 'none', html: '' };
+          const _org = window.location.origin;
+          return {
+            type: 'youtube', id: htid,
+            html: `<iframe class="dp-hero-trailer" id="dp-trailer" src="https://www.youtube-nocookie.com/embed/${htid}?autoplay=1&mute=1&controls=0&loop=1&playlist=${htid}&rel=0&playsinline=1&origin=${_org}&enablejsapi=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>`
+          };
+        })();
+
+        document.getElementById('detail-root').innerHTML = `
+          <div class="dp-hero animate-in">
+            <img class="dp-hero-img" src="${movie.banner_img || movie.img}" alt="${movie.title}">
+            ${heroTrailerInfo.html}
+            <div class="dp-hero-overlay"></div>
+            <div class="dp-hero-fade"></div>
+            <a class="detail-back" onclick="history.back();return false;" href="#">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m15 18-6-6 6-6"/></svg>
+            </a>
+            ${heroTrailerInfo.type !== 'none' ? `
+            <div class="dp-hero-controls" id="dp-hero-controls">
+              <button class="dp-hero-ctrl-btn" id="dp-vol-btn" type="button" onclick="toggleHeroTrailerMute()" title="Ovoz">
+                <svg id="dp-vol-muted" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+                <svg id="dp-vol-on" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+              </button>
+              <button class="dp-hero-ctrl-btn" id="dp-fs-btn" type="button" onclick="expandHeroTrailer()" title="To'liq ekran">
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+              </button>
+            </div>` : ''}
+            <div class="dp-hero-content">
+              <h1 class="dp-hero-title">${movie.title}</h1>
+              <div class="dp-hero-rating">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                ${movie.rating}<span class="rating-denom">/10</span>
+              </div>
+              <div class="dp-hero-meta">
+                <span>${movie.year}</span><span class="dp-hero-meta-sep">|</span>
+                <span>${durationOrSeries}</span><span class="dp-hero-meta-sep">|</span>
+                <span>${movie.age}+ Rating</span><span class="dp-hero-meta-sep">|</span>
+                <span>${movie.genre.map(g => g.charAt(0).toUpperCase() + g.slice(1)).join(', ')}</span>
+              </div>
+            </div>
+          </div>
+          <div class="dp-info-section animate-in" style="transition-delay:0.06s">
+            <div class="dp-poster"><img src="${movie.img}" alt="${movie.title}"></div>
+            <div class="dp-details">
+              <div class="dp-detail-line"><strong>Cast:</strong> <span>${movie.cast.join(', ')}</span></div>
+              <div class="dp-synopsis">${movie.description}</div>
+              <div class="dp-genres">
+                ${movie.genre.map(g => `<span class="dp-genre-pill">${g.charAt(0).toUpperCase() + g.slice(1)}</span>`).join('')}
+              </div>
+              <div class="dp-actions">
+                <button class="btn-play" onclick="App.go('../pages/watch.html?id=${movie.id}')">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                  Ko'rish
+                </button>
+                <button class="btn-secondary${liked ? ' active' : ''}" id="dp-like-btn" onclick="toggleLikeDesktop()">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="${liked ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" id="dp-like-icon"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                  <span id="dp-like-label">${liked ? 'Yoqdi' : 'Yoqdimi'}</span>
+                </button>
+                <button class="btn-secondary" id="fav-btn" onclick="toggleFav()">
+                  <span id="fav-icon">${fav ? App.icons.heartFill : App.icons.heart}</span>
+                  <span id="fav-label">${fav ? 'Saqlandi' : 'Saqlash'}</span>
+                </button>
+                <button class="btn-secondary" onclick="shareMovie()">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                  Ulashish
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="dp-gallery animate-in" style="transition-delay:0.1s">
+            <div class="dp-section-label">GALLEREYA</div>
+            <div class="dp-gallery-grid">${galleryHTML}</div>
+          </div>
+          <div class="dp-cast-section animate-in" style="transition-delay:0.14s">
+            <div class="dp-section-label">AKTYORLAR</div>
+            <div class="dp-cast-scroll">${castHTML}</div>
+          </div>
+          ${relatedHTML}
+          <section class="reviews-section animate-in" style="transition-delay:0.18s">
+            <div class="reviews-header">
+              <div class="reviews-title">Sharhlar</div>
+              <div class="reviews-count" id="review-count">0 ta sharh</div>
+            </div>
+            ${(function () {
+            const u = typeof Auth !== 'undefined' ? Auth.getUser() : null;
+            const li = typeof Auth !== 'undefined' && Auth.isLoggedIn() && u;
+            if (!li) return `<div class="review-write-card review-login-prompt">
+                <div class="review-write-label">Sharh qoldirish uchun hisobingizga kiring.</div>
+                <a class="review-submit-btn" href="/pages/login.html" style="display:inline-block;text-decoration:none;margin-top:14px">Kirish</a></div>`;
+            const nm = u.name || 'Foydalanuvchi';
+            const ini = nm.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+            const av = (u.avatar ? (typeof u.avatar === 'object' ? u.avatar.url : u.avatar) : '');
+            const avEl = av
+              ? `<div class="review-write-avatar" style="overflow:hidden;background:none;padding:0"><img src="${av}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%"></div>`
+              : `<div class="review-write-avatar">${ini}</div>`;
+            return `<div class="review-write-card">
+                <div class="review-write-top">${avEl}<div class="review-write-label">${nm}, fikringizni yozing…</div></div>
+                <div class="review-stars-input" id="star-input">
+                  ${[1, 2, 3, 4, 5].map(s => `<button class="review-star-btn" data-s="${s}">★</button>`).join('')}
+                </div>
+                <textarea class="review-textarea" id="review-input" placeholder="Sharhingizni yozing…"></textarea>
+                <button class="review-submit-btn" onclick="submitReview()">Sharh qoldirish</button>
+              </div>`;
+          })()}
+            <div class="reviews-list" id="reviews-list"></div>
+          </section>`;
+
+        App.initAnimations();
+        window._cpHeroTrailer = heroTrailerInfo;
+        window._cpHeroMuted = true;
+
+        const dpTrailer = document.getElementById('dp-trailer');
+        if (dpTrailer) {
+          const delay = dpTrailer.tagName === 'VIDEO' ? 400 : 2500;
+          setTimeout(() => { if (dpTrailer.style.display !== 'none') dpTrailer.classList.add('visible'); }, delay);
+        }
+
+        /* Desktop star input */
+        const starInput = document.getElementById('star-input');
+        if (starInput) {
+          starInput.addEventListener('click', e => {
+            const btn = e.target.closest('.review-star-btn');
+            if (!btn) return;
+            selectedStars = +btn.dataset.s;
+            document.querySelectorAll('.review-star-btn').forEach((b, i) => b.classList.toggle('active', i < selectedStars));
+          });
+          starInput.addEventListener('mouseover', e => {
+            const btn = e.target.closest('.review-star-btn');
+            if (!btn) return;
+            const h = +btn.dataset.s;
+            document.querySelectorAll('.review-star-btn').forEach((b, i) => { b.style.color = i < h ? '#fff' : ''; });
+          });
+          starInput.addEventListener('mouseleave', () => {
+            document.querySelectorAll('.review-star-btn').forEach(b => { b.style.color = ''; });
+          });
+        }
+
+        /* Desktop watchlist */
+        window.toggleFav = async function () {
+          if (typeof Auth !== 'undefined' && Auth.isLoggedIn()) {
+            try {
+              const data = await WatchlistAPI.toggle(movie.id);
+              document.getElementById('fav-icon').innerHTML = data.added ? App.icons.heartFill : App.icons.heart;
+              document.getElementById('fav-label').textContent = data.added ? 'Saqlandi' : 'Saqlash';
+              document.getElementById('fav-btn').classList.toggle('active', data.added);
+              showToast(data.message); return;
+            } catch (_) { }
+          }
+          const added = typeof toggleWatchlistLocal === 'function' ? toggleWatchlistLocal(movie) : toggleFavorite(movie.id);
+          document.getElementById('fav-icon').innerHTML = added ? App.icons.heartFill : App.icons.heart;
+          document.getElementById('fav-label').textContent = added ? 'Saqlandi' : 'Saqlash';
+          document.getElementById('fav-btn').classList.toggle('active', added);
+        };
+
+        loadDesktopReviews();
+      } /* end desktop */
     })(); /* end async IIFE */
 
-    /* ── YouTube error handler — hide the banner trailer silently on embed error ── */
-    window.addEventListener('message', function(e) {
+    /* ─── Load reviews ─── */
+    async function loadMobReviews() {
+      if (typeof ReviewsAPI === 'undefined') return;
       try {
-        const data = JSON.parse(typeof e.data === 'string' ? e.data : '{}');
-        if (data.event !== 'onError') return;
-        const t = document.getElementById('dp-trailer');
-        if (t && t.tagName === 'IFRAME' && t.contentWindow === e.source) {
-          t.style.display = 'none';
-          const c = document.getElementById('dp-hero-controls');
-          if (c) c.style.display = 'none';
+        const data = await ReviewsAPI.getByMovie(movie.id);
+        document.getElementById('mob-review-count').textContent = data.total + ' ta';
+        if (data.total > 0) {
+          const rv = data.data.map(r => ({
+            id: r.id, name: r.user_name, avatar: r.user_avatar || '',
+            initials: (r.user_name || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2),
+            rating: r.rating, date: r.created_at.slice(0, 10), text: r.body
+          }));
+          document.getElementById('mob-reviews-list').innerHTML = buildReviews(rv);
+        } else {
+          document.getElementById('mob-reviews-list').innerHTML =
+            `<div style="text-align:center;padding:24px 0;color:rgba(255,255,255,0.35);font-size:14px">Hozircha sharhlar yo'q.</div>`;
         }
-      } catch {}
+      } catch { }
+    }
+
+    async function loadDesktopReviews() {
+      if (typeof ReviewsAPI === 'undefined') return;
+      try {
+        const data = await ReviewsAPI.getByMovie(movie.id);
+        if (data.total > 0) {
+          const rv = data.data.map(r => ({
+            id: r.id, name: r.user_name,
+            initials: (r.user_name || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2),
+            avatar: r.user_avatar || '', color: 'linear-gradient(135deg,#3a3a3a,#121212)',
+            rating: r.rating, date: r.created_at.slice(0, 10), text: r.body, helpful: r.helpful
+          }));
+          const desktopBuild = reviews => reviews.map(r => {
+            const av = r.avatar
+              ? `<div class="review-avatar" style="overflow:hidden"><img src="${r.avatar}" alt="${r.name}" style="width:100%;height:100%;object-fit:cover;border-radius:50%"></div>`
+              : `<div class="review-avatar" style="background:${r.color}">${r.initials}</div>`;
+            return `<div class="review-card" data-id="${r.id}">
+              <div class="review-card-header">
+                <div class="review-user">${av}<div>
+                  <div class="review-name">${r.name}</div>
+                  <div class="review-date">${r.date}</div>
+                </div></div>
+                ${r.rating ? buildStars(r.rating) : ''}
+              </div>
+              <div class="review-text">${r.text}</div>
+              <div class="review-footer">
+                <button class="review-helpful" onclick="markHelpful('${r.id}',this)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/><path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+                  <span class="helpful-count">${r.helpful}</span> foydali
+                </button>
+                <span class="review-badge">Tasdiqlangan</span>
+              </div>
+            </div>`;
+          }).join('');
+          if (document.getElementById('reviews-list')) document.getElementById('reviews-list').innerHTML = desktopBuild(rv);
+          if (document.getElementById('review-count')) document.getElementById('review-count').textContent = data.total + ' ta sharh';
+        }
+      } catch { }
+    }
+
+    /* ─── Lightbox ─── */
+    let _lbIndex = 0;
+    window.openLightbox = function (idx) {
+      const urls = window._galleryUrls || [];
+      if (!urls.length) return;
+      _lbIndex = idx || 0;
+      _lbUpdate();
+      document.getElementById('img-lightbox').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    };
+    window.closeLightbox = function () {
+      document.getElementById('img-lightbox').classList.remove('open');
+      document.body.style.overflow = '';
+    };
+    window.lbClickOutside = function (e) {
+      if (e.target === document.getElementById('img-lightbox')) closeLightbox();
+    };
+    window.lbNav = function (dir) {
+      const urls = window._galleryUrls || [];
+      _lbIndex = (_lbIndex + dir + urls.length) % urls.length;
+      _lbUpdate();
+    };
+    function _lbUpdate() {
+      const urls = window._galleryUrls || [];
+      document.getElementById('lb-img').src = urls[_lbIndex] || '';
+      document.getElementById('lb-counter').textContent = `${_lbIndex + 1} / ${urls.length}`;
+      const hasPrev = document.querySelector('.img-lightbox-prev');
+      const hasNext = document.querySelector('.img-lightbox-next');
+      if (hasPrev) hasPrev.style.display = urls.length > 1 ? '' : 'none';
+      if (hasNext) hasNext.style.display = urls.length > 1 ? '' : 'none';
+    }
+    window.openGalleryAll = function () {
+      const urls = window._galleryUrls || [];
+      if (!urls.length) return;
+      const modal = document.getElementById('gallery-modal');
+      const grid  = document.getElementById('gallery-modal-grid');
+      const title = document.getElementById('gallery-modal-title');
+      if (title) title.textContent = 'Gallereya · ' + urls.length + ' ta rasm';
+      grid.innerHTML = urls.map((url, i) =>
+        `<div class="gallery-modal-item" onclick="openLightboxFromModal(${i})">
+          <img src="${url}" alt="" loading="lazy">
+        </div>`
+      ).join('');
+      modal.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    };
+    window.closeGalleryModal = function () {
+      document.getElementById('gallery-modal').classList.remove('open');
+      document.body.style.overflow = '';
+    };
+    window.openLightboxFromModal = function (idx) {
+      closeGalleryModal();
+      setTimeout(() => openLightbox(idx), 60);
+    };
+    document.addEventListener('keydown', function (e) {
+      const gm = document.getElementById('gallery-modal');
+      if (gm && gm.classList.contains('open')) {
+        if (e.key === 'Escape') closeGalleryModal();
+        return;
+      }
+      const lb = document.getElementById('img-lightbox');
+      if (!lb || !lb.classList.contains('open')) return;
+      if (e.key === 'Escape')      closeLightbox();
+      if (e.key === 'ArrowLeft')   lbNav(-1);
+      if (e.key === 'ArrowRight')  lbNav(1);
     });
 
-    /* ── Banner trailer: mute toggle + fullscreen full-playback ── */
-    window._cpHeroTrailer = null;     /* set by the detail render below */
-    window._cpHeroMuted   = true;
+    /* ─── Desktop like ─── */
+    window.toggleLikeDesktop = function () {
+      if (!movie) return;
+      const movieObj = { id: String(movie.id), title: movie.title, img: movie.img, year: movie.year, posterUrl: movie.img };
+      const added = typeof toggleLike === 'function' ? toggleLike(movieObj) : false;
+      const btn  = document.getElementById('dp-like-btn');
+      const icon = document.getElementById('dp-like-icon');
+      const lbl  = document.getElementById('dp-like-label');
+      if (btn)  btn.classList.toggle('active', added);
+      if (icon) icon.setAttribute('fill', added ? 'currentColor' : 'none');
+      if (lbl)  lbl.textContent = added ? 'Yoqdi' : 'Yoqdimi';
+    };
+
+    /* ─── Mobile like ─── */
+    window.mobToggleLike = function () {
+      if (!movie) return;
+      const movieObj = { id: String(movie.id), title: movie.title, img: movie.img, year: movie.year, posterUrl: movie.img };
+      const added = (typeof toggleLike === 'function') ? toggleLike(movieObj) : false;
+      const btn   = document.getElementById('mob-like-btn');
+      const icon  = document.getElementById('mob-like-icon');
+      const lbl   = document.getElementById('mob-like-label');
+      if (btn)  btn.classList.toggle('active', added);
+      if (icon) icon.setAttribute('fill', added ? 'currentColor' : 'none');
+      if (lbl)  lbl.textContent = added ? 'Yoqdi' : 'Yoqdimi';
+    };
+
+    /* ─── Mobile watchlist ─── */
+    window.mobToggleFav = async function () {
+      if (!movie) return;
+      if (typeof Auth !== 'undefined' && Auth.isLoggedIn()) {
+        try {
+          const data = await WatchlistAPI.toggle(movie.id);
+          const btn = document.getElementById('mob-fav-btn');
+          const iconEl = document.getElementById('mob-fav-icon');
+          const lblEl = document.getElementById('mob-fav-label');
+          btn.classList.toggle('active', data.added);
+          iconEl.innerHTML = data.added
+            ? '<path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" fill="currentColor"/>'
+            : '<path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>';
+          lblEl.textContent = data.added ? 'Saqlandi' : 'Saqlash';
+          showToast(data.message); return;
+        } catch (_) { }
+      }
+      const added = typeof toggleWatchlistLocal === 'function' ? toggleWatchlistLocal(movie) : toggleFavorite(movie.id);
+      const btn = document.getElementById('mob-fav-btn');
+      const iconEl = document.getElementById('mob-fav-icon');
+      const lblEl = document.getElementById('mob-fav-label');
+      btn.classList.toggle('active', added);
+      iconEl.innerHTML = added
+        ? '<path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" fill="currentColor"/>'
+        : '<path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>';
+      lblEl.textContent = added ? 'Saqlandi' : 'Saqlash';
+    };
+
+    /* ─── Mobile review submit ─── */
+    window.mobSubmitReview = async function () {
+      if (typeof Auth === 'undefined' || !Auth.isLoggedIn()) {
+        showToast('Sharh qoldirish uchun kiring'); return;
+      }
+      const input = document.getElementById('mob-review-input');
+      const text = input ? input.value.trim() : '';
+      if (!text) { showToast('Avval sharh yozing'); return; }
+      if (!selectedStars) { showToast('Yulduz reytingini tanlang'); return; }
+      try {
+        await ReviewsAPI.create(movie.id, selectedStars, text);
+        showToast("Sharh qo'shildi!");
+        input.value = ''; selectedStars = 0;
+        document.querySelectorAll('.mob-star-btn').forEach(b => b.classList.remove('active'));
+        loadMobReviews();
+      } catch (e) { showToast('Xato: ' + e.message); }
+    };
+
+    /* ─── Desktop review submit ─── */
+    window.submitReview = async function () {
+      if (typeof Auth === 'undefined' || !Auth.isLoggedIn()) {
+        showToast('Sharh qoldirish uchun hisobingizga kiring');
+        setTimeout(() => { window.location.href = '/pages/login.html'; }, 1200); return;
+      }
+      const input = document.getElementById('review-input');
+      const text = input ? input.value.trim() : '';
+      if (!text) { showToast('Avval sharh yozing'); return; }
+      if (!selectedStars) { showToast('Yulduz reytingini tanlang'); return; }
+      try {
+        await ReviewsAPI.create(movie.id, selectedStars, text);
+        showToast("Sharh qo'shildi!"); loadDesktopReviews();
+      } catch (e) { showToast('Xato: ' + e.message); return; }
+      input.value = ''; selectedStars = 0;
+      document.querySelectorAll('.review-star-btn').forEach(b => b.classList.remove('active'));
+    };
+
+    /* ─── Helpful ─── */
+    window.markHelpful = async function (id, btn) {
+      if (typeof Auth !== 'undefined' && Auth.isLoggedIn()) {
+        try { await ReviewsAPI.helpful(id); } catch { }
+      }
+      const countEl = btn.querySelector('.helpful-count');
+      countEl.textContent = parseInt(countEl.textContent) + 1;
+      btn.style.color = 'rgba(255,255,255,0.7)';
+      btn.style.pointerEvents = 'none';
+      showToast('Foydali deb belgilandi');
+    };
+
+    /* ─── Hero trailer controls (desktop) ─── */
+    window._cpHeroTrailer = null;
+    window._cpHeroMuted = true;
 
     window.toggleHeroTrailerMute = function () {
       const info = window._cpHeroTrailer;
@@ -627,115 +2028,86 @@
       const reqFs = t.requestFullscreen || t.webkitRequestFullscreen || t.webkitEnterFullscreen || t.msRequestFullscreen;
       if (info.type === 'video') {
         t.loop = false; t.muted = false; t.controls = true; t.volume = 0.9;
-        if (reqFs) reqFs.call(t);
-        t.play().catch(() => {});
+        if (reqFs) reqFs.call(t); t.play().catch(() => { });
       } else if (info.type === 'youtube') {
-        /* Reload with full controls + sound, no loop, so it plays to the end */
         const _org = window.location.origin;
         t.src = `https://www.youtube-nocookie.com/embed/${info.id}?autoplay=1&mute=0&controls=1&rel=0&playsinline=1&origin=${_org}&enablejsapi=1`;
         if (reqFs) reqFs.call(t);
       }
       window._cpHeroMuted = false;
-      const m = document.getElementById('dp-vol-muted');
-      const s = document.getElementById('dp-vol-on');
-      if (m) m.style.display = 'none';
-      if (s) s.style.display = '';
+      const m = document.getElementById('dp-vol-muted'); const s = document.getElementById('dp-vol-on');
+      if (m) m.style.display = 'none'; if (s) s.style.display = '';
     };
 
-    /* Restore the ambient muted loop after leaving fullscreen */
     document.addEventListener('fullscreenchange', function () {
       if (document.fullscreenElement) return;
-      const info = window._cpHeroTrailer;
-      const t = document.getElementById('dp-trailer');
+      const info = window._cpHeroTrailer; const t = document.getElementById('dp-trailer');
       if (!info || !t) return;
       if (info.type === 'youtube') {
         const _org = window.location.origin;
         t.src = `https://www.youtube-nocookie.com/embed/${info.id}?autoplay=1&mute=1&controls=0&loop=1&playlist=${info.id}&rel=0&playsinline=1&origin=${_org}&enablejsapi=1`;
         setTimeout(() => t.classList.add('visible'), 600);
       } else if (info.type === 'video') {
-        t.controls = false; t.loop = true; t.muted = true;
-        t.play().catch(() => {});
+        t.controls = false; t.loop = true; t.muted = true; t.play().catch(() => { });
       }
       window._cpHeroMuted = true;
-      const m = document.getElementById('dp-vol-muted');
-      const s = document.getElementById('dp-vol-on');
-      if (m) m.style.display = '';
-      if (s) s.style.display = 'none';
+      const m = document.getElementById('dp-vol-muted'); const s = document.getElementById('dp-vol-on');
+      if (m) m.style.display = ''; if (s) s.style.display = 'none';
     });
 
-    /* ── Actor Modal ── */
+    window.addEventListener('message', function (e) {
+      try {
+        const data = JSON.parse(typeof e.data === 'string' ? e.data : '{}');
+        if (data.event !== 'onError') return;
+        const t = document.getElementById('dp-trailer');
+        if (t && t.tagName === 'IFRAME' && t.contentWindow === e.source) {
+          t.style.display = 'none';
+          const c = document.getElementById('dp-hero-controls');
+          if (c) c.style.display = 'none';
+        }
+      } catch { }
+    });
+
+    /* ─── Actor Modal ─── */
     const ACTOR_BIOS = [
-      'Drama va jangovar janrlarda chuqur, qatlamli talqinlari bilan tomoshabinlarni maftun etadigan tan olingan ijrochi.',
-      'Kuchli ijrolari va murakkab rollarni tanlash intiziomi bilan zamonaviy kinoartn shakllantirishga hissa qo\'shgan ko\'p qirrali iste\'dod.',
-      'Ekrandagi ulug\'vor mavjudligi va har bir qahramonga chinlik va chuqurlik olib kirish qobiliyati bilan mashhur.',
-      'O\'nlab yillar davomida butun avlodni belgilaydigan ijrolarni doimiy ravishda taqdim etib kelayotgan tanqidchilar tomonidan e\'tirof etilgan aktyor.',
-      'Tanqidchilar va muxlislar tomonidan butun dunyoda tan olinib, hikoya qilish chegaralarini kengaytiruvchi transformatsion rollar bilan mashhur.',
+      'Drama va jangovar janrlarda chuqur, qatlamli talqinlari bilan tomoshabinlarni maftun etadigan ijrochi.',
+      'Kuchli ijrolari va murakkab rollarni tanlash intiziomi bilan zamonaviy kino sanʼatini shakllantirgan koʻp qirrali iste\'dod.',
+      'Ekrandagi ulugʻvor mavjudligi va har bir qahramonga chinlik olib kirish qobiliyati bilan mashhur.',
+      'Oʻnlab yillar davomida avlodni belgilaydigan ijrolarni taqdim etib kelayotgan koʻp qirrali aktyor.',
+      'Hikoya qilish chegaralarini kengaytiruvchi transformatsion rollar bilan dunyo miqyosida tan olingan.',
     ];
 
-    window.openActorModal = function(name, gradient) {
-      const inits = name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+    window.openActorModal = function (name, gradient) {
+      const inits = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
       const films = MOVIES.filter(m => m.cast && m.cast.includes(name));
-
-      /* Look up real IMDB data */
       const actorData = typeof ACTORS_DATA !== 'undefined'
-        ? ACTORS_DATA.find(a => a.name.toLowerCase() === name.toLowerCase())
-        : null;
-
-      const bio = actorData && actorData.bio
-        ? actorData.bio
-        : ACTOR_BIOS[name.length % ACTOR_BIOS.length];
-
+        ? ACTORS_DATA.find(a => a.name.toLowerCase() === name.toLowerCase()) : null;
+      const bio = actorData && actorData.bio ? actorData.bio : ACTOR_BIOS[name.length % ACTOR_BIOS.length];
       const avatarEl = document.getElementById('am-avatar');
       if (actorData && actorData.photo) {
-        avatarEl.innerHTML = `<img src="${actorData.photo}" alt="${name}"
-          style="width:72px;height:72px;border-radius:50%;object-fit:cover;object-position:top;"
-          onerror="this.parentElement.innerHTML='${inits}';this.parentElement.style.background='${gradient}'">`;
+        avatarEl.innerHTML = `<img src="${actorData.photo}" alt="${name}" style="width:72px;height:72px;border-radius:50%;object-fit:cover;object-position:top;" onerror="this.parentElement.innerHTML='${inits}';this.parentElement.style.background='${gradient}'">`;
         avatarEl.style.background = 'transparent';
-      } else {
-        avatarEl.innerHTML = inits;
-        avatarEl.style.background = gradient;
-      }
-
-      /* Meta chips */
+      } else { avatarEl.innerHTML = inits; avatarEl.style.background = gradient; }
       let metaHTML = '';
       if (actorData) {
         if (actorData.birthDate) {
           const d = new Date(actorData.birthDate);
-          metaHTML += `<span style="font-size:11px;color:var(--text-muted);margin-right:10px">
-            📅 ${d.toLocaleDateString('uz-UZ',{year:'numeric',month:'long',day:'numeric'})}
-          </span>`;
+          metaHTML += `<span style="font-size:11px;color:var(--text-muted);margin-right:10px">📅 ${d.toLocaleDateString('uz-UZ', { year: 'numeric', month: 'long', day: 'numeric' })}</span>`;
         }
-        if (actorData.birthPlace) {
-          metaHTML += `<span style="font-size:11px;color:var(--text-muted);margin-right:10px">
-            📍 ${actorData.birthPlace}
-          </span>`;
-        }
+        if (actorData.birthPlace) metaHTML += `<span style="font-size:11px;color:var(--text-muted);margin-right:10px">📍 ${actorData.birthPlace}</span>`;
       }
-
       document.getElementById('am-name').textContent = name;
-      document.getElementById('am-bio').innerHTML = `
-        ${metaHTML ? `<div style="margin-bottom:10px;display:flex;flex-wrap:wrap;gap:4px">${metaHTML}</div>` : ''}
-        <span>${bio}</span>
-        ${actorData ? `<a href="../pages/actor-profile.html?id=${actorData.id}"
-          style="display:inline-flex;align-items:center;gap:5px;margin-top:12px;font-size:12px;
-                 color:rgba(255,255,255,0.45);transition:color 0.15s"
-          onmouseover="this.style.color='#ffffff'" onmouseout="this.style.color='rgba(255,255,255,0.45)'">
-          To'liq profil ko'rish →
-        </a>` : ''}`;
-
+      document.getElementById('am-bio').innerHTML = `${metaHTML ? `<div style="margin-bottom:10px;display:flex;flex-wrap:wrap;gap:4px">${metaHTML}</div>` : ''}<span>${bio}</span>${actorData ? `<a href="../pages/actor-profile.html?id=${actorData.id}" style="display:inline-flex;align-items:center;gap:5px;margin-top:12px;font-size:12px;color:rgba(255,255,255,0.45);transition:color 0.15s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.45)'">To'liq profil ko'rish →</a>` : ''}`;
       const grid = document.getElementById('am-grid');
-      grid.innerHTML = films.length
-        ? films.map(m => App.buildCard(m, '../')).join('')
-        : '<div class="actor-modal-empty">Bu kutubxonada filmlar topilmadi.</div>';
-
+      grid.innerHTML = films.length ? films.map(m => App.buildCard(m, '../')).join('') : '<div class="actor-modal-empty">Bu kutubxonada filmlar topilmadi.</div>';
       document.getElementById('actor-modal-overlay').classList.add('open');
     };
 
-    window.closeActorModal = function(e) {
-      if (e.target === document.getElementById('actor-modal-overlay')) {
+    window.closeActorModal = function (e) {
+      if (e.target === document.getElementById('actor-modal-overlay'))
         document.getElementById('actor-modal-overlay').classList.remove('open');
-      }
     };
   </script>
 </body>
+
 </html>
