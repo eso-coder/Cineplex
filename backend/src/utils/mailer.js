@@ -37,8 +37,9 @@ if (!resendClient && smtpConfigured) {
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const generateOtp = () => String(Math.floor(100000 + Math.random() * 900000));
 
-// Resend free tier: faqat onboarding@resend.dev dan yuborish mumkin (domen tasdiqlanmagan bo'lsa)
-const RESEND_FROM = process.env.MAIL_FROM || 'CINEPLEX <onboarding@resend.dev>';
+// Domen Resend'da tasdiqlangach noreply@cineplex.uz dan yuboriladi.
+// MAIL_FROM env bilan ham override qilish mumkin.
+const RESEND_FROM = process.env.MAIL_FROM || 'CINEPLEX <noreply@cineplex.uz>';
 const SMTP_FROM   = smtp.from || 'CINEPLEX <no-reply@cineplex.app>';
 const SUBJECT     = 'Email tasdiqlash kodi — CINEPLEX';
 
