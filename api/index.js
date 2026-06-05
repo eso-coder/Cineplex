@@ -1,16 +1,25 @@
 /**
  * Vercel serverless entry point.
  * Barcha /api/* so'rovlar shu yerga keladi.
- * MongoDB ulanishi serverless uchun cache qilingan.
+ *
+ * Muhim: barcha paketlar backend/node_modules da o'rnatilgan.
+ * Shu sababli mongoose va dotenv ga to'g'ridan-to'g'ri yo'l ko'rsatilgan.
  */
 const path = require('path');
+const BACKEND = path.resolve(__dirname, '../backend');
 
-// .env faylni backend papkasidan yukla (lokal dev uchun)
-require('dotenv').config({ path: path.join(__dirname, '../backend/.env') });
+// dotenv — backend papkasidagi .env ni yukla (local dev uchun)
+require(path.join(BACKEND, 'node_modules/dotenv')).config({
+  path: path.join(BACKEND, '.env'),
+});
 
-const mongoose = require('mongoose');
+// mongoose — backend modellari bilan BIR XIL instance ishlatilsin
+const mongoose = require(path.join(BACKEND, 'node_modules/mongoose'));
 
-// ── MongoDB connection caching (serverless best practice) ─────────────────────
+// Express ilovasi (app.listen() yo'q — Vercel boshqaradi)
+const app = require('../backend/src/app');
+
+// ── MongoDB connection caching (serverless uchun) ─────────────────────────────
 let isConnected = false;
 
 async function connectDB() {
@@ -21,10 +30,8 @@ async function connectDB() {
 
   await mongoose.connect(uri, { serverSelectionTimeoutMS: 10000 });
   isConnected = true;
+  console.log('[vercel] MongoDB connected');
 }
-
-// ── Express app (app.listen() chaqirilmaydi — Vercel boshqaradi) ──────────────
-const app = require('../backend/src/app');
 
 // ── Vercel serverless handler ─────────────────────────────────────────────────
 module.exports = async (req, res) => {
