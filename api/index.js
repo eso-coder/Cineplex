@@ -1,33 +1,22 @@
 /**
- * Vercel serverless entry point.
- * Barcha /api/* so'rovlar shu yerga keladi.
- *
- * Muhim: barcha paketlar backend/node_modules da o'rnatilgan.
- * Shu sababli mongoose va dotenv ga to'g'ridan-to'g'ri yo'l ko'rsatilgan.
+ * Vercel serverless entry point — /api/* barcha so'rovlar shu yerga keladi.
+ * Barcha paketlar root node_modules da (root package.json dan).
  */
 const path = require('path');
-const BACKEND = path.resolve(__dirname, '../backend');
 
-// dotenv — backend papkasidagi .env ni yukla (local dev uchun)
-require(path.join(BACKEND, 'node_modules/dotenv')).config({
-  path: path.join(BACKEND, '.env'),
-});
+// Local dev uchun backend/.env yukla (Vercel da env vars dashboard dan keladi)
+require('dotenv').config({ path: path.join(__dirname, '../backend/.env') });
 
-// mongoose — backend modellari bilan BIR XIL instance ishlatilsin
-const mongoose = require(path.join(BACKEND, 'node_modules/mongoose'));
-
-// Express ilovasi (app.listen() yo'q — Vercel boshqaradi)
+const mongoose = require('mongoose');
 const app = require('../backend/src/app');
 
-// ── MongoDB connection caching (serverless uchun) ─────────────────────────────
+// ── MongoDB connection caching (serverless best practice) ─────────────────────
 let isConnected = false;
 
 async function connectDB() {
   if (isConnected && mongoose.connection.readyState === 1) return;
-
   const uri = process.env.MONGODB_URI;
   if (!uri) throw new Error('MONGODB_URI environment variable is not set');
-
   await mongoose.connect(uri, { serverSelectionTimeoutMS: 10000 });
   isConnected = true;
   console.log('[vercel] MongoDB connected');
@@ -44,6 +33,5 @@ module.exports = async (req, res) => {
       message: 'Database unavailable. Please try again shortly.',
     });
   }
-
   return app(req, res);
 };
