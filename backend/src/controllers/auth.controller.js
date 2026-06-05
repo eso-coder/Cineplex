@@ -31,14 +31,24 @@ const issueSession = async (res, user, message, created = false) => {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// LEGACY: POST /api/auth/register  (name + email + password, immediate session)
+// LEGACY: POST /api/auth/register  (name + email + password → OTP verification)
 // ─────────────────────────────────────────────────────────────────────────────
 const register = asyncHandler(async (req, res) => {
   const { name, email, password } = req.body;
   const existing = await User.findOne({ email });
-  if (existing) throw ApiError.conflict('Email already registered');
-  const user = await User.create({ name, email, password, isVerified: true });
-  return issueSession(res, user, 'Registration successful', true);
+  if (existing && existing.isVerified) throw ApiError.conflict('Email already registered');
+
+  const code = generateOtp();
+  const expiresAt = new Date(Date.now() + OTP_TTL_MS);
+  await Otp.deleteMany({ email });
+  await Otp.create({ email, code, expiresAt, used: false, payload: { name, password } });
+
+  const { delivered, devCode } = await sendOtpEmail(email, code);
+  return sendCreated(
+    res,
+    { email, otpSent: true, delivered, ...(devCode ? { devCode } : {}) },
+    'Verification code sent'
+  );
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -89,7 +99,7 @@ const verifyOtp = asyncHandler(async (req, res) => {
   await otp.save();
 
   const data = otp.payload || {};
-  const name = `${data.firstName || ''} ${data.lastName || ''}`.trim() || email.split('@')[0];
+  const name = `${data.firstName || ''} ${data.lastName || ''}`.trim() || data.name || email.split('@')[0];
 
   let user = await User.findOne({ email });
   if (user) {
@@ -122,7 +132,13 @@ const verifyOtp = asyncHandler(async (req, res) => {
 const resendOtp = asyncHandler(async (req, res) => {
   const { email } = req.body;
   const prev = await Otp.findOne({ email }).sort({ createdAt: -1 });
-  if (!prev) throw ApiError.badRequest('No pending signup for this email');
+
+  if (!prev) {
+    // Allow resend for existing but unverified users (e.g. signed up via legacy /register)
+    const user = await User.findOne({ email });
+    if (!user) throw ApiError.badRequest('No pending signup for this email');
+    if (user.isVerified) throw ApiError.badRequest('Email is already verified');
+  }
 
   const code = generateOtp();
   await Otp.deleteMany({ email });
@@ -131,7 +147,7 @@ const resendOtp = asyncHandler(async (req, res) => {
     code,
     expiresAt: new Date(Date.now() + OTP_TTL_MS),
     used: false,
-    payload: prev.payload,
+    payload: prev ? prev.payload : null,
   });
 
   const { delivered, devCode } = await sendOtpEmail(email, code);
@@ -148,6 +164,9 @@ const signin = asyncHandler(async (req, res) => {
     throw ApiError.unauthorized('Invalid email or password');
   }
   if (!user.isActive) throw ApiError.forbidden('Account has been deactivated');
+  if (!user.isVerified) {
+    throw new ApiError(403, 'Email tasdiqlanmagan', 'EMAIL_NOT_VERIFIED', { needsVerification: true });
+  }
   return issueSession(res, user, 'Login successful');
 });
 

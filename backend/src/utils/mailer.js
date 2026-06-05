@@ -1,65 +1,118 @@
 const { smtp, nodeEnv } = require('../config/env');
 const logger = require('./logger');
 
-/*
- * OTP mailer.
- *
- * If SMTP credentials are configured (SMTP_USER + SMTP_PASS, e.g. a Gmail app
- * password) AND the `nodemailer` package is installed, a real email is sent.
- * Otherwise we fall back to a dev stub: the code is logged to the server console
- * and, in non-production, returned to the caller so the UI can surface it.
- */
+// ── Resend (priority 1) ───────────────────────────────────────────────────────
+const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
+let resendClient = null;
 
-let transporter = null;
-let nodemailer = null;
+if (RESEND_API_KEY) {
+  try {
+    const { Resend } = require('resend');
+    resendClient = new Resend(RESEND_API_KEY);
+    logger.info('[mailer] Resend configured ✓');
+  } catch (err) {
+    logger.warn(`[mailer] Resend unavailable (${err.message})`);
+  }
+}
+
+// ── Nodemailer / Gmail SMTP (priority 2) ──────────────────────────────────────
+let smtpTransporter = null;
 const smtpConfigured = Boolean(smtp.user && smtp.pass);
 
-if (smtpConfigured) {
+if (!resendClient && smtpConfigured) {
   try {
-    // Lazy require so a missing dependency never crashes the server.
-    nodemailer = require('nodemailer');
-    transporter = nodemailer.createTransport({
+    const nodemailer = require('nodemailer');
+    smtpTransporter = nodemailer.createTransport({
       host: smtp.host,
       port: smtp.port,
       secure: smtp.port === 465,
       auth: { user: smtp.user, pass: smtp.pass },
     });
+    logger.info('[mailer] SMTP (nodemailer) configured ✓');
   } catch (err) {
     logger.warn(`[mailer] nodemailer unavailable (${err.message}) — using dev stub.`);
-    transporter = null;
   }
 }
 
+// ── Helpers ───────────────────────────────────────────────────────────────────
 const generateOtp = () => String(Math.floor(100000 + Math.random() * 900000));
 
+// Resend free tier: faqat onboarding@resend.dev dan yuborish mumkin (domen tasdiqlanmagan bo'lsa)
+const RESEND_FROM = process.env.MAIL_FROM || 'CINEPLEX <onboarding@resend.dev>';
+const SMTP_FROM   = smtp.from || 'CINEPLEX <no-reply@cineplex.app>';
+const SUBJECT     = 'Email tasdiqlash kodi — CINEPLEX';
+
 const otpEmailHtml = (code) => `
-  <div style="font-family:Inter,Arial,sans-serif;max-width:480px;margin:0 auto;padding:32px;background:#14181c;border-radius:16px;color:#fff">
-    <h1 style="font-size:20px;margin:0 0 8px;color:#fff">Confirm your email</h1>
-    <p style="color:#9ab;margin:0 0 24px;font-size:14px">Use this code to finish creating your CINEPLEX account. It expires in 10 minutes.</p>
-    <div style="font-size:34px;font-weight:800;letter-spacing:10px;text-align:center;padding:18px;background:#1f262d;border-radius:12px;color:#fff">${code}</div>
-    <p style="color:#5a6a78;margin:24px 0 0;font-size:12px">If you didn't request this, you can safely ignore this email.</p>
+  <div style="font-family:Inter,Arial,sans-serif;max-width:480px;margin:0 auto;background:#000;border-radius:0">
+    <div style="background:#0d0d0d;padding:32px 36px 36px;border-radius:16px;border:1px solid #1a1a1a">
+      <div style="margin-bottom:24px">
+        <span style="font-size:22px;font-weight:800;color:#e50914;letter-spacing:-0.5px">CINEPLEX</span>
+      </div>
+      <h1 style="font-size:22px;font-weight:700;margin:0 0 10px;color:#fff">Email tasdiqlash kodi</h1>
+      <p style="color:#888;margin:0 0 28px;font-size:14px;line-height:1.6">
+        CINEPLEX hisobingizni yaratishni tugatish uchun quyidagi kodni kiriting.<br>
+        Kod <strong style="color:#ccc">10 daqiqa</strong> davomida amal qiladi.
+      </p>
+      <div style="background:#111;border:2px solid #e50914;border-radius:12px;padding:20px 12px;text-align:center;margin-bottom:28px">
+        <span style="font-size:42px;font-weight:900;letter-spacing:14px;color:#fff;font-variant-numeric:tabular-nums">${code}</span>
+      </div>
+      <p style="color:#444;margin:0;font-size:12px;line-height:1.5">
+        Agar siz bu kodni so'ramagan bo'lsangiz, ushbu xatni e'tiborsiz qoldiring.<br>
+        Hech qachon kodingizni hech kimga bermang.
+      </p>
+      <div style="margin-top:28px;padding-top:20px;border-top:1px solid #1a1a1a">
+        <p style="color:#333;font-size:11px;margin:0">© 2025 CINEPLEX. Barcha huquqlar himoyalangan.</p>
+      </div>
+    </div>
   </div>`;
 
+// ── sendOtpEmail ──────────────────────────────────────────────────────────────
 /**
  * Sends an OTP to `email`. Returns { delivered, devCode }.
+ * Priority: Resend → SMTP → dev stub.
  * `devCode` is only populated outside production so the client can auto-fill.
  */
 async function sendOtpEmail(email, code) {
-  if (transporter) {
+  // 1. Try Resend
+  if (resendClient) {
     try {
-      await transporter.sendMail({
-        from: smtp.from,
-        to: email,
-        subject: `${code} is your CINEPLEX verification code`,
+      const { data, error } = await resendClient.emails.send({
+        from: RESEND_FROM,
+        to: [email],
+        subject: SUBJECT,
         html: otpEmailHtml(code),
       });
-      return { delivered: true, devCode: null };
+      if (error) {
+        logger.error(`[mailer:resend] API error for ${email}: ${JSON.stringify(error)}`);
+        // fall through to SMTP
+      } else {
+        logger.info(`[mailer:resend] OTP delivered to ${email} (id: ${data?.id})`);
+        return { delivered: true, devCode: null };
+      }
     } catch (err) {
-      logger.error(`[mailer] Failed to send OTP to ${email}: ${err.message}`);
-      // fall through to stub so signup still completes in dev
+      logger.error(`[mailer:resend] Failed to send to ${email}: ${err.message}`);
+      // fall through to SMTP
     }
   }
 
+  // 2. Try SMTP (nodemailer)
+  if (smtpTransporter) {
+    try {
+      await smtpTransporter.sendMail({
+        from: SMTP_FROM,
+        to: email,
+        subject: SUBJECT,
+        html: otpEmailHtml(code),
+      });
+      logger.info(`[mailer:smtp] OTP delivered to ${email}`);
+      return { delivered: true, devCode: null };
+    } catch (err) {
+      logger.error(`[mailer:smtp] Failed to send to ${email}: ${err.message}`);
+      // fall through to dev stub
+    }
+  }
+
+  // 3. Dev stub — log to console, return code so the UI can auto-fill
   logger.info(`[mailer:DEV] OTP for ${email} → ${code}`);
   return { delivered: false, devCode: nodeEnv === 'production' ? null : code };
 }

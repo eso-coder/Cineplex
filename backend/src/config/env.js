@@ -24,8 +24,8 @@ module.exports = {
   smtp: {
     host: process.env.SMTP_HOST || 'smtp.gmail.com',
     port: parseInt(process.env.SMTP_PORT, 10) || 465,
-    user: process.env.SMTP_USER || process.env.GMAIL_USER || '',
-    pass: process.env.SMTP_PASS || process.env.GMAIL_APP_PASSWORD || '',
+    user: process.env.SMTP_USER || process.env.GMAIL_USER || process.env.EMAIL_USER || '',
+    pass: process.env.SMTP_PASS || process.env.GMAIL_APP_PASSWORD || process.env.EMAIL_PASS || '',
     from: process.env.MAIL_FROM || 'CINEPLEX <no-reply@cineplex.app>',
   },
   cloudinary: {

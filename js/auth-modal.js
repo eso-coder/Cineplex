@@ -329,7 +329,7 @@
 
   function startResendCooldown() {
     var btn = $('#am-resend');
-    var left = 30;
+    var left = 60;
     clearInterval(state.resendTimer);
     btn.disabled = true;
     btn.textContent = 'Resend in ' + left + 's';
@@ -356,7 +356,21 @@
     setLoading(btn, true, 'Signing in…');
     AuthAPI.signin(email, pass)
       .then(function () { close(); redirectToProfile(); })
-      .catch(function (err) { showError(err.message || 'Sign in failed.'); setLoading(btn, false); });
+      .catch(function (err) {
+        setLoading(btn, false);
+        // Unverified email — resend OTP and show verification panel
+        var needsVerify = err.status === 403 &&
+          err.data && err.data.error && err.data.error.details &&
+          err.data.error.details.needsVerification;
+        if (needsVerify) {
+          state.pendingEmail = email;
+          AuthAPI.resendOtp(email)
+            .then(function (data) { goToOtp(email, data && data.devCode); })
+            .catch(function () { goToOtp(email, null); });
+          return;
+        }
+        showError(err.message || 'Sign in failed.');
+      });
   }
 
   function doOAuth(provider) {
