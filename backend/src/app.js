@@ -28,9 +28,26 @@ const FRONTEND_DIR = path.join(__dirname, '../../');
 // ─── Security ────────────────────────────────────────────────────────────────
 app.use(helmet({ contentSecurityPolicy: false }));
 
+// CORS: bir nechta ruxsat etilgan originlar (Vercel + localhost + custom domain)
+const allowedOrigins = clientUrl
+  ? clientUrl.split(',').map((o) => o.trim())
+  : [];
+
 app.use(
   cors({
-    origin: clientUrl,
+    origin: (origin, callback) => {
+      // Same-origin yoki server-to-server so'rovlar (origin yo'q)
+      if (!origin) return callback(null, true);
+      // Barcha originga ruxsat (CLIENT_URL='*' bo'lsa)
+      if (allowedOrigins.includes('*')) return callback(null, true);
+      // Ro'yxatdagi originlarga ruxsat
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      // .vercel.app domenlariga avtomatik ruxsat
+      if (origin.endsWith('.vercel.app')) return callback(null, true);
+      // .cineplex.uz domenlariga avtomatik ruxsat
+      if (origin.endsWith('.cineplex.uz') || origin === 'https://cineplex.uz') return callback(null, true);
+      return callback(new Error(`CORS: ${origin} is not allowed`));
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
