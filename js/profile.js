@@ -190,6 +190,40 @@
     }).join('');
   }
 
+  /* ── Settings tab actions ── */
+  function wireSettings() {
+    // Profilni tahrirlash → profil rasmini almashtirish (mavjud edit imkoniyati)
+    var edit = document.getElementById('set-edit');
+    if (edit) edit.addEventListener('click', function () {
+      var av = document.getElementById('pf2-avatar');
+      if (av) av.click();
+    });
+
+    // Parolni o'zgartirish
+    var pass = document.getElementById('set-password');
+    if (pass) pass.addEventListener('click', function () {
+      if (typeof Auth === 'undefined' || !Auth.isLoggedIn()) {
+        if (window.AuthModal) AuthModal.open('signin');
+        return;
+      }
+      var current = window.prompt('Joriy parolingiz:');
+      if (!current) return;
+      var next = window.prompt('Yangi parol (kamida 6 belgi):');
+      if (!next) return;
+      if (next.length < 6) { if (window.showToast) showToast('Parol kamida 6 belgi bo\'lishi kerak'); return; }
+      AuthAPI.changePassword(current, next)
+        .then(function () { if (window.showToast) showToast('Parol o\'zgartirildi ✓'); })
+        .catch(function (e) { if (window.showToast) showToast(e.message || 'Xato yuz berdi'); });
+    });
+
+    // Chiqish
+    var logout = document.getElementById('set-logout');
+    if (logout) logout.addEventListener('click', function () {
+      if (typeof AuthAPI !== 'undefined') AuthAPI.logout();
+      else { localStorage.removeItem('cp_token'); localStorage.removeItem('cp_user'); window.location.href = '../index.html'; }
+    });
+  }
+
   /* ── Tabs ── */
   function setTab(tab) {
     document.querySelectorAll('.pf2-tab').forEach(function (t) {
@@ -197,13 +231,21 @@
     });
     var profileView = document.getElementById('view-profile');
     var genericView = document.getElementById('view-generic');
+    var settingsView = document.getElementById('view-settings');
+
+    // hide all
+    profileView.style.display = 'none';
+    genericView.style.display = 'none';
+    if (settingsView) settingsView.style.display = 'none';
 
     if (tab === 'profile') {
       profileView.style.display = '';
-      genericView.style.display = 'none';
       return;
     }
-    profileView.style.display = 'none';
+    if (tab === 'settings') {
+      if (settingsView) settingsView.style.display = '';
+      return;
+    }
     genericView.style.display = '';
     renderGeneric(tab);
   }
@@ -357,6 +399,11 @@
       if (t) setTab(t.dataset.tab);
     });
     document.getElementById('pf2-activity-all').addEventListener('click', function () { setTab('activity'); });
+
+    wireSettings();
+
+    // Deep-link: profile.html#settings ochilsa to'g'ridan settings tab
+    if (window.location.hash === '#settings') setTab('settings');
 
     if (typeof Auth !== 'undefined' && Auth.isLoggedIn()) {
       loadReal().catch(function () { applyDemo(); });

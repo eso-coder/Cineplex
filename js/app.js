@@ -256,26 +256,11 @@ const App = {
     /* Transparent navbar on all pages — glass appears on scroll */
     const nav = document.getElementById('navbar');
 
-    /* Profile dropdown — hover to show quick menu */
-    const profileWrap = document.getElementById('profile-wrap');
-    const profileDd   = document.getElementById('profile-dd');
-    if (profileWrap && profileDd) {
-      const openPd  = () => { profileDd.classList.add('open'); };
-      const closePd = () => { profileDd.classList.remove('open'); };
-      profileWrap.addEventListener('mouseenter', openPd);
-      if (nav) nav.addEventListener('mouseleave', closePd);
-      document.addEventListener('click', e => {
-        if (nav && !nav.contains(e.target)) closePd();
-      });
-      document.getElementById('profile-settings-btn')?.addEventListener('click', () => {
-        closePd(); App.go(root + 'pages/profile.html');
-      });
-      document.getElementById('profile-logout-btn')?.addEventListener('click', () => {
-        closePd();
-        if (typeof AuthAPI !== 'undefined') AuthAPI.logout();
-        else { localStorage.removeItem('cp_token'); localStorage.removeItem('cp_user'); window.location.href = root + 'index.html'; }
-      });
-    }
+    /* Profile avatar — clicking goes straight to the profile page.
+       The old hover dropdown is disabled; settings/support/logout now live
+       inside the profile page itself. */
+    const profileDd = document.getElementById('profile-dd');
+    if (profileDd) profileDd.remove();
     if (nav) {
       const onScroll = () => nav.classList.toggle('scrolled', window.scrollY > 40);
       window.addEventListener('scroll', onScroll, { passive: true });
