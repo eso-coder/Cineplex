@@ -65,6 +65,8 @@
       '    </div>',
       '    <div class="am-field"><span class="am-field-icon">' + ICONS.mail + '</span>',
       '      <input class="am-input has-icon" id="am-email" type="email" placeholder="Enter your email" autocomplete="email"></div>',
+      '    <div class="am-field"><span class="am-field-icon">' + ICONS.lock + '</span>',
+      '      <input class="am-input has-icon" id="am-pass" type="password" placeholder="Create a password (min 6 chars)" autocomplete="new-password"></div>',
       '    <div class="am-field"><div class="am-phone">',
       '      <button class="am-cc" id="am-cc" type="button"><span class="am-flag">🇺🇸</span><span id="am-cc-dial">+1</span>' + ICONS.chevron + '',
       '        <div class="am-cc-menu" id="am-cc-menu"></div>',
@@ -208,6 +210,7 @@
     // Signup
     $('#am-signup-btn').addEventListener('click', doSignup);
     $('#am-email').addEventListener('keydown', function (e) { if (e.key === 'Enter') doSignup(); });
+    $('#am-pass').addEventListener('keydown', function (e) { if (e.key === 'Enter') doSignup(); });
 
     // Signin
     $('#am-signin-btn').addEventListener('click', doSignin);
@@ -267,14 +270,16 @@
     var firstName = $('#am-first').value.trim();
     var lastName = $('#am-last').value.trim();
     var email = $('#am-email').value.trim();
+    var password = $('#am-pass').value;
     var phoneLocal = $('#am-phone').value.trim();
     if (!firstName) return showError('Please enter your first name.');
     if (!/^\S+@\S+\.\S+$/.test(email)) return showError('Please enter a valid email address.');
+    if (!password || password.length < 6) return showError('Password must be at least 6 characters.');
 
     var phone = phoneLocal ? (state.country.d + ' ' + phoneLocal) : '';
     var btn = $('#am-signup-btn');
     setLoading(btn, true, 'Sending code…');
-    AuthAPI.signup({ firstName: firstName, lastName: lastName, email: email, phone: phone })
+    AuthAPI.signup({ firstName: firstName, lastName: lastName, email: email, phone: phone, password: password })
       .then(function (data) {
         state.pendingEmail = email;
         goToOtp(email, data && data.devCode);
