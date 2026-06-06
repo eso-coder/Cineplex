@@ -65,8 +65,9 @@ app.use(
 );
 
 // ─── Parsers ─────────────────────────────────────────────────────────────────
-app.use(express.json({ limit: '10kb' }));
-app.use(express.urlencoded({ extended: true }));
+// base64 avatar (~150 KB) va cover (~600 KB) uchun 2 MB kerak
+app.use(express.json({ limit: '2mb' }));
+app.use(express.urlencoded({ extended: true, limit: '2mb' }));
 app.use(cookieParser());
 app.use(mongoSanitize());
 

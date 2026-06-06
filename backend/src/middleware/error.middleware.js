@@ -28,6 +28,13 @@ const errorMiddleware = (err, req, res, next) => {
 
   // JWT errors handled in authMiddleware already
 
+  // Express body-parser errors (413 Payload Too Large, 400 Bad JSON, etc.)
+  // These have `status` + `expose:true` but no `statusCode` or `isOperational`.
+  if (!error.isOperational && err.status && err.expose) {
+    error = ApiError.badRequest(err.message);
+    if (err.status === 413) error = new ApiError(413, err.message, 'PAYLOAD_TOO_LARGE');
+  }
+
   const statusCode = error.statusCode || 500;
   const message = error.isOperational ? error.message : 'Internal server error';
 
