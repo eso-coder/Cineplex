@@ -30,14 +30,51 @@ const Auth = {
   isAdmin()     { const u = this.getUser(); return u && u.role === 'admin'; }
 };
 
+/* ─── Silent token refresh (singleton — avoids duplicate refresh calls) ─── */
+let _refreshInFlight = null;
+async function _silentRefresh() {
+  if (!_refreshInFlight) {
+    _refreshInFlight = fetch(`${API_BASE}/auth/refresh-token`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+    })
+      .then(r => r.json().catch(() => ({})))
+      .then(d => {
+        if (d.success && d.data && d.data.accessToken) {
+          Auth.setToken(d.data.accessToken);
+          return true;
+        }
+        return false;
+      })
+      .catch(() => false)
+      .finally(() => { _refreshInFlight = null; });
+  }
+  return _refreshInFlight;
+}
+
 /* ─── Base fetch wrapper ─── */
 async function apiFetch(path, opts = {}) {
   const token = Auth.getToken();
   const headers = { 'Content-Type': 'application/json', ...(opts.headers || {}) };
   if (token) headers['Authorization'] = `Bearer ${token}`;
 
-  const res = await fetch(`${API_BASE}${path}`, { ...opts, headers });
+  const res = await fetch(`${API_BASE}${path}`, { ...opts, headers, credentials: 'include' });
   const data = await res.json().catch(() => ({}));
+
+  // Access token muddati tugagan — refresh token (cookie) orqali yangilash
+  if (res.status === 401 && !path.startsWith('/auth/refresh')) {
+    const refreshed = await _silentRefresh();
+    if (refreshed) {
+      const retryHeaders = { ...headers, 'Authorization': `Bearer ${Auth.getToken()}` };
+      const retry = await fetch(`${API_BASE}${path}`, { ...opts, headers: retryHeaders, credentials: 'include' });
+      const retryData = await retry.json().catch(() => ({}));
+      if (!retry.ok) throw Object.assign(new Error(retryData.message || 'Xato yuz berdi'), { status: retry.status, data: retryData });
+      return retryData;
+    }
+    // Refresh ham muddati tugagan — qayta kirish kerak
+    Auth.removeToken();
+  }
 
   if (!res.ok) throw Object.assign(new Error(data.message || 'Xato yuz berdi'), { status: res.status, data });
   return data;
