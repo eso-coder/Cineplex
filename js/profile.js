@@ -268,15 +268,27 @@
   }
 
   function closeEditModal() {
-    document.getElementById('pf2-edit-overlay').classList.remove('open');
+    var ov = document.getElementById('pf2-edit-overlay');
+    if (ov) ov.classList.remove('open');
     document.body.style.overflow = '';
   }
 
   function wireEditModal() {
-    document.getElementById('pf2-edit-close').addEventListener('click', closeEditModal);
-    document.getElementById('pf2-edit-cancel').addEventListener('click', closeEditModal);
+    // Null-safe — eski HTML cache'da bo'lsa elementlar yo'q bo'lishi mumkin
+    var overlay = document.getElementById('pf2-edit-overlay');
+    if (!overlay) return; // modal HTML yo'q → skip (wireSettings ishlaydi)
+
+    var closeBtn  = document.getElementById('pf2-edit-close');
+    var cancelBtn = document.getElementById('pf2-edit-cancel');
+    var saveBtn   = document.getElementById('pf2-edit-save');
+    var avBtn     = document.getElementById('pf2-edit-av-btn');
+    var avDiv     = document.getElementById('pf2-edit-av');
+
+    if (closeBtn)  closeBtn.addEventListener('click', closeEditModal);
+    if (cancelBtn) cancelBtn.addEventListener('click', closeEditModal);
+
     // Click on backdrop → close
-    document.getElementById('pf2-edit-overlay').addEventListener('click', function (e) {
+    overlay.addEventListener('click', function (e) {
       if (e.target === this) closeEditModal();
     });
     // ESC key → close
@@ -285,10 +297,10 @@
     });
 
     // Avatar button inside modal → trigger the same file input
-    document.getElementById('pf2-edit-av-btn').addEventListener('click', function () {
+    if (avBtn) avBtn.addEventListener('click', function () {
       document.getElementById('pf2-avatar-input').click();
     });
-    document.getElementById('pf2-edit-av').addEventListener('click', function () {
+    if (avDiv) avDiv.addEventListener('click', function () {
       document.getElementById('pf2-avatar-input').click();
     });
 
@@ -300,7 +312,8 @@
     });
 
     // Save
-    document.getElementById('pf2-edit-save').addEventListener('click', function () {
+    if (!saveBtn) return;
+    saveBtn.addEventListener('click', function () {
       var name     = document.getElementById('pf2-edit-name').value.trim();
       var location = document.getElementById('pf2-edit-location').value.trim();
       var website  = document.getElementById('pf2-edit-website').value.trim();
@@ -570,7 +583,7 @@
 
   function boot() {
     wireUploads();
-    wireEditModal();
+    try { wireEditModal(); } catch (e) { /* eski HTML cache'da bo'lsa xato chiqmassin */ }
 
     document.getElementById('pf2-tabs').addEventListener('click', function (e) {
       var t = e.target.closest('.pf2-tab');
