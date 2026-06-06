@@ -223,9 +223,14 @@
 
   /* ── Edit Profile Modal ── */
   function openEditModal() {
-    if (!current || !current.user) return;
-    if (isDemo) { if (window.AuthModal) AuthModal.open('signin'); return; }
-    var u = current.user;
+    // Login bo'lmasa → signin modal
+    if (typeof Auth === 'undefined' || !Auth.isLoggedIn()) {
+      if (window.AuthModal) AuthModal.open('signin');
+      return;
+    }
+    // current set bo'lmagan bo'lsa (API hali yuklanmagan) → cached userni ishlatamiz
+    var u = (current && current.user) || Auth.getUser();
+    if (!u) { if (window.AuthModal) AuthModal.open('signin'); return; }
 
     // Fill fields
     document.getElementById('pf2-edit-name').value     = u.name     || '';
@@ -510,9 +515,9 @@
     var badge = document.getElementById('pf2-demo');
     badge.style.display = '';
     badge.addEventListener('click', function () { if (window.AuthModal) AuthModal.open('signin'); });
-    // hide edit controls in demo mode
+    // demo rejimida pencil ko'rinishi kerak emas
     var editBtn = document.getElementById('pf2-name-edit-btn');
-    if (editBtn) editBtn.style.display = 'none';
+    if (editBtn) editBtn.style.display = 'none'; // isLoggedIn() false → open yashirin
     renderHeader(DEMO.user, DEMO.stats);
     renderFavourites();
     renderActivity(DEMO.activity);
