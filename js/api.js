@@ -212,6 +212,25 @@ const AuthAPI = {
     return apiFetch('/auth/change-password', { method: 'PATCH', body: JSON.stringify({ currentPassword: current, newPassword }) });
   },
 
+  // Save avatar as URL or base64 data URL (no file upload needed — works on Vercel)
+  async saveAvatarUrl(dataUrl) {
+    const resp = await apiFetch('/auth/avatar-url', { method: 'PATCH', body: JSON.stringify({ avatarUrl: dataUrl }) });
+    const url = resp.data?.avatarUrl || dataUrl;
+    const user = Auth.getUser() || {};
+    user.avatar = url;
+    Auth.setUser(user);
+    return url;
+  },
+
+  async saveCoverUrl(dataUrl) {
+    const resp = await apiFetch('/auth/cover-url', { method: 'PATCH', body: JSON.stringify({ coverUrl: dataUrl }) });
+    const url = resp.data?.coverImageUrl || dataUrl;
+    const user = Auth.getUser() || {};
+    user.coverImageUrl = url;
+    Auth.setUser(user);
+    return url;
+  },
+
   async uploadAvatar(file) {
     const token = Auth.getToken();
     const form  = new FormData();

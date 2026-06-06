@@ -6,6 +6,27 @@
 (function () {
   'use strict';
 
+  /* ── Image resize utility ──────────────────────────────────────────────────
+     Canvas yordamida rasmni kichraytiradi va JPEG data URL qaytaradi.
+     Vercel'da file upload ishlamagani uchun data URL DB'ga saqlanadi.         */
+  function resizeImage(file, maxW, maxH, cb) {
+    var reader = new FileReader();
+    reader.onload = function (ev) {
+      var img = new Image();
+      img.onload = function () {
+        var w = img.width, h = img.height;
+        var ratio = Math.min(maxW / w, maxH / h, 1);
+        var canvas = document.createElement('canvas');
+        canvas.width  = Math.round(w * ratio);
+        canvas.height = Math.round(h * ratio);
+        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+        cb(canvas.toDataURL('image/jpeg', 0.82));
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
   App.initNavbar('', '../');
 
   var ICON = {
@@ -313,31 +334,35 @@
     avInput.addEventListener('change', function (e) {
       var file = e.target.files[0];
       if (!file) return;
-      var reader = new FileReader();
-      reader.onload = function (ev) { setAvatar(ev.target.result); };
-      reader.readAsDataURL(file);
-      if (typeof Auth !== 'undefined' && Auth.isLoggedIn()) {
-        AuthAPI.uploadAvatar(file)
-          .then(function (url) { if (url) setAvatar(url); if (App.refreshNavbarUser) App.refreshNavbarUser(); showToast('Profile photo updated ✓'); })
-          .catch(function (err) { showToast('Upload failed: ' + err.message); });
-      } else {
-        showToast('Sign in to save your photo');
-      }
+      resizeImage(file, 400, 400, function (dataUrl) {
+        setAvatar(dataUrl); // ko'rsat
+        if (typeof Auth !== 'undefined' && Auth.isLoggedIn()) {
+          AuthAPI.saveAvatarUrl(dataUrl)
+            .then(function (url) {
+              if (url) setAvatar(url);
+              if (App && App.refreshNavbarUser) App.refreshNavbarUser();
+              showToast('Profil rasm saqlandi ✓');
+            })
+            .catch(function (err) { showToast('Xato: ' + err.message); });
+        } else {
+          showToast("Saqlash uchun tizimga kiring");
+        }
+      });
     });
 
     coverInput.addEventListener('change', function (e) {
       var file = e.target.files[0];
       if (!file) return;
-      var reader = new FileReader();
-      reader.onload = function (ev) { setCover(ev.target.result); };
-      reader.readAsDataURL(file);
-      if (typeof Auth !== 'undefined' && Auth.isLoggedIn()) {
-        AuthAPI.uploadCover(file)
-          .then(function (url) { if (url) setCover(url); showToast('Cover updated ✓'); })
-          .catch(function (err) { showToast('Upload failed: ' + err.message); });
-      } else {
-        showToast('Sign in to save your cover');
-      }
+      resizeImage(file, 1400, 500, function (dataUrl) {
+        setCover(dataUrl);
+        if (typeof Auth !== 'undefined' && Auth.isLoggedIn()) {
+          AuthAPI.saveCoverUrl(dataUrl)
+            .then(function (url) { if (url) setCover(url); showToast('Cover saqlandi ✓'); })
+            .catch(function (err) { showToast('Xato: ' + err.message); });
+        } else {
+          showToast("Saqlash uchun tizimga kiring");
+        }
+      });
     });
   }
 

@@ -33,5 +33,7 @@ router.patch('/update-profile', authMiddleware, validate(v.updateProfile), ctrl.
 router.patch('/change-password', authMiddleware, validate(v.changePassword), ctrl.changePassword);
 router.post('/upload-avatar', authMiddleware, ...ctrl.uploadAvatar);
 router.post('/upload-cover', authMiddleware, ...ctrl.uploadCover);
+router.patch('/avatar-url', authMiddleware, ctrl.saveAvatarUrl);
+router.patch('/cover-url', authMiddleware, ctrl.saveCoverUrl);
 
 module.exports = router;

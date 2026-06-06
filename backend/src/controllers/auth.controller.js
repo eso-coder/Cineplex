@@ -307,6 +307,35 @@ const changePassword = asyncHandler(async (req, res) => {
   sendSuccess(res, null, 'Password changed successfully');
 });
 
+// PATCH /api/auth/avatar-url  — saves any URL or base64 data URL directly to DB
+// Used when no S3/Cloudinary is configured (Vercel serverless)
+const saveAvatarUrl = asyncHandler(async (req, res) => {
+  const { avatarUrl } = req.body;
+  if (!avatarUrl) throw ApiError.badRequest('avatarUrl required');
+  // Accept https:// or data:image/ only
+  if (!avatarUrl.startsWith('http') && !avatarUrl.startsWith('data:image/')) {
+    throw ApiError.badRequest('Invalid avatar URL');
+  }
+  const user = await User.findById(req.user._id);
+  user.avatar = { url: avatarUrl, public_id: '' };
+  await user.save({ validateBeforeSave: false });
+  const u = user.toPublic();
+  sendSuccess(res, { avatar: user.avatar, avatarUrl }, 'Avatar updated');
+});
+
+// PATCH /api/auth/cover-url  — saves any URL or base64 data URL directly to DB
+const saveCoverUrl = asyncHandler(async (req, res) => {
+  const { coverUrl } = req.body;
+  if (!coverUrl) throw ApiError.badRequest('coverUrl required');
+  if (!coverUrl.startsWith('http') && !coverUrl.startsWith('data:image/')) {
+    throw ApiError.badRequest('Invalid cover URL');
+  }
+  const user = await User.findById(req.user._id);
+  user.coverImage = { url: coverUrl, public_id: '' };
+  await user.save({ validateBeforeSave: false });
+  sendSuccess(res, { coverImage: user.coverImage, coverImageUrl: coverUrl }, 'Cover updated');
+});
+
 // POST /api/auth/upload-avatar  (Cloudinary if configured, else local disk)
 const uploadAvatar = [
   handleUpload(imageUpload.single('avatar')),
@@ -336,6 +365,8 @@ const uploadCover = [
 ];
 
 module.exports = {
+  saveAvatarUrl,
+  saveCoverUrl,
   register,
   signup,
   verifyOtp,
