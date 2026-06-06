@@ -941,12 +941,10 @@
     /* ── HLS switching controls ── */
     window.setHlsQuality = function(level) {
       if (!hls) return;
-      // Video holatini saqlab qolish — to'xtatmasdan sifat o'zgartirish
-      const wasPlaying = !videoEl.paused;
-      const curTime = videoEl.currentTime;
-      hls.nextLevel = level;   // nextLevel = joriy segment tugagach o'zgartiradi (to'xtatmaydi)
+      // -1 = ABR auto; boshqa = foydalanuvchi tanladi → darhol o'zgartirish
+      hls.currentLevel = level;
       const lbl = document.getElementById('qual-lbl');
-      const name = level === -1 ? 'Avto' : heightFullLabel(hls.levels[level]?.height);
+      const name      = level === -1 ? 'Avto' : heightFullLabel(hls.levels[level]?.height);
       const shortName = level === -1 ? 'Avto' : heightLabel(hls.levels[level]?.height);
       if (lbl) lbl.textContent = shortName;
       document.querySelectorAll('#qual-dd .psd-item').forEach((el, i) => {
