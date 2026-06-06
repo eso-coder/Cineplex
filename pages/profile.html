@@ -338,6 +338,113 @@
     @media (max-width: 440px) {
       .pf2-grid { grid-template-columns: repeat(3, 1fr); }
     }
+
+    /* ── Edit Profile Modal ────────────────────────────── */
+    .pf2-edit-overlay {
+      position: fixed; inset: 0; z-index: 1000;
+      background: rgba(10,13,16,0.78);
+      -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px; box-sizing: border-box;
+      opacity: 0; pointer-events: none;
+      transition: opacity 220ms var(--pf-ease);
+    }
+    .pf2-edit-overlay.open { opacity: 1; pointer-events: all; }
+    .pf2-edit-modal {
+      background: #1b2228;
+      border: 1px solid rgba(255,255,255,0.09);
+      border-radius: 20px;
+      width: 100%; max-width: 460px;
+      max-height: calc(100vh - 40px); overflow-y: auto;
+      transform: translateY(20px) scale(0.97);
+      transition: transform 280ms var(--pf-ease);
+    }
+    .pf2-edit-overlay.open .pf2-edit-modal { transform: translateY(0) scale(1); }
+    .pf2-edit-head {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 22px 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+    .pf2-edit-head h3 { font-size: 16px; font-weight: 700; color: #fff; margin: 0; }
+    .pf2-edit-close {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: rgba(255,255,255,0.07); border: none;
+      color: #9ab; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 160ms, color 160ms;
+    }
+    .pf2-edit-close:hover { background: rgba(255,255,255,0.14); color: #fff; }
+    .pf2-edit-body { padding: 22px 22px 24px; }
+    .pf2-edit-av-row { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
+    .pf2-edit-av {
+      width: 68px; height: 68px; border-radius: 50%;
+      background: linear-gradient(135deg, #f6d9e4, #e9b6c8);
+      overflow: hidden; flex-shrink: 0; position: relative;
+      border: 3px solid rgba(255,255,255,0.1); cursor: pointer;
+    }
+    .pf2-edit-av img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .pf2-edit-av-fb {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px; font-weight: 800; color: #b85c7e;
+    }
+    .pf2-edit-av-col { display: flex; flex-direction: column; gap: 6px; }
+    .pf2-edit-av-btn {
+      background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 9px; color: #fff; font-size: 12.5px; font-weight: 600;
+      padding: 8px 16px; cursor: pointer; font-family: inherit;
+      transition: background 160ms;
+    }
+    .pf2-edit-av-btn:hover { background: rgba(255,255,255,0.15); }
+    .pf2-edit-av-hint { font-size: 11px; color: var(--pf-muted); }
+    .pf2-edit-field { margin-bottom: 14px; }
+    .pf2-edit-label {
+      display: block; font-size: 11px; font-weight: 700; letter-spacing: 0.6px;
+      text-transform: uppercase; color: var(--pf-muted); margin-bottom: 6px;
+    }
+    .pf2-edit-input {
+      width: 100%; box-sizing: border-box;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.09);
+      border-radius: 10px; padding: 11px 14px;
+      color: #fff; font-size: 14px; font-family: inherit; outline: none;
+      transition: border-color 160ms;
+    }
+    .pf2-edit-input:focus { border-color: var(--pf-green); }
+    .pf2-edit-input::placeholder { color: var(--pf-muted); }
+    .pf2-edit-actions { display: flex; gap: 10px; margin-top: 20px; }
+    .pf2-edit-save {
+      flex: 1; padding: 12px;
+      background: var(--pf-green); border: none; border-radius: 10px;
+      color: #fff; font-size: 14px; font-weight: 700; font-family: inherit;
+      cursor: pointer; transition: background 160ms, transform 120ms;
+    }
+    .pf2-edit-save:hover { background: #00d535; }
+    .pf2-edit-save:active { transform: scale(0.98); }
+    .pf2-edit-save:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+    .pf2-edit-cancel {
+      padding: 12px 20px;
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.09);
+      border-radius: 10px;
+      color: var(--pf-dim); font-size: 14px; font-weight: 600; font-family: inherit;
+      cursor: pointer; transition: background 160ms;
+    }
+    .pf2-edit-cancel:hover { background: rgba(255,255,255,0.11); }
+
+    /* ── Pencil button next to username ── */
+    .pf2-name-edit-btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+      background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1);
+      color: var(--pf-muted); cursor: pointer;
+      opacity: 0.45;
+      transition: background 160ms, color 160ms, opacity 160ms;
+    }
+    @media (hover: hover) and (pointer: fine) {
+      .pf2-name-edit-btn { opacity: 0; }
+      .pf2-name-row:hover .pf2-name-edit-btn { opacity: 1; }
+    }
+    .pf2-name-edit-btn:hover { background: rgba(255,255,255,0.16); color: #fff; opacity: 1 !important; }
   </style>
 </head>
 <body>
@@ -375,6 +482,9 @@
             <span class="pf2-username" id="pf2-username">—</span>
             <span class="pf2-patron" id="pf2-patron" style="display:none">PATRON</span>
             <span class="pf2-demo-badge" id="pf2-demo" style="display:none" title="Sign in to see your own profile">DEMO · Sign in</span>
+            <button class="pf2-name-edit-btn" id="pf2-name-edit-btn" type="button" title="Profilni tahrirlash" style="display:none">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </button>
           </div>
           <div class="pf2-meta" id="pf2-meta"></div>
         </div>
@@ -478,6 +588,62 @@
               <span class="pf2-set-txt"><b>Chiqish</b></span>
             </button>
           </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Edit Profile Modal ────────────────────────────── -->
+  <div class="pf2-edit-overlay" id="pf2-edit-overlay" role="dialog" aria-modal="true" aria-labelledby="pf2-edit-title">
+    <div class="pf2-edit-modal">
+      <div class="pf2-edit-head">
+        <h3 id="pf2-edit-title">Profilni tahrirlash</h3>
+        <button class="pf2-edit-close" id="pf2-edit-close" type="button" aria-label="Yopish">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="pf2-edit-body">
+        <!-- Avatar -->
+        <div class="pf2-edit-av-row">
+          <div class="pf2-edit-av" id="pf2-edit-av" title="Rasmni o'zgartirish">
+            <div class="pf2-edit-av-fb" id="pf2-edit-av-fb">?</div>
+          </div>
+          <div class="pf2-edit-av-col">
+            <button class="pf2-edit-av-btn" id="pf2-edit-av-btn" type="button">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px;margin-right:5px"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>Rasmni o'zgartirish
+            </button>
+            <span class="pf2-edit-av-hint">400×400 px · JPEG yoki PNG</span>
+          </div>
+        </div>
+
+        <!-- Ism -->
+        <div class="pf2-edit-field">
+          <label class="pf2-edit-label" for="pf2-edit-name">Ism</label>
+          <input class="pf2-edit-input" id="pf2-edit-name" type="text" placeholder="Ismingiz" maxlength="60" autocomplete="name">
+        </div>
+
+        <!-- Joylashuv -->
+        <div class="pf2-edit-field">
+          <label class="pf2-edit-label" for="pf2-edit-location">Joylashuv</label>
+          <input class="pf2-edit-input" id="pf2-edit-location" type="text" placeholder="Shahar yoki davlat" maxlength="80">
+        </div>
+
+        <!-- Veb-sayt -->
+        <div class="pf2-edit-field">
+          <label class="pf2-edit-label" for="pf2-edit-website">Veb-sayt</label>
+          <input class="pf2-edit-input" id="pf2-edit-website" type="text" placeholder="example.com" maxlength="100">
+        </div>
+
+        <!-- Ijtimoiy tarmoq -->
+        <div class="pf2-edit-field">
+          <label class="pf2-edit-label" for="pf2-edit-social">Ijtimoiy tarmoq</label>
+          <input class="pf2-edit-input" id="pf2-edit-social" type="text" placeholder="@username" maxlength="60">
+        </div>
+
+        <!-- Harakatlar -->
+        <div class="pf2-edit-actions">
+          <button class="pf2-edit-cancel" id="pf2-edit-cancel" type="button">Bekor qilish</button>
+          <button class="pf2-edit-save" id="pf2-edit-save" type="button">Saqlash</button>
         </div>
       </div>
     </div>

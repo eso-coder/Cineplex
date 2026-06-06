@@ -115,6 +115,15 @@
       '</div>';
   }
 
+  /* ── Cover URL cache (separate key so me() overwrites don't lose it) ── */
+  function saveCoverCache(url) {
+    if (!url) return;
+    try { localStorage.setItem('cp_cover_url', url); } catch (e) { /* quota */ }
+  }
+  function getCoverCache() {
+    try { return localStorage.getItem('cp_cover_url') || ''; } catch (e) { return ''; }
+  }
+
   /* ── Identity / meta / stats ── */
   function renderHeader(user, stats) {
     document.getElementById('pf2-username').textContent = user.name || 'User';
@@ -125,8 +134,9 @@
     avFb.textContent = (user.name || '?').trim().charAt(0).toUpperCase();
     if (user.avatarUrl) setAvatar(user.avatarUrl);
 
-    // cover
-    if (user.coverImageUrl) setCover(user.coverImageUrl);
+    // cover — use cached key as fallback in case me() couldn't store it
+    var coverUrl = user.coverImageUrl || getCoverCache();
+    if (coverUrl) setCover(coverUrl);
 
     // meta row
     var meta = [];
@@ -211,14 +221,119 @@
     }).join('');
   }
 
+  /* ── Edit Profile Modal ── */
+  function openEditModal() {
+    if (!current || !current.user) return;
+    if (isDemo) { if (window.AuthModal) AuthModal.open('signin'); return; }
+    var u = current.user;
+
+    // Fill fields
+    document.getElementById('pf2-edit-name').value     = u.name     || '';
+    document.getElementById('pf2-edit-location').value = u.location || '';
+    document.getElementById('pf2-edit-website').value  = u.website  || '';
+    document.getElementById('pf2-edit-social').value   = (u.socialHandle || '').replace(/^@/, '');
+
+    // Avatar preview inside modal
+    var modalAv  = document.getElementById('pf2-edit-av');
+    var modalAvFb = document.getElementById('pf2-edit-av-fb');
+    modalAvFb.textContent = (u.name || '?').trim().charAt(0).toUpperCase();
+    var existImg = modalAv.querySelector('img.pf2-edit-av-photo');
+    var avatarSrc = u.avatarUrl || (typeof u.avatar === 'string' ? u.avatar : '');
+    if (avatarSrc) {
+      if (!existImg) {
+        existImg = document.createElement('img');
+        existImg.className = 'pf2-edit-av-photo';
+        modalAv.appendChild(existImg);
+      }
+      existImg.src = avatarSrc;
+      modalAvFb.style.display = 'none';
+    } else {
+      if (existImg) existImg.remove();
+      modalAvFb.style.display = '';
+    }
+
+    // Reset save button
+    var saveBtn = document.getElementById('pf2-edit-save');
+    saveBtn.disabled = false;
+    saveBtn.textContent = 'Saqlash';
+
+    document.getElementById('pf2-edit-overlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    setTimeout(function () { document.getElementById('pf2-edit-name').focus(); }, 280);
+  }
+
+  function closeEditModal() {
+    document.getElementById('pf2-edit-overlay').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  function wireEditModal() {
+    document.getElementById('pf2-edit-close').addEventListener('click', closeEditModal);
+    document.getElementById('pf2-edit-cancel').addEventListener('click', closeEditModal);
+    // Click on backdrop → close
+    document.getElementById('pf2-edit-overlay').addEventListener('click', function (e) {
+      if (e.target === this) closeEditModal();
+    });
+    // ESC key → close
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') closeEditModal();
+    });
+
+    // Avatar button inside modal → trigger the same file input
+    document.getElementById('pf2-edit-av-btn').addEventListener('click', function () {
+      document.getElementById('pf2-avatar-input').click();
+    });
+    document.getElementById('pf2-edit-av').addEventListener('click', function () {
+      document.getElementById('pf2-avatar-input').click();
+    });
+
+    // Pencil button next to username
+    var nameEditBtn = document.getElementById('pf2-name-edit-btn');
+    if (nameEditBtn) nameEditBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      openEditModal();
+    });
+
+    // Save
+    document.getElementById('pf2-edit-save').addEventListener('click', function () {
+      var name     = document.getElementById('pf2-edit-name').value.trim();
+      var location = document.getElementById('pf2-edit-location').value.trim();
+      var website  = document.getElementById('pf2-edit-website').value.trim();
+      var social   = document.getElementById('pf2-edit-social').value.trim().replace(/^@/, '');
+
+      if (!name) { if (window.showToast) showToast('Ism bo\'sh bo\'lmasin'); return; }
+      if (typeof Auth === 'undefined' || !Auth.isLoggedIn()) {
+        if (window.AuthModal) AuthModal.open('signin'); return;
+      }
+
+      var btn = document.getElementById('pf2-edit-save');
+      btn.disabled = true;
+      btn.textContent = 'Saqlanmoqda…';
+
+      AuthAPI.updateProfile({ name: name, location: location, website: website, socialHandle: social })
+        .then(function (updatedUser) {
+          // updateProfile → Auth.setUser might not keep coverImageUrl if quota hit; restore it
+          var cover = (updatedUser && updatedUser.coverImageUrl) || getCoverCache();
+          if (updatedUser && !updatedUser.coverImageUrl && cover) updatedUser.coverImageUrl = cover;
+          if (current) current.user = updatedUser || current.user;
+          renderHeader(current.user, current.stats || {});
+          closeEditModal();
+          if (window.showToast) showToast('Profil yangilandi ✓');
+          if (window.App && App.refreshNavbarUser) App.refreshNavbarUser();
+        })
+        .catch(function (err) {
+          btn.disabled = false;
+          btn.textContent = 'Saqlash';
+          if (window.showToast) showToast('Xato: ' + ((err && err.message) || 'Noma\'lum xato'));
+        });
+    });
+  }
+
   /* ── Settings tab actions ── */
   function wireSettings() {
-    // Profilni tahrirlash → profil rasmini almashtirish (mavjud edit imkoniyati)
+    // Profilni tahrirlash → edit modal ochiladi
     var edit = document.getElementById('set-edit');
-    if (edit) edit.addEventListener('click', function () {
-      var av = document.getElementById('pf2-avatar');
-      if (av) av.click();
-    });
+    if (edit) edit.addEventListener('click', openEditModal);
 
     // Parolni o'zgartirish
     var pass = document.getElementById('set-password');
@@ -335,11 +450,28 @@
       var file = e.target.files[0];
       if (!file) return;
       resizeImage(file, 400, 400, function (dataUrl) {
-        setAvatar(dataUrl); // ko'rsat
+        setAvatar(dataUrl); // main profile avatar
+        // also update avatar preview inside the edit modal if it's open
+        var modalAv = document.getElementById('pf2-edit-av');
+        if (modalAv) {
+          var mImg = modalAv.querySelector('img.pf2-edit-av-photo');
+          if (!mImg) {
+            mImg = document.createElement('img');
+            mImg.className = 'pf2-edit-av-photo';
+            modalAv.appendChild(mImg);
+          }
+          mImg.src = dataUrl;
+          var mFb = document.getElementById('pf2-edit-av-fb');
+          if (mFb) mFb.style.display = 'none';
+        }
         if (typeof Auth !== 'undefined' && Auth.isLoggedIn()) {
           AuthAPI.saveAvatarUrl(dataUrl)
             .then(function (url) {
-              if (url) setAvatar(url);
+              if (url) {
+                setAvatar(url);
+                if (mImg) mImg.src = url;
+              }
+              if (current && current.user) current.user.avatarUrl = url || dataUrl;
               if (App && App.refreshNavbarUser) App.refreshNavbarUser();
               showToast('Profil rasm saqlandi ✓');
             })
@@ -355,9 +487,13 @@
       if (!file) return;
       resizeImage(file, 1400, 500, function (dataUrl) {
         setCover(dataUrl);
+        saveCoverCache(dataUrl); // immediately cache so refresh shows it
         if (typeof Auth !== 'undefined' && Auth.isLoggedIn()) {
           AuthAPI.saveCoverUrl(dataUrl)
-            .then(function (url) { if (url) setCover(url); showToast('Cover saqlandi ✓'); })
+            .then(function (url) {
+              if (url) { setCover(url); saveCoverCache(url); }
+              showToast('Cover saqlandi ✓');
+            })
             .catch(function (err) { showToast('Xato: ' + err.message); });
         } else {
           showToast("Saqlash uchun tizimga kiring");
@@ -374,6 +510,9 @@
     var badge = document.getElementById('pf2-demo');
     badge.style.display = '';
     badge.addEventListener('click', function () { if (window.AuthModal) AuthModal.open('signin'); });
+    // hide edit controls in demo mode
+    var editBtn = document.getElementById('pf2-name-edit-btn');
+    if (editBtn) editBtn.style.display = 'none';
     renderHeader(DEMO.user, DEMO.stats);
     renderFavourites();
     renderActivity(DEMO.activity);
@@ -383,6 +522,10 @@
     var cached = Auth.getUser();
     var user = cached;
     try { user = await AuthAPI.me(); } catch (e) { if (!user) throw e; }
+
+    // Keep cover cache in sync with the freshest server value
+    if (user && user.coverImageUrl) saveCoverCache(user.coverImageUrl);
+
     var userId = user._id || user.id;
 
     renderHeader(user, {}); // paint identity immediately
@@ -411,6 +554,10 @@
       }).catch(function () {});
     }
 
+    // show pencil edit button for logged-in users
+    var editBtn = document.getElementById('pf2-name-edit-btn');
+    if (editBtn) editBtn.style.display = '';
+
     renderHeader(user, stats);
     renderFavourites();
     renderActivity(activity);
@@ -418,6 +565,7 @@
 
   function boot() {
     wireUploads();
+    wireEditModal();
 
     document.getElementById('pf2-tabs').addEventListener('click', function (e) {
       var t = e.target.closest('.pf2-tab');
