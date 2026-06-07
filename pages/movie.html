@@ -419,7 +419,7 @@
 
       .mob-info-row {
         display: flex;
-        gap: 16px;
+        gap: 8px;
         align-items: flex-end;
         margin-bottom: 18px;
       }
@@ -458,6 +458,19 @@
         -webkit-line-clamp: 3;
         -webkit-box-orient: vertical;
         overflow: hidden;
+      }
+
+      /* Logo (rasm) bo'lsa — matn clamp o'rniga oddiy oqim, chapga tekislangan
+         va posterga yopishib tursin */
+      .mob-title:has(.mob-title-logo) {
+        display: flex;
+        align-items: flex-end;
+        -webkit-line-clamp: unset;
+        overflow: visible;
+        margin-bottom: 6px;
+      }
+      .mob-title .mob-title-logo {
+        margin: 0;
       }
 
       .mob-title-meta {
@@ -1384,15 +1397,22 @@
           ? `${movie.seasons || 0} Mavsum`
           : (movie.duration || '');
 
-        /* Hero image (banner) */
+        /* Hero image (banner) — banner buzilgan/yo'q bo'lsa posterga qaytamiz,
+           u ham bo'lmasa yashiramiz (buzilgan "?" rasm chiqmasligi uchun) */
         const heroImg = document.getElementById('mob-hero-img');
-        heroImg.src = movie.banner_img || movie.img;
         heroImg.alt = movie.title;
+        let _heroFellBack = false;
+        heroImg.onerror = function () {
+          if (!_heroFellBack && movie.img) { _heroFellBack = true; this.src = movie.img; }
+          else { this.style.display = 'none'; }
+        };
+        heroImg.src = movie.banner_img || movie.img || '';
 
         /* Info poster (kichik poster chap tomonda) */
         const infoPosterImg = document.getElementById('mob-info-poster-img');
-        infoPosterImg.src = movie.img;
         infoPosterImg.alt = movie.title;
+        infoPosterImg.onerror = function () { this.style.display = 'none'; };
+        infoPosterImg.src = movie.img || '';
 
         /* Trailer button */
         if (_mobTrailerInfo.type !== 'none') {
@@ -1638,7 +1658,7 @@
 
         document.getElementById('detail-root').innerHTML = `
           <div class="dp-hero animate-in">
-            <img class="dp-hero-img" src="${movie.banner_img || movie.img}" alt="${movie.title}">
+            <img class="dp-hero-img" src="${movie.banner_img || movie.img}" alt="${movie.title}" onerror="if(this.src!=='${movie.img}'&&'${movie.img}'){this.src='${movie.img}';}else{this.style.display='none';}">
             ${heroTrailerInfo.html}
             <div class="dp-hero-overlay"></div>
             <div class="dp-hero-fade"></div>
