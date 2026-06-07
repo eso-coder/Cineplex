@@ -105,8 +105,11 @@ function normalizeMovie(m) {
   if (!m) return m;
   m.id          = (m._id || m.id || '').toString();
   m.img         = m.img || m.poster?.url || '';
-  m.banner_img  = m.banner_img || m.bannerUrl || m.img;
   m.gallery     = m.gallery || [];
+  // Banner uchun: avval haqiqiy bannerUrl, keyin gallereyadagi backdrop (posterdan
+  // farqli, textsiz sahna), va faqat oxirgi chora sifatida poster. Bu hero rasm
+  // poster bilan bir xil bo'lib, ustidagi yozuv logo bilan ikkilanib qolmasligi uchun.
+  m.banner_img  = m.banner_img || m.bannerUrl || (m.gallery && m.gallery[0]) || m.img;
   m.rating      = m.rating != null ? m.rating : (m.imdbRating || m.averageRating || 0);
   m.year        = m.year || m.releaseYear || '';
   m.genre       = m.genre || (m.genres || []).map(g => (typeof g === 'object' ? g.name : g).toLowerCase());
