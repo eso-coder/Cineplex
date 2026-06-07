@@ -29,8 +29,12 @@ const run = async () => {
   console.log('Connected to MongoDB');
 
   // ─── Genres ──────────────────────────────────────────────────────────────
+  // insertMany pre('save') hook ni chaqirmaydi → slug null bo'ladi
+  // Shuning uchun har birini alohida save qilamiz
   await Genre.deleteMany({});
-  const genres = await Genre.insertMany(GENRES.map((name) => ({ name })));
+  const genres = await Promise.all(
+    GENRES.map((name) => new Genre({ name }).save())
+  );
   console.log(`Seeded ${genres.length} genres`);
 
   // ─── Admin user ──────────────────────────────────────────────────────────

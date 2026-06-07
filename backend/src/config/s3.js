@@ -45,18 +45,18 @@ const deleteFromS3 = async (key) => {
 const imageUpload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 5 * 1024 * 1024 },
-  fileFilter: async (req, file) => {
-    if (/^image\/(jpeg|png|webp)$/.test(file.mimetype)) return true;
-    throw new Error('Only jpg, png, webp images are allowed');
+  fileFilter: (req, file, cb) => {
+    if (/^image\/(jpeg|png|webp)$/.test(file.mimetype)) return cb(null, true);
+    cb(new Error('Only jpg, png, webp images are allowed'));
   },
 });
 
 const videoUpload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 100 * 1024 * 1024 },
-  fileFilter: async (req, file) => {
-    if (/^video\//.test(file.mimetype)) return true;
-    throw new Error('Only video files are allowed');
+  fileFilter: (req, file, cb) => {
+    if (/^video\//.test(file.mimetype)) return cb(null, true);
+    cb(new Error('Only video files are allowed'));
   },
 });
 
