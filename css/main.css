@@ -4252,11 +4252,14 @@ video.hero-bg-iframe {
     --card-w: 140px;
   }
 
-  /* Navbar — boshqa sahifalarda doim orqa fon ko'rinadi */
+  /* Navbar — boshqa sahifalarda doim orqa fon ko'rinadi.
+     MUHIM: mobilda backdrop-filter ishlatilmaydi — fixed navbar har scroll
+     kadrida orqani qayta blur qilib, scroll'ni juda sekinlashtiradi (lag).
+     Buning o'rniga to'liqroq (opaque) qattiq fon ishlatamiz — silliq scroll. */
   .navbar {
-    background: rgba(9, 9, 9, 0.82) !important;
-    backdrop-filter: blur(20px) !important;
-    -webkit-backdrop-filter: blur(20px) !important;
+    background: rgba(9, 9, 9, 0.96) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
     border-bottom-color: rgba(255, 255, 255, 0.06) !important;
   }
 
@@ -4271,9 +4274,9 @@ video.hero-bg-iframe {
   }
   body.home-page .navbar.scrolled,
   body.profile-page .navbar.scrolled {
-    background: rgba(9, 9, 9, 0.88) !important;
-    backdrop-filter: blur(20px) !important;
-    -webkit-backdrop-filter: blur(20px) !important;
+    background: rgba(9, 9, 9, 0.96) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
     border-bottom-color: rgba(255, 255, 255, 0.06) !important;
   }
 
@@ -4585,5 +4588,40 @@ video.hero-bg-iframe {
   .category-card:hover {
     transform: none;
     box-shadow: none;
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════
+   MOBIL SCROLL PERFORMANCE — silliq (120fps-dek) scroll
+   ----------------------------------------------------------------
+   Sabab: `backdrop-filter: blur()` fixed/scroll elementlarda har bir
+   scroll kadrida orqadagi pikselni qayta blur qiladi. Telefonда bu
+   GPU'ni bo'g'ib, scroll'ni 15fps'gacha tushiradi (qotib-qotib).
+   Yechim: mobilda backdrop-filter'ni butunlay o'chiramiz. Barcha
+   overlay/menu/dropdownlar allaqachon ~0.96–0.97 qattiq (opaque) qora
+   fon ishlatadi, shuning uchun o'qilishi saqlanadi — faqat blur ketadi.
+   Og'ir/kataklashgan soyalar ham yumshatiladi (paint qiymatini kamaytirish).
+   ════════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  *,
+  *::before,
+  *::after {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+
+  /* Katta xira soyalar scroll paytida paint'ni og'irlashtiradi — yengillashtiramiz */
+  .movie-card,
+  .category-card,
+  .cat-actor-imgwrap,
+  .am-card,
+  .profile-dd,
+  .lang-dd {
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+  }
+
+  /* GPU layer promotion + scroll uzilishlarini kamaytirish */
+  body {
+    -webkit-overflow-scrolling: touch;
   }
 }
