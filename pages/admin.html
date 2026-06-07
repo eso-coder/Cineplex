@@ -308,6 +308,25 @@ textarea.form-ctrl{resize:vertical;min-height:88px;line-height:1.6}
 .confirm-p{font-size:12px;color:var(--muted);text-align:center;margin-bottom:20px;line-height:1.6}
 .confirm-btns{display:flex;gap:9px}
 .confirm-btns .btn{flex:1;justify-content:center}
+/* User detail modal */
+.user-detail-box{background:var(--bg2);border:1px solid var(--border2);border-radius:14px;width:460px;max-width:calc(100vw - 32px);max-height:86vh;overflow-y:auto;animation:fadeUp 180ms var(--ease-out) both}
+.udx-head{display:flex;align-items:center;gap:13px;padding:18px 22px;border-bottom:1px solid var(--border2);position:sticky;top:0;background:var(--bg2);z-index:1}
+.udx-avatar{width:50px;height:50px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:700;color:#fff}
+.udx-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.udx-name{font-size:15.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.udx-sub{font-size:12px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.udx-close{margin-left:auto;background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;width:30px;height:30px;border-radius:7px;flex:none;transition:all 140ms}
+.udx-close:hover{background:var(--bg3);color:var(--text)}
+.udx-grid{padding:16px 22px 22px;display:grid;grid-template-columns:1fr 1fr;gap:13px 18px}
+.udx-item{display:flex;flex-direction:column;gap:3px;min-width:0}
+.udx-item.full{grid-column:1/-1}
+.udx-label{font-size:9.5px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted2);font-weight:600}
+.udx-value{font-size:13px;color:var(--text);word-break:break-word}
+.udx-stats{grid-column:1/-1;display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-top:5px}
+.udx-stat{background:var(--bg3);border:1px solid var(--border2);border-radius:10px;padding:11px 6px;text-align:center}
+.udx-stat b{display:block;font-size:18px;font-weight:700;line-height:1.1}
+.udx-stat span{font-size:10px;color:var(--muted)}
+.udx-pass{grid-column:1/-1;background:rgba(255,255,255,0.03);border:1px solid var(--border2);border-radius:10px;padding:12px 14px;display:flex;gap:10px;align-items:flex-start;margin-top:4px}
 
 /* ── Actor modal ── */
 .actor-modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.72);z-index:400;display:none;align-items:center;justify-content:center}
@@ -570,7 +589,7 @@ textarea.form-ctrl{resize:vertical;min-height:88px;line-height:1.6}
       </div>
       <div class="tbl-wrap">
         <table>
-          <thead><tr><th>Foydalanuvchi</th><th>Email</th><th>Rol</th><th>Ro'yxatdan o'tgan</th><th>Amallar</th></tr></thead>
+          <thead><tr><th>Foydalanuvchi</th><th>Email</th><th>Telefon</th><th>Rol</th><th>Holat</th><th>Oxirgi kirish</th><th>Amallar</th></tr></thead>
           <tbody id="users-body"></tbody>
         </table>
       </div>
@@ -922,6 +941,21 @@ textarea.form-ctrl{resize:vertical;min-height:88px;line-height:1.6}
       <button class="btn btn-ghost" onclick="closeConfirm()">Bekor</button>
       <button class="btn btn-danger" id="confirm-ok">O'chirish</button>
     </div>
+  </div>
+</div>
+
+<!-- User detail -->
+<div class="confirm-backdrop" id="user-back" onclick="if(event.target===this)closeUserModal()">
+  <div class="user-detail-box">
+    <div class="udx-head">
+      <div class="udx-avatar" id="udx-avatar"></div>
+      <div style="min-width:0">
+        <div class="udx-name" id="udx-name"></div>
+        <div class="udx-sub" id="udx-sub"></div>
+      </div>
+      <button class="udx-close" onclick="closeUserModal()" aria-label="Yopish">✕</button>
+    </div>
+    <div class="udx-grid" id="udx-grid"></div>
   </div>
 </div>
 
@@ -1917,26 +1951,107 @@ async function loadUsers(page=0) {
   const role = document.getElementById('users-role-filter').value;
   const q    = document.getElementById('users-search').value.trim();
   try {
-    const data = await api('GET', `/admin/users?page=${page+1}&limit=15`);
+    const qs = `page=${page+1}&limit=15` + (role ? `&role=${role}` : '') + (q ? `&search=${encodeURIComponent(q)}` : '');
+    const data = await api('GET', `/admin/users?${qs}`);
     document.getElementById('users-body').innerHTML = data.data.length
-      ? data.data.map(u => `
+      ? data.data.map(u => {
+          const nm = u.name || u.email || '?';
+          const av = u.avatar && u.avatar.url;
+          const avatarInner = av
+            ? `<img src="${esc(av)}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit" onerror="this.remove()">`
+            : esc(nm[0].toUpperCase());
+          const status = u.isActive === false
+            ? '<span class="badge" style="color:#e57373;border-color:rgba(229,115,115,0.3)">Bloklangan</span>'
+            : '<span class="badge" style="color:#81c784;border-color:rgba(129,199,132,0.3)">Faol</span>';
+          return `
           <tr>
             <td><div class="user-cell">
-              <div class="user-avatar" style="background:${nameGrad(u.name)}">${u.name[0].toUpperCase()}</div>
-              <b>${esc(u.name)}</b>
+              <div class="user-avatar" style="background:${nameGrad(nm)};overflow:hidden">${avatarInner}</div>
+              <b>${esc(nm)}</b>
             </div></td>
-            <td style="color:var(--muted)">${esc(u.email)}</td>
+            <td style="color:var(--muted)">${esc(u.email||'—')}</td>
+            <td style="color:var(--muted);font-size:11.5px">${esc(u.phone||'—')}</td>
             <td><span class="badge badge-${u.role}">${u.role}</span></td>
-            <td style="color:var(--muted);font-size:11.5px">${(u.createdAt||'').slice(0,10)}</td>
+            <td>${status}</td>
+            <td style="color:var(--muted);font-size:11.5px;white-space:nowrap">${fmtDateTime(u.lastLogin)}</td>
             <td style="white-space:nowrap">
-              <button class="btn btn-ghost btn-sm" style="margin-right:5px" onclick="toggleRole('${u._id}','${u.role}')">${u.role==='admin'?'User qilish':'Admin qilish'}</button>
+              <button class="btn btn-ghost btn-sm" style="margin-right:5px" onclick="viewUser('${u._id}')">Ko'rish</button>
+              <button class="btn btn-ghost btn-sm" style="margin-right:5px" onclick="toggleRole('${u._id}','${u.role}')">${u.role==='admin'?'User':'Admin'}</button>
               <button class="btn btn-danger btn-sm" data-uid="${u._id}" onclick="delUserBtn(this)">O'chirish</button>
             </td>
-          </tr>`).join('')
-      : '<tr><td colspan="5" class="empty-state"><p>Foydalanuvchi topilmadi</p></td></tr>';
+          </tr>`;
+        }).join('')
+      : '<tr><td colspan="7" class="empty-state"><p>Foydalanuvchi topilmadi</p></td></tr>';
     renderPag('users-pag', data.pagination?.totalPages || 1, page, loadUsers);
   } catch(e) { toast('Foydalanuvchilar yuklanmadi', 'error'); }
 }
+
+/* Sana-vaqt formati: "2026-06-07 14:30" */
+function fmtDateTime(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return '—';
+  const p = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+
+/* ─── Foydalanuvchi to'liq ma'lumoti (modal) ─── */
+const PROVIDER_LABEL = { local: 'Email / Parol', google: 'Google', apple: 'Apple' };
+async function viewUser(id) {
+  try {
+    const r = await api('GET', `/admin/users/${id}`);
+    const u = r.data;
+    const nm = u.name || u.email || '?';
+    const av = u.avatar && u.avatar.url;
+    const avEl = document.getElementById('udx-avatar');
+    avEl.style.background = nameGrad(nm);
+    avEl.innerHTML = av ? `<img src="${esc(av)}" onerror="this.remove()">` : esc(nm[0].toUpperCase());
+    document.getElementById('udx-name').textContent = nm;
+    document.getElementById('udx-sub').textContent = u.email || '';
+
+    const st = u.stats || {};
+    const item = (label, val, full) =>
+      `<div class="udx-item${full?' full':''}"><div class="udx-label">${label}</div><div class="udx-value">${val}</div></div>`;
+
+    const rows = [
+      item('Ism', esc(u.name || '—')),
+      item('Email (login)', esc(u.email || '—')),
+      item('Telefon', esc(u.phone || '—')),
+      item('Rol', `<span class="badge badge-${u.role}">${u.role}</span>`),
+      item('Holat', u.isActive === false ? '🔴 Bloklangan' : '🟢 Faol'),
+      item('Email tasdiq', u.isVerified ? '✅ Tasdiqlangan' : '❌ Tasdiqlanmagan'),
+      item('Kirish usuli', PROVIDER_LABEL[u.provider] || u.provider || '—'),
+      item('Joylashuv', esc(u.location || '—')),
+      item("Ro'yxatdan o'tgan", fmtDateTime(u.createdAt)),
+      item('Oxirgi kirish', fmtDateTime(u.lastLogin)),
+      item('Kirishlar soni', (u.loginCount || 0) + ' marta'),
+      item('Foydalanuvchi ID', `<span style="font-family:monospace;font-size:11px">${esc(String(u._id))}</span>`, true),
+    ];
+
+    const stats = `<div class="udx-stats">
+      <div class="udx-stat"><b>${st.favorites||0}</b><span>Sevimli</span></div>
+      <div class="udx-stat"><b>${st.watchlist||0}</b><span>Ro'yxat</span></div>
+      <div class="udx-stat"><b>${st.comments||0}</b><span>Sharh</span></div>
+      <div class="udx-stat"><b>${st.ratings||0}</b><span>Baho</span></div>
+    </div>`;
+
+    const passNote = `<div class="udx-pass">
+      <span style="font-size:17px;line-height:1">🔒</span>
+      <div>
+        <div class="udx-label" style="margin-bottom:4px">Parol</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.55">
+          Parol <b>bcrypt</b> bilan bir tomonlama shifrlangan. Asl parolni <b>hech kim</b> — admin ham, dasturchi ham — ko'ra olmaydi. Bu xavfsizlik talabi. Foydalanuvchi parolni unutsa, faqat qayta tiklash (reset) mumkin.
+        </div>
+      </div>
+    </div>`;
+
+    document.getElementById('udx-grid').innerHTML = rows.join('') + stats + passNote;
+    document.getElementById('user-back').classList.add('open');
+  } catch(e) {
+    toast('Foydalanuvchi maʼlumoti yuklanmadi', 'error');
+  }
+}
+function closeUserModal() { document.getElementById('user-back').classList.remove('open'); }
 document.getElementById('users-role-filter').onchange = () => loadUsers(0);
 document.getElementById('users-search').addEventListener('input', () => {
   clearTimeout(usersSearchTimer);

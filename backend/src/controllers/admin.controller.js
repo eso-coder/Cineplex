@@ -28,11 +28,46 @@ const getUsers = asyncHandler(async (req, res) => {
   const page = parseInt(req.query.page, 10) || 1;
   const limit = parseInt(req.query.limit, 10) || 20;
   const skip = (page - 1) * limit;
+
+  // Filtrlar: rol + qidiruv (ism / email / telefon)
+  const filter = {};
+  if (req.query.role && ['user', 'admin'].includes(req.query.role)) {
+    filter.role = req.query.role;
+  }
+  if (req.query.search && req.query.search.trim()) {
+    const safe = req.query.search.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const rx = new RegExp(safe, 'i');
+    filter.$or = [{ name: rx }, { email: rx }, { phone: rx }, { firstName: rx }, { lastName: rx }];
+  }
+
+  // password & refreshToken schema'da select:false — qaytmaydi (bcrypt hash hech qachon yuborilmaydi)
   const [users, total] = await Promise.all([
-    User.find().sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
-    User.countDocuments(),
+    User.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
+    User.countDocuments(filter),
   ]);
   sendPaginated(res, users, { page, limit, total, totalPages: Math.ceil(total / limit) });
+});
+
+// GET /api/admin/users/:id — bitta foydalanuvchining TO'LIQ ma'lumoti + statistikasi
+const getUserDetail = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.params.id)
+    .populate('favorites', 'title')
+    .populate('watchlist', 'title')
+    .lean();
+  if (!user) throw ApiError.notFound('User');
+
+  const [comments, ratings] = await Promise.all([
+    Comment.countDocuments({ user: user._id }),
+    Rating.countDocuments({ user: user._id }),
+  ]);
+
+  user.stats = {
+    favorites: Array.isArray(user.favorites) ? user.favorites.length : 0,
+    watchlist: Array.isArray(user.watchlist) ? user.watchlist.length : 0,
+    comments,
+    ratings,
+  };
+  sendSuccess(res, user);
 });
 
 const updateUser = asyncHandler(async (req, res) => {
@@ -242,7 +277,7 @@ const deleteGenre = asyncHandler(async (req, res) => {
 
 module.exports = {
   getDashboard,
-  getUsers, updateUser, deleteUser,
+  getUsers, getUserDetail, updateUser, deleteUser,
   createMovie, updateMovie, deleteMovie,
   getComments, deleteComment,
   getGenres, createGenre, updateGenre, deleteGenre,

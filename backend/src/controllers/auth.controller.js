@@ -24,6 +24,9 @@ const generateTokens = async (user) => {
 };
 
 const issueSession = async (res, user, message, created = false) => {
+  // Kirish vaqtini va sonini yozib boramiz (generateTokens save qiladi)
+  user.lastLogin = new Date();
+  user.loginCount = (user.loginCount || 0) + 1;
   const { accessToken, refreshToken } = await generateTokens(user);
   res.cookie('refreshToken', refreshToken, REFRESH_COOKIE_OPTIONS);
   const fn = created ? sendCreated : sendSuccess;

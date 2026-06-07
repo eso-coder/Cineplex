@@ -14,6 +14,7 @@ router.get('/dashboard', ctrl.getDashboard);
 
 // Users
 router.get('/users', ctrl.getUsers);
+router.get('/users/:id', ctrl.getUserDetail);
 router.patch(
   '/users/:id',
   validate(

@@ -67,8 +67,12 @@ const userSchema = new mongoose.Schema(
 
     refreshToken: { type: String, select: false },
     isActive: { type: Boolean, default: true },
+
+    // ── Activity tracking (admin panel uchun) ──
+    lastLogin:  { type: Date, default: null },  // oxirgi marta qachon kirgan
+    loginCount: { type: Number, default: 0 },   // necha marta kirgan
   },
-  { timestamps: true }
+  { timestamps: true }  // createdAt = ro'yxatdan o'tgan sana, updatedAt
 );
 
 // Keep `name` in sync when first/last are provided.
