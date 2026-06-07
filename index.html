@@ -326,11 +326,12 @@
       })();
 
       /* ── HERO MULTI-FILM PLAYER ── */
-      var heroMuted     = true;
-      var heroIdx       = 0;
-      var heroFadeTimer = null;
-      var heroAutoTimer = null;
-      var HERO_DURATION = 22000; /* ms per film */
+      var heroMuted       = true;
+      var heroIdx         = 0;
+      var heroFadeTimer   = null;
+      var heroAutoTimer   = null;
+      var HERO_DURATION   = 22000; /* ms per film */
+      var currentTrailerId = ''; /* YouTube trailer ID — mobil unmute uchun */
 
       /* Hero filmlarni admin paneldan o'qish, aks holda default */
       var _DEFAULT_HERO_FILMS = [];
@@ -444,8 +445,10 @@
           } else if (d.trailer) {
             /* YouTube */
             if (heroVideo) { heroVideo.src = ''; heroVideo.style.display = 'none'; heroVideo.classList.remove('visible'); }
+            currentTrailerId = d.trailer;
+            var muteParam = heroMuted ? '1' : '0';
             iframe.src = 'https://www.youtube-nocookie.com/embed/' + d.trailer
-              + '?autoplay=1&mute=1&controls=0&loop=1&playlist=' + d.trailer
+              + '?autoplay=1&mute=' + muteParam + '&controls=0&loop=1&playlist=' + d.trailer
               + '&rel=0&playsinline=1&enablejsapi=1&origin=' + window.location.origin;
             heroFadeTimer = setTimeout(function() {
               iframe.classList.add('visible');
@@ -505,14 +508,29 @@
         var heroVideo = document.getElementById('hero-video');
         /* YouTube iframe */
         if (iframe && iframe.src) {
-          if (heroMuted) {
-            iframe.contentWindow.postMessage('{"event":"command","func":"mute","args":""}', '*');
+          var isMobile = window.innerWidth <= 768 || /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+          if (isMobile && currentTrailerId) {
+            /* Mobil: postMessage ishlamasligini hisobga olib iframe URL ni qayta yuklaymiz.
+               User gesture bo'lgani uchun brauzer mute=0 bilan autoplay ruxsat beradi. */
+            var muteVal = heroMuted ? '1' : '0';
+            iframe.classList.remove('visible');
+            iframe.src = 'https://www.youtube-nocookie.com/embed/' + currentTrailerId
+              + '?autoplay=1&mute=' + muteVal + '&controls=0&loop=1&playlist=' + currentTrailerId
+              + '&rel=0&playsinline=1&enablejsapi=1&origin=' + window.location.origin;
+            /* Yuklangandan so'ng ko'rsatamiz */
+            clearTimeout(heroFadeTimer);
+            heroFadeTimer = setTimeout(function() { iframe.classList.add('visible'); }, 1200);
           } else {
-            iframe.contentWindow.postMessage('{"event":"command","func":"unMute","args":""}', '*');
-            iframe.contentWindow.postMessage('{"event":"command","func":"setVolume","args":[80]}', '*');
+            /* Desktop: postMessage orqali mute/unmute */
+            if (heroMuted) {
+              iframe.contentWindow.postMessage('{"event":"command","func":"mute","args":""}', '*');
+            } else {
+              iframe.contentWindow.postMessage('{"event":"command","func":"unMute","args":""}', '*');
+              iframe.contentWindow.postMessage('{"event":"command","func":"setVolume","args":[80]}', '*');
+            }
           }
         }
-        /* S3 video */
+        /* S3 video — to'g'ridan-to'g'ri boshqariladi */
         if (heroVideo && heroVideo.src) {
           heroVideo.muted = heroMuted;
           if (!heroMuted) heroVideo.volume = 0.8;
