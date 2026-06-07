@@ -167,9 +167,6 @@ const App = {
     <ul class="mobile-links">
       ${links.map(l => `<li><a href="${l.href}" class="${activePage === l.key ? 'active' : ''}">${l.label}</a></li>`).join('')}
     </ul>
-    <div class="mobile-lang">
-      ${I18N && I18N.LANGS ? I18N.LANGS.map(l => `<button class="mobile-lang-opt${l === curLang ? ' active' : ''}" type="button" data-lang="${l}">${LANG_LABELS[l]}</button>`).join('') : ''}
-    </div>
     <div class="mobile-auth" id="mobile-auth" style="display:none">
       <a class="mobile-auth-login" href="${root}pages/login.html">${T('nav.login', 'Kirish')}</a>
       <a class="mobile-auth-register" href="${root}pages/register.html">${T('nav.register', "Ro'yxatdan o'tish")}</a>
@@ -237,12 +234,6 @@ const App = {
       });
       if (mBackdrop) mBackdrop.addEventListener('click', closeMenu);
       mMenu.querySelectorAll('.mobile-links a').forEach(a => a.addEventListener('click', closeMenu));
-      mMenu.querySelectorAll('.mobile-lang-opt').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const l = btn.getAttribute('data-lang');
-          if (typeof I18N !== 'undefined') I18N.setLang(l);
-        });
-      });
       if (mSearch) {
         mSearch.addEventListener('keydown', e => {
           if (e.key === 'Enter' && mSearch.value.trim()) {

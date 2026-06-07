@@ -443,7 +443,7 @@
               heroVideo.play().catch(function(){});
               heroFadeTimer = setTimeout(function() {
                 heroVideo.classList.add('visible');
-              }, 400);
+              }, 120);
             }
           } else if (d.trailer) {
             /* YouTube */
@@ -455,7 +455,7 @@
               + '&rel=0&playsinline=1&enablejsapi=1&origin=' + window.location.origin;
             heroFadeTimer = setTimeout(function() {
               iframe.classList.add('visible');
-            }, 2500);
+            }, 500);
           } else {
             iframe.src = '';
             if (heroVideo) { heroVideo.src = ''; heroVideo.style.display = 'none'; heroVideo.classList.remove('visible'); }

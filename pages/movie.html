@@ -364,13 +364,21 @@
         display: flex;
       }
 
+      /* Yuqori panel — X tugmasi shu yerda, videoga xalaqit bermaydi */
+      .mob-trailer-bar {
+        flex: 0 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        height: 52px;
+        padding: 0 14px;
+        padding-top: env(safe-area-inset-top, 0px);
+        background: #000;
+      }
+
       .mob-trailer-close {
-        position: absolute;
-        top: 16px;
-        right: 16px;
-        z-index: 2;
-        width: 38px;
-        height: 38px;
+        width: 40px;
+        height: 40px;
         border-radius: 50%;
         background: rgba(255, 255, 255, 0.12);
         border: 1px solid rgba(255, 255, 255, 0.2);
@@ -379,11 +387,13 @@
         justify-content: center;
         color: #fff;
         cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
       }
 
       .mob-trailer-frame {
+        flex: 1 1 auto;
         width: 100%;
-        height: 100%;
+        min-height: 0;
         border: none;
       }
 
@@ -1066,12 +1076,14 @@
 
   <!-- Trailer full-screen overlay (mobile) -->
   <div class="mob-trailer-overlay" id="mob-trailer-overlay">
-    <button class="mob-trailer-close" onclick="closeMobTrailer()">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-        <line x1="18" y1="6" x2="6" y2="18" />
-        <line x1="6" y1="6" x2="18" y2="18" />
-      </svg>
-    </button>
+    <div class="mob-trailer-bar">
+      <button class="mob-trailer-close" onclick="closeMobTrailer()" aria-label="Yopish">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="18" y1="6" x2="6" y2="18" />
+          <line x1="6" y1="6" x2="18" y2="18" />
+        </svg>
+      </button>
+    </div>
   </div>
 
   <!-- ══════════ MOBILE LAYOUT ══════════ -->
