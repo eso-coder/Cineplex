@@ -334,20 +334,27 @@
       .pf2-grid { grid-template-columns: repeat(3, 1fr); gap: 12px; }
       .pf2-stat { padding: 0 12px; }
       .pf2-stat-num { font-size: 17px; }
-      /* Telefon: faqat kamera ikonkasi, pastki o'ng burchakda (ism qatori bilan bir tekis) */
+      /* Telefon: faqat kamera ikonkasi, pastki o'ng burchakda (ism qatori bilan bir tekis).
+         Fon — yonidagi qalam tugmasi (pf2-name-edit-btn) bilan bir xil. */
       .pf2-cover-edit {
         top: auto;
-        bottom: 16px;
-        right: 14px;
-        width: 40px;
-        height: 40px;
-        padding: 0;
+        bottom: 13px;
+        right: 12px;
+        width: 35px;
+        height: 35px;
+        padding: 9px;
         gap: 0;
         border-radius: 50%;
         justify-content: center;
+        background: rgba(255,255,255,0.08);
+        border-color: rgba(255,255,255,0.13);
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
       }
+      .pf2-cover-edit:hover,
+      .pf2-cover-edit:active { background: rgba(255,255,255,0.18); }
       .pf2-cover-edit .pf2-cover-edit-txt { display: none; }
-      .pf2-cover-edit svg { width: 18px; height: 18px; }
+      .pf2-cover-edit svg { width: 16px; height: 16px; }
     }
     @media (max-width: 440px) {
       .pf2-grid { grid-template-columns: repeat(3, 1fr); }
