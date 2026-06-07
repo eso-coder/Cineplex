@@ -2859,6 +2859,20 @@ main {
   background: #050505;
 }
 
+/* ── Movie detail (desktop) — telefon formatdagidek: bo'limlar shaffof,
+   orqada fixed blur banner (#movie-bg-blur) ko'rinib turadi. Matn o'qilishi
+   uchun yengil qorong'i scrim qo'shamiz. ── */
+body.movie-page .dp-info-section,
+body.movie-page .dp-gallery,
+body.movie-page .dp-cast-section,
+body.movie-page .dp-related-section,
+body.movie-page .reviews-section {
+  background: rgba(8, 8, 10, 0.4);
+}
+body.movie-page .dp-hero {
+  background: transparent;
+}
+
 .reviews-header {
   display: flex;
   align-items: center;
