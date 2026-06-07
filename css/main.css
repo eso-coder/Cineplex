@@ -1348,6 +1348,40 @@ main {
   padding-left: 4px;
 }
 
+/* Hero logo image (logo rasm mavjud bo'lsa matn o'rnida ko'rinadi) */
+.hero-logo-img {
+  max-height: 100px;
+  max-width: 360px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 3px 16px rgba(0, 0, 0, 0.7));
+  display: block;
+}
+
+/* Movie detail page — desktop logo */
+.dp-hero-logo-img {
+  max-height: 80px;
+  max-width: 320px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 12px rgba(0, 0, 0, 0.6));
+  display: block;
+  margin-bottom: 12px;
+}
+
+/* Movie detail page — mobile logo */
+.mob-title-logo {
+  max-height: 52px;
+  max-width: 220px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.5));
+  display: block;
+}
+
 /* Volume toggle button */
 .hero-volume-btn {
   position: absolute;
@@ -4209,6 +4243,10 @@ video.hero-bg-iframe {
     gap: 5px;
     margin-bottom: 16px;
     max-width: 100%;
+  }
+  .hero-logo-img {
+    max-height: 62px;
+    max-width: 220px;
   }
   .logo-main {
     font-size: 34px;

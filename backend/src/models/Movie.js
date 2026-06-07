@@ -46,6 +46,7 @@ const movieSchema = new mongoose.Schema(
     ageRating:  { type: Number, default: 0 },
     imdbRating: { type: Number, default: 0, min: 0, max: 10 },
     bannerUrl:  { type: String, default: '' },
+    logoUrl:    { type: String, default: '' },
     gallery:    [{ type: String }],
     subtitles:  [{
       lang:  { type: String, trim: true, default: '' },  // 'uz', 'ru', 'en'

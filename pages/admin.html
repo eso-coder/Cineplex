@@ -276,6 +276,14 @@ textarea.form-ctrl{resize:vertical;min-height:88px;line-height:1.6}
 .banner-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.6);opacity:0;display:flex;align-items:center;justify-content:center;transition:opacity 180ms;border-radius:9px;flex-direction:column;gap:6px;pointer-events:none}
 .banner-zone:hover .banner-overlay{opacity:1}
 
+/* ── Logo zone ── */
+.logo-zone{position:relative;width:100%;height:110px;border:2px dashed rgba(255,255,255,0.18);border-radius:11px;background:#080810;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;transition:all 200ms var(--ease-out);overflow:hidden}
+.logo-zone:hover{border-color:rgba(255,255,255,0.38)}
+.logo-zone.drag-over{border-color:rgba(255,255,255,0.6);background:rgba(255,255,255,0.03)}
+.logo-preview{position:absolute;max-height:75%;max-width:82%;object-fit:contain;filter:drop-shadow(0 0 6px rgba(255,255,255,0.08))}
+.logo-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.6);opacity:0;display:none;align-items:center;justify-content:center;transition:opacity 180ms;border-radius:9px;flex-direction:column;gap:6px;pointer-events:none}
+.logo-zone:hover .logo-overlay{opacity:1}
+
 /* ── Gallery items ── */
 .gallery-item{display:flex;gap:8px;align-items:center;margin-bottom:7px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 10px}
 .gallery-thumb{width:64px;height:38px;border-radius:5px;object-fit:cover;background:var(--bg4);flex-shrink:0;display:block}
@@ -798,6 +806,24 @@ textarea.form-ctrl{resize:vertical;min-height:88px;line-height:1.6}
         </div>
         <input type="url" class="form-ctrl" id="mf-banner" placeholder="https://... (banner URL, ixtiyoriy)" style="margin-top:9px" oninput="bannerPreviewFromUrl(this.value)">
         <div class="form-note">Film sahifasida ishlatiladigan keng gorizontal banner rasm (ixtiyoriy — ko'rsatilmasa poster ishlatiladi)</div>
+      </div>
+
+      <!-- ── Logo ── -->
+      <div class="form-group">
+        <label>Film Logosi <span style="font-size:10px;background:var(--bg4);color:var(--muted);border-radius:4px;padding:1px 6px;font-weight:500;margin-left:4px">ixtiyoriy</span></label>
+        <div class="logo-zone" id="logo-zone" onclick="document.getElementById('logo-file').click()">
+          <input type="file" id="logo-file" accept="image/*" style="display:none">
+          <svg class="pz-icon" width="22" height="22" fill="none" stroke="rgba(255,255,255,0.28)" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h.01M3 15l5-5 4 4 3-3 4 4"/></svg>
+          <div class="pz-text" style="font-size:11px;color:rgba(255,255,255,0.3)">Logo rasm (PNG shaffof fon — film nomi o'rnida ko'rinadi)</div>
+          <div class="pz-sub" style="color:rgba(255,255,255,0.18)">yoki bu yerga tashlang</div>
+          <img class="logo-preview" id="logo-preview" style="display:none" alt="logo">
+          <div class="logo-overlay" id="logo-overlay">
+            <svg width="15" height="15" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <div style="font-size:11px;color:#fff">Almashtirish</div>
+          </div>
+        </div>
+        <input type="url" class="form-ctrl" id="mf-logo" placeholder="https://... (logo URL, ixtiyoriy)" style="margin-top:9px" oninput="logoPreviewFromUrl(this.value)">
+        <div class="form-note">Bosh sahifa hero bo'limida va film sahifasida film nomi o'rnida ko'rsatiladi. Oq/shaffof PNG yoki SVG tavsiya qilinadi.</div>
       </div>
     </div>
 
@@ -1338,6 +1364,7 @@ async function editMovieFromAPI(id) {
     document.getElementById('mf-video-url').value = m.videoUrl || '';
     document.getElementById('mf-img').value       = m.poster?.url || '';
     document.getElementById('mf-banner').value    = m.bannerUrl || '';
+    document.getElementById('mf-logo').value      = m.logoUrl   || '';
     /* YouTube ID yoki S3 URL ni to'g'ri ko'rsatish */
     const ytId = extractYtId(m.trailerUrl || '');
     document.getElementById('mf-trailer-id').value = ytId || m.trailerUrl || '';
@@ -1351,6 +1378,12 @@ async function editMovieFromAPI(id) {
       const bp = document.getElementById('banner-preview');
       bp.src = m.bannerUrl; bp.style.display = 'block';
       document.getElementById('banner-overlay').style.display = 'flex';
+    }
+    if (m.logoUrl) {
+      const lp = document.getElementById('logo-preview');
+      lp.src = m.logoUrl; lp.style.display = 'block';
+      document.getElementById('logo-overlay').style.display = 'flex';
+      document.getElementById('logo-zone').querySelectorAll('.pz-icon,.pz-text,.pz-sub').forEach(el => el.style.display = 'none');
     }
     if (m.isFeatured) { toggleStates.trending = true; document.getElementById('toggle-trending').classList.add('on'); }
     galleryImages = Array.isArray(m.gallery) ? [...m.gallery] : [];
@@ -1430,7 +1463,7 @@ function renderSubtitleRows(subs) {
 }
 
 function resetDrawerForm() {
-  ['mf-title','mf-title-ru','mf-title-en','mf-img','mf-year','mf-rating','mf-duration','mf-seasons','mf-episodes','mf-desc','mf-desc-ru','mf-desc-en','mf-video-url','mf-trailer-id','mf-banner'].forEach(id => { document.getElementById(id).value = ''; });
+  ['mf-title','mf-title-ru','mf-title-en','mf-img','mf-year','mf-rating','mf-duration','mf-seasons','mf-episodes','mf-desc','mf-desc-ru','mf-desc-en','mf-video-url','mf-trailer-id','mf-banner','mf-logo'].forEach(id => { document.getElementById(id).value = ''; });
   document.getElementById('mf-type').value = 'movie';
   document.getElementById('mf-age').value  = '0';
   document.getElementById('video-file-name').textContent = '';
@@ -1439,6 +1472,10 @@ function resetDrawerForm() {
   document.getElementById('poster-overlay').style.display = 'none';
   document.getElementById('banner-preview').style.display = 'none';
   document.getElementById('banner-overlay').style.display = 'none';
+  document.getElementById('logo-preview').style.display = 'none';
+  document.getElementById('logo-overlay').style.display = 'none';
+  document.getElementById('logo-zone').querySelectorAll('.pz-icon,.pz-text,.pz-sub').forEach(el => el.style.display = '');
+  logoFileData = null;
   toggleStates = { trending: false, new: false };
   document.getElementById('toggle-trending').classList.remove('on');
   document.getElementById('toggle-new').classList.remove('on');
@@ -1470,6 +1507,13 @@ function fillDrawerForm(m) {
   document.getElementById('mf-video-url').value = m.video_url   || '';
   document.getElementById('mf-trailer-id').value= m.trailer_id  || '';
   document.getElementById('mf-banner').value    = m.banner_img  || '';
+  document.getElementById('mf-logo').value      = m.logo_url    || '';
+  if (m.logo_url) {
+    const lp = document.getElementById('logo-preview');
+    lp.src = m.logo_url; lp.style.display = 'block';
+    document.getElementById('logo-overlay').style.display = 'flex';
+    document.getElementById('logo-zone').querySelectorAll('.pz-icon,.pz-text,.pz-sub').forEach(el => el.style.display = 'none');
+  }
   if (m.img) {
     const prev = document.getElementById('poster-preview');
     prev.src = m.img; prev.style.display = 'block';
@@ -1595,6 +1639,59 @@ function loadBannerFile(file) {
   reader.readAsDataURL(file);
 }
 let bannerTimer;
+
+/* ── Logo file & URL handlers ── */
+let logoFileData = null;
+document.getElementById('logo-file').addEventListener('change', e => {
+  if (e.target.files[0]) loadLogoFile(e.target.files[0]);
+});
+// Logo drag-drop
+(function() {
+  const lz = document.getElementById('logo-zone');
+  lz.addEventListener('dragover',  e => { e.preventDefault(); lz.classList.add('drag-over'); });
+  lz.addEventListener('dragleave', () => lz.classList.remove('drag-over'));
+  lz.addEventListener('drop', e => {
+    e.preventDefault(); lz.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) loadLogoFile(file);
+  });
+})();
+function loadLogoFile(file) {
+  const reader = new FileReader();
+  reader.onload = ev => {
+    logoFileData = ev.target.result;
+    const lp = document.getElementById('logo-preview');
+    lp.src = logoFileData; lp.style.display = 'block';
+    const lo = document.getElementById('logo-overlay');
+    lo.style.display = 'flex';
+    document.getElementById('mf-logo').value = '';
+    // pz elements yashirish
+    document.getElementById('logo-zone').querySelectorAll('.pz-icon,.pz-text,.pz-sub').forEach(el => el.style.display = 'none');
+  };
+  reader.readAsDataURL(file);
+}
+let logoTimer;
+function logoPreviewFromUrl(url) {
+  clearTimeout(logoTimer);
+  logoFileData = null;
+  logoTimer = setTimeout(() => {
+    const lp = document.getElementById('logo-preview');
+    const lo = document.getElementById('logo-overlay');
+    const lz = document.getElementById('logo-zone');
+    if (url) {
+      lp.onload  = () => {
+        lp.style.display = 'block';
+        lo.style.display = 'flex';
+        lz.querySelectorAll('.pz-icon,.pz-text,.pz-sub').forEach(el => el.style.display = 'none');
+      };
+      lp.onerror = () => { lp.style.display = 'none'; lo.style.display = 'none'; };
+      lp.src = url;
+    } else {
+      lp.style.display = 'none'; lo.style.display = 'none';
+      lz.querySelectorAll('.pz-icon,.pz-text,.pz-sub').forEach(el => el.style.display = '');
+    }
+  }, 400);
+}
 function bannerPreviewFromUrl(url) {
   clearTimeout(bannerTimer);
   bannerTimer = setTimeout(() => {
@@ -1799,6 +1896,10 @@ async function saveMovie() {
     const bannerUrl = document.getElementById('mf-banner').value.trim();
     if (bannerUrl) fd.append('bannerUrl', bannerUrl);
   }
+
+  // Logo (base64 data URL yoki oddiy URL)
+  const logoVal = logoFileData || document.getElementById('mf-logo').value.trim();
+  if (logoVal) fd.append('logoUrl', logoVal);
 
   const dur = parseDuration(document.getElementById('mf-duration').value);
   if (dur) fd.append('duration', dur);
@@ -2181,6 +2282,15 @@ function renderHeroItems() {
           '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">' +
             '<div class="form-group" style="margin:0"><label>Logo sarlavha</label><input type="text" class="form-ctrl" style="font-size:12px" value="' + esc(item.logoMain||'') + '" oninput="heroConfig[' + i + '].logoMain=this.value" placeholder="DUNE"></div>' +
             '<div class="form-group" style="margin:0"><label>Logo taglavha</label><input type="text" class="form-ctrl" style="font-size:12px" value="' + esc(item.logoSub||'') + '" oninput="heroConfig[' + i + '].logoSub=this.value" placeholder="PART TWO"></div>' +
+          '</div>' +
+          '<div class="form-group" style="margin-bottom:10px">' +
+            '<label>Logo rasm URL <span style="font-size:10px;background:var(--bg4);color:var(--muted);border-radius:3px;padding:1px 5px">ixtiyoriy</span></label>' +
+            '<div style="display:flex;align-items:center;gap:8px;margin-top:4px">' +
+              (item.logoImg ? '<img src="' + esc(item.logoImg) + '" style="height:36px;max-width:100px;object-fit:contain;background:#080810;border-radius:5px;padding:4px;border:1px solid var(--border);" onerror="this.style.display=\'none\'">' : '') +
+              '<input type="url" class="form-ctrl" style="font-size:12px;flex:1" value="' + esc(item.logoImg||'') + '" oninput="heroConfig[' + i + '].logoImg=this.value" placeholder="https://... (PNG logo URL)">' +
+            '</div>' +
+          '</div>' +
+          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">' +
           '</div>' +
           '<div class="form-group" style="margin-bottom:10px"><label>Trailer URL (YouTube ID yoki S3)</label><input type="text" class="form-ctrl" style="font-size:12px" value="' + esc(item.trailer||'') + '" oninput="heroConfig[' + i + '].trailer=this.value" placeholder="YouTube ID yoki https://...mp4"></div>' +
           '<div class="form-group" style="margin-bottom:10px"><label>Poster / Banner URL</label><input type="url" class="form-ctrl" style="font-size:12px" value="' + esc(item.img||'') + '" oninput="heroConfig[' + i + '].img=this.value;renderHeroItems()" placeholder="https://..."></div>' +
