@@ -210,6 +210,12 @@ const AuthAPI = {
     return _persistSession(resp);
   },
 
+  // Public OAuth config — qaysi providerlar (Google/Apple) yoqilganini qaytaradi
+  async oauthConfig() {
+    const resp = await apiFetch('/auth/config');
+    return resp.data; // { google:{clientId,enabled}, apple:{clientId,enabled} }
+  },
+
   // OAuth — pass a real provider token, or an email for stub mode.
   async google({ token, email, firstName, lastName } = {}) {
     const resp = await apiFetch('/auth/google', { method: 'POST', body: JSON.stringify({ token, email, firstName, lastName }) });

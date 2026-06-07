@@ -378,11 +378,109 @@
       });
   }
 
+  /* ── Real OAuth (Google Identity Services + Sign in with Apple) ───────────── */
+  var oauthCfg = null, gisInited = false, appleInited = false, oauthPrep = null;
+
+  function loadScript(src) {
+    return new Promise(function (resolve, reject) {
+      if (document.querySelector('script[src="' + src + '"]')) return resolve();
+      var s = document.createElement('script');
+      s.src = src; s.async = true; s.defer = true;
+      s.onload = function () { resolve(); };
+      s.onerror = function () { reject(new Error('script load failed: ' + src)); };
+      document.head.appendChild(s);
+    });
+  }
+
+  // Config'ni bir marta olib, yoqilgan providerlar SDK'sini yuklab/initsiyalaymiz
+  function prepareOAuth() {
+    if (oauthPrep) return oauthPrep;
+    // AuthAPI hali yuklanmagan bo'lsa — memoize qilmaymiz, keyin qayta urinamiz
+    if (!(window.AuthAPI && AuthAPI.oauthConfig)) return Promise.resolve();
+    oauthPrep = AuthAPI.oauthConfig().then(function (cfg) {
+      oauthCfg = cfg || {};
+      var tasks = [];
+      if (cfg && cfg.google && cfg.google.enabled) {
+        tasks.push(loadScript('https://accounts.google.com/gsi/client').then(function () {
+          if (window.google && !gisInited) {
+            window.google.accounts.id.initialize({ client_id: cfg.google.clientId, callback: onGoogleCredential });
+            gisInited = true;
+          }
+        }).catch(function () {}));
+      }
+      if (cfg && cfg.apple && cfg.apple.enabled) {
+        tasks.push(loadScript('https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js').then(function () {
+          if (window.AppleID && !appleInited) {
+            window.AppleID.auth.init({ clientId: cfg.apple.clientId, scope: 'name email', redirectURI: location.origin + '/', usePopup: true });
+            appleInited = true;
+          }
+        }).catch(function () {}));
+      }
+      return Promise.all(tasks);
+    }).catch(function () { /* config yo'q → stub rejimi qoladi */ });
+    return oauthPrep;
+  }
+
+  // Google ID token kelganda → backendga yuboramiz (backend uni tekshiradi)
+  function onGoogleCredential(resp) {
+    if (!resp || !resp.credential) return;
+    if (!ensureApi()) return;
+    clearError();
+    AuthAPI.google({ token: resp.credential })
+      .then(function () { close(); redirectToProfile(); })
+      .catch(function (err) { showError(err.message || 'Google orqali kirishda xato.'); });
+  }
+
+  // Custom Google tugmasini rasmiy GIS tugmasi bilan almashtiramiz (ishonchli oqim)
+  function renderGoogleButtons() {
+    if (!gisInited || !window.google || !el) return;
+    el.querySelectorAll('.am-social[data-provider="google"]').forEach(function (btn) {
+      if (btn.dataset.gisDone) return;
+      btn.dataset.gisDone = '1';
+      var holder = document.createElement('div');
+      holder.className = 'am-social am-gsi';
+      holder.style.padding = '0';
+      holder.style.background = 'transparent';
+      holder.style.border = 'none';
+      holder.style.overflow = 'hidden';
+      btn.parentNode.replaceChild(holder, btn);
+      try {
+        window.google.accounts.id.renderButton(holder, {
+          type: 'icon', shape: 'square', theme: 'filled_black', size: 'large',
+        });
+      } catch (e) { /* ignore */ }
+    });
+  }
+
+  // Sign in with Apple — popup orqali id_token olamiz
+  function appleSignIn() {
+    if (!appleInited || !window.AppleID) return doStubOAuth('apple');
+    if (!ensureApi()) return;
+    clearError();
+    window.AppleID.auth.signIn().then(function (data) {
+      var idToken = data && data.authorization && data.authorization.id_token;
+      if (!idToken) return showError('Apple orqali kirishda xato.');
+      var nm = (data.user && data.user.name) || {};
+      AuthAPI.apple({ credential: idToken, firstName: nm.firstName || '', lastName: nm.lastName || '' })
+        .then(function () { close(); redirectToProfile(); })
+        .catch(function (err) { showError(err.message || 'Apple orqali kirishda xato.'); });
+    }).catch(function () { /* foydalanuvchi bekor qildi */ });
+  }
+
   function doOAuth(provider) {
+    // Provider yoqilgan bo'lsa — haqiqiy oqim, aks holda stub
+    if (provider === 'apple' && appleInited) return appleSignIn();
+    if (provider === 'google' && gisInited) {
+      if (window.google) window.google.accounts.id.prompt();
+      return;
+    }
+    return doStubOAuth(provider);
+  }
+
+  // Stub rejim: SDK sozlanmagan bo'lsa, test uchun email so'raymiz
+  function doStubOAuth(provider) {
     clearError();
     if (!ensureApi()) return;
-    // Real provider SDKs aren't configured in stub mode — fall back to an email
-    // so the flow stays testable end-to-end.
     var typed = (state.tab === 'signin' ? $('#am-si-email').value : $('#am-email').value).trim();
     var email = typed || window.prompt('Stub ' + provider + ' sign-in — enter an email to continue:');
     if (!email) return;
@@ -398,6 +496,9 @@
   /* ── Public open/close ── */
   function open(tab) {
     build();
+    // Yoqilgan OAuth providerlarini tayyorlab, Google tugmasini render qilamiz
+    prepareOAuth().then(renderGoogleButtons);
+    renderGoogleButtons();
     setTab(tab === 'signin' ? 'signin' : 'signup');
     clearError();
     // Force a reflow so the closed-state styles commit, then transition open.
@@ -433,4 +534,9 @@
   });
 
   window.AuthModal = { open: open, close: close };
+
+  // OAuth SDK'larini oldindan yuklab qo'yamiz (modal ochilishidan oldin tayyor bo'lsin)
+  if (typeof Auth === 'undefined' || !Auth.isLoggedIn()) {
+    try { prepareOAuth(); } catch (e) { /* ignore */ }
+  }
 })();

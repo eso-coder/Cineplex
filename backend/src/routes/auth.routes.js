@@ -15,6 +15,9 @@ const authLimiter = rateLimit({
   skip: (req) => req.ip === '127.0.0.1' || req.ip === '::1' || req.ip === '::ffff:127.0.0.1',
 });
 
+// ── Public OAuth config (qaysi providerlar yoqilgan) ──
+router.get('/config', ctrl.getAuthConfig);
+
 // ── New Letterboxd-style auth (OTP + OAuth) ──
 router.post('/signup', authLimiter, validate(v.signup), ctrl.signup);
 router.post('/verify-otp', authLimiter, validate(v.verifyOtp), ctrl.verifyOtp);

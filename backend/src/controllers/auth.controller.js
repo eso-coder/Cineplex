@@ -9,7 +9,7 @@ const { generateOtp, sendOtpEmail } = require('../utils/mailer');
 const { uploadImage, deleteImage } = require('../utils/upload');
 const { handleUpload } = require('../middleware/upload.middleware');
 const { imageUpload } = require('../config/s3');
-const { google: googleCfg } = require('../config/env');
+const { google: googleCfg, apple: appleCfg } = require('../config/env');
 const logger = require('../utils/logger');
 
 const OTP_TTL_MS = 10 * 60 * 1000; // 10 minutes
@@ -193,10 +193,14 @@ const verifyGoogleToken = async (token) => {
 };
 
 const verifyAppleToken = async (token) => {
-  if (!token) return null;
+  if (!token || !appleCfg.clientId) return null;
   try {
     const appleSignin = require('apple-signin-auth');
-    const p = await appleSignin.verifyIdToken(token, {});
+    // audience = Services ID — token aynan bizning ilova uchun chiqarilganini tekshiradi
+    const p = await appleSignin.verifyIdToken(token, {
+      audience: appleCfg.clientId,
+      ignoreExpiration: false,
+    });
     return { email: p.email, firstName: '', lastName: '' };
   } catch (err) {
     logger.warn(`[auth] Apple token verify failed: ${err.message}`);
@@ -234,6 +238,15 @@ const oauthLogin = (provider, verifier) =>
     }
     return issueSession(res, user, `${provider} sign-in successful`);
   });
+
+// GET /api/auth/config — ommaviy OAuth client ID lari (frontend qaysi tugmani
+// yoqishni shu orqali biladi). Client ID maxfiy emas — uni ko'rsatish xavfsiz.
+const getAuthConfig = asyncHandler(async (req, res) => {
+  return sendSuccess(res, {
+    google: { clientId: googleCfg.clientId || '', enabled: !!googleCfg.clientId },
+    apple:  { clientId: appleCfg.clientId  || '', enabled: !!appleCfg.clientId },
+  });
+});
 
 const googleAuth = oauthLogin('google', verifyGoogleToken);
 const appleAuth = oauthLogin('apple', verifyAppleToken);
@@ -376,6 +389,7 @@ module.exports = {
   resendOtp,
   signin,
   login: signin, // keep /login working
+  getAuthConfig,
   googleAuth,
   appleAuth,
   logout,
