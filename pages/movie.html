@@ -1670,8 +1670,8 @@
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="${liked ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" id="dp-like-icon"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
                   <span id="dp-like-label">${liked ? 'Yoqdi' : 'Yoqdimi'}</span>
                 </button>
-                <button class="btn-secondary" id="fav-btn" onclick="toggleFav()">
-                  <span id="fav-icon">${fav ? App.icons.heartFill : App.icons.heart}</span>
+                <button class="btn-secondary${fav ? ' active' : ''}" id="fav-btn" onclick="toggleFav()">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="${fav ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" id="fav-icon"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
                   <span id="fav-label">${fav ? 'Saqlandi' : 'Saqlash'}</span>
                 </button>
                 <button class="btn-secondary" onclick="shareMovie()">
@@ -1754,14 +1754,14 @@
           if (typeof Auth !== 'undefined' && Auth.isLoggedIn()) {
             try {
               const data = await WatchlistAPI.toggle(movie.id);
-              document.getElementById('fav-icon').innerHTML = data.added ? App.icons.heartFill : App.icons.heart;
+              document.getElementById('fav-icon').setAttribute('fill', data.added ? 'currentColor' : 'none');
               document.getElementById('fav-label').textContent = data.added ? 'Saqlandi' : 'Saqlash';
               document.getElementById('fav-btn').classList.toggle('active', data.added);
               showToast(data.message); return;
             } catch (_) { }
           }
           const added = typeof toggleWatchlistLocal === 'function' ? toggleWatchlistLocal(movie) : toggleFavorite(movie.id);
-          document.getElementById('fav-icon').innerHTML = added ? App.icons.heartFill : App.icons.heart;
+          document.getElementById('fav-icon').setAttribute('fill', added ? 'currentColor' : 'none');
           document.getElementById('fav-label').textContent = added ? 'Saqlandi' : 'Saqlash';
           document.getElementById('fav-btn').classList.toggle('active', added);
         };
