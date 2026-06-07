@@ -27,7 +27,6 @@ const App = {
       { key: 'new',        label: T('nav.new', 'Yangi'),            href: root + 'pages/new.html' },
       { key: 'movies',     label: T('nav.movies', 'Filmlar'),       href: root + 'pages/movies.html' },
       { key: 'series',     label: T('nav.series', 'Seriallar'),     href: root + 'pages/series.html' },
-      { key: 'actors',     label: T('nav.actors', 'Aktyorlar'),     href: root + 'pages/actors.html' },
       { key: 'categories', label: T('nav.categories', 'Janrlar'),   href: root + 'pages/category.html' },
     ];
     const curLang = (typeof I18N !== 'undefined' ? I18N.getLang() : 'uz');

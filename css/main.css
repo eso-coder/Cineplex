@@ -3724,78 +3724,159 @@ main {
   gap: 16px;
 }
 
+/* ── Spotify-style genre card ── */
 .category-card {
-  background-color: #111111;
-  background-size: cover;
-  background-position: center;
-  border: 1px solid var(--border);
+  background-color: #333;
+  border: none;
   border-radius: var(--r-xl);
-  padding: 32px 24px;
+  padding: 20px;
   cursor: pointer;
   text-decoration: none;
   color: #ffffff;
   display: block;
-  transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.28s, outline-color 0.18s;
   position: relative;
   overflow: hidden;
+  aspect-ratio: 16 / 9;
+  min-height: 140px;
+  outline: 2px solid transparent;
+  outline-offset: -2px;
 }
 
-.category-card::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    155deg,
-    rgba(0, 0, 0, 0.5) 0%,
-    rgba(0, 0, 0, 0.8) 100%
-  );
-  transition: background 0.28s;
-  z-index: 0;
-}
-
-.category-card:hover::before {
-  background: linear-gradient(
-    155deg,
-    rgba(0, 0, 0, 0.3) 0%,
-    rgba(0, 0, 0, 0.65) 100%
-  );
-}
-
-.category-card > * {
+.category-card > .cat-name,
+.category-card > .cat-count,
+.category-card > .cat-tag {
   position: relative;
-  z-index: 1;
+  z-index: 2;
 }
 
 .category-card:hover {
-  transform: translateY(-5px);
-  border-color: rgba(255, 255, 255, 0.22);
-  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.5);
+  transform: scale(1.02);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.45);
+}
+
+.category-card.selected {
+  outline-color: rgba(255, 255, 255, 0.85);
 }
 
 .cat-name {
-  font-size: 19px;
-  font-weight: 700;
-  margin-bottom: 6px;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+  margin-bottom: 5px;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.25);
 }
 
 .cat-count {
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.55);
+  font-size: 13.5px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.78);
 }
 
 .cat-tag {
   position: absolute;
-  top: 18px;
-  right: 18px;
+  top: 16px;
+  right: 16px;
   font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 1px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
   text-transform: uppercase;
   padding: 3px 8px;
   border-radius: 5px;
-  background: rgba(255, 255, 255, 0.07);
-  border: 1px solid var(--border);
-  color: rgba(255, 255, 255, 0.4);
+  background: rgba(0, 0, 0, 0.22);
+  color: rgba(255, 255, 255, 0.92);
+}
+
+/* Qiyshaygan film posteri — pastki o'ng burchakda (Spotify uslubi) */
+.cat-poster {
+  position: absolute;
+  bottom: -10px;
+  right: -18px;
+  width: 86px;
+  height: 116px;
+  object-fit: cover;
+  border-radius: 6px;
+  transform: rotate(25deg);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.45);
+  z-index: 1;
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.category-card:hover .cat-poster {
+  transform: rotate(20deg) scale(1.06);
+}
+
+/* ── Actors section on category page ── */
+.cat-actors-section {
+  padding: 24px var(--px) 70px;
+}
+
+.cat-actors-grid {
+  padding: 0 var(--px);
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 16px;
+}
+
+.cat-actor-card {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  text-align: center;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.cat-actor-card:hover {
+  transform: translateY(-4px);
+}
+
+.cat-actor-imgwrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  overflow: hidden;
+  margin-bottom: 11px;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.4);
+  background: var(--glass-2);
+}
+
+.cat-actor-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+  display: block;
+}
+
+.cat-actor-ph {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+  font-weight: 900;
+  color: #fff;
+}
+
+.cat-actor-name {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 3px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cat-actor-known {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .cat-movies-section {
@@ -4159,6 +4240,9 @@ video.hero-bg-iframe {
   .category-grid {
     grid-template-columns: repeat(3, 1fr);
   }
+  .cat-actors-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }
 
 /* ── Mobile (≤ 640px) ── */
@@ -4390,6 +4474,33 @@ video.hero-bg-iframe {
   /* Category */
   .category-grid {
     grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  .category-card {
+    min-height: 110px;
+    padding: 15px;
+  }
+  .cat-name {
+    font-size: 17px;
+  }
+  .cat-count {
+    font-size: 12px;
+  }
+  .cat-poster {
+    width: 64px;
+    height: 88px;
+    bottom: -8px;
+    right: -14px;
+  }
+  .cat-actors-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+  .cat-actor-name {
+    font-size: 12px;
+  }
+  .cat-actor-known {
+    font-size: 10.5px;
   }
 
   /* Footer — 4-col grid → 2-col on phones */
