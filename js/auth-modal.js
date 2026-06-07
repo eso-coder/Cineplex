@@ -468,13 +468,26 @@
   }
 
   function doOAuth(provider) {
-    // Provider yoqilgan bo'lsa — haqiqiy oqim, aks holda stub
-    if (provider === 'apple' && appleInited) return appleSignIn();
-    if (provider === 'google' && gisInited) {
-      if (window.google) window.google.accounts.id.prompt();
-      return;
-    }
-    return doStubOAuth(provider);
+    clearError();
+    // Qaror qabul qilishdan oldin SDK tayyor bo'lishini kutamiz — sekin mobil
+    // tarmoqda ham vaqtidan oldin stub rejimga tushib qolmaslik uchun.
+    var prep = prepareOAuth() || Promise.resolve();
+    prep.then(function () {
+      if (provider === 'google') {
+        if (gisInited && window.google) {
+          // Rasmiy GIS tugmasini joylab, darhol Google account chooserni ochamiz
+          renderGoogleButtons();
+          try { window.google.accounts.id.prompt(); } catch (e) { /* ignore */ }
+        } else {
+          doStubOAuth('google');
+        }
+      } else if (provider === 'apple') {
+        if (appleInited) appleSignIn();
+        else doStubOAuth('apple');
+      } else {
+        doStubOAuth(provider);
+      }
+    });
   }
 
   // Stub rejim: SDK sozlanmagan bo'lsa, test uchun email so'raymiz
@@ -496,9 +509,12 @@
   /* ── Public open/close ── */
   function open(tab) {
     build();
-    // Yoqilgan OAuth providerlarini tayyorlab, Google tugmasini render qilamiz
+    // Yoqilgan OAuth providerlarini tayyorlab, Google tugmasini render qilamiz.
+    // GIS sekin yuklansa ham rasmiy tugma barqaror chiqishi uchun bir nechta urinish.
     prepareOAuth().then(renderGoogleButtons);
     renderGoogleButtons();
+    setTimeout(renderGoogleButtons, 600);
+    setTimeout(renderGoogleButtons, 1500);
     setTab(tab === 'signin' ? 'signin' : 'signup');
     clearError();
     // Force a reflow so the closed-state styles commit, then transition open.
