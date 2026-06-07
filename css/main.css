@@ -4142,14 +4142,17 @@ video.hero-bg-iframe {
     border-bottom-color: rgba(255, 255, 255, 0.06) !important;
   }
 
-  /* Bosh sahifada (home-page) — scroll qilinmasa transparent */
-  body.home-page .navbar:not(.scrolled) {
+  /* Bosh sahifa va profil sahifasida — scroll qilinmasa transparent
+     (cover/hero rasm to'liq ko'rinsin, navbar soyasi bo'lmasin) */
+  body.home-page .navbar:not(.scrolled),
+  body.profile-page .navbar:not(.scrolled) {
     background: transparent !important;
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
     border-bottom-color: transparent !important;
   }
-  body.home-page .navbar.scrolled {
+  body.home-page .navbar.scrolled,
+  body.profile-page .navbar.scrolled {
     background: rgba(9, 9, 9, 0.88) !important;
     backdrop-filter: blur(20px) !important;
     -webkit-backdrop-filter: blur(20px) !important;
@@ -4190,7 +4193,7 @@ video.hero-bg-iframe {
     padding-bottom: 0;
   }
   .hero-bg-iframe {
-    display: none;
+    display: block;            /* telefon formatda ham trailer ko'rinsin */
   }
   .hero-content {
     left: 20px;
