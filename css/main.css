@@ -4324,8 +4324,17 @@ video.hero-bg-iframe {
     min-height: 440px;
     padding-bottom: 0;
   }
+  /* MUHIM: mobil brauzerda `vh` address-bar yashirilganda o'zgarib, scroll
+     paytida hero (treyler) cho'ziladi. `svh` (kichik viewport) — BARQAROR:
+     sahifaga kirgandagi balandlik scroll davomida o'zgarmaydi. */
+  .hero-featured {
+    height: 88svh;
+    min-height: 480px;
+  }
   .hero-bg-iframe {
     display: block;            /* telefon formatda ham trailer ko'rinsin */
+    /* iframe kengligi ham svh asosida — scroll paytida o'zgarmaydi */
+    width: max(100%, calc(88svh * 16 / 9));
   }
   .hero-content {
     left: 20px;

@@ -1248,10 +1248,24 @@
 
     window.toggleFullscreen = async function () {
       const el = document.getElementById('player-wrapper');
-      if (!document.fullscreenElement) {
+      const reqFs = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen;
+
+      // iOS Safari: <div> uchun requestFullscreen YO'Q — faqat <video> elementining
+      // native fullscreen'i (webkitEnterFullscreen) ishlaydi. Shuni ishlatamiz.
+      if (!reqFs && videoEl && typeof videoEl.webkitEnterFullscreen === 'function') {
+        try { videoEl.webkitEnterFullscreen(); } catch (e) {}
+        return;
+      }
+
+      if (!document.fullscreenElement && !document.webkitFullscreenElement) {
         try {
-          // Fullscreen so'rash
-          await (el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen).call(el);
+          // Fullscreen so'rash (desktop / Android)
+          if (reqFs) {
+            await reqFs.call(el);
+          } else if (videoEl && typeof videoEl.webkitEnterFullscreen === 'function') {
+            videoEl.webkitEnterFullscreen();
+            return;
+          }
           // Telefon landscape burilsin
           if (screen.orientation && screen.orientation.lock) {
             await screen.orientation.lock('landscape').catch(() => {});

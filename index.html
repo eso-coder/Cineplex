@@ -329,6 +329,61 @@
       var heroAutoTimer   = null;
       var HERO_DURATION   = 22000; /* ms per film */
       var currentTrailerId = ''; /* YouTube trailer ID — mobil unmute uchun */
+      /* YouTube IFrame API — ovozni QAYTA YUKLAMASDAN (qotirмasdan) yoqish uchun */
+      var ytHeroPlayer = null;
+      var ytApiReady   = false;
+      /* API skriptini yuklab qo'yamiz (bir marta) */
+      (function loadYTApi() {
+        if (window.YT && window.YT.Player) { ytApiReady = true; return; }
+        if (document.getElementById('yt-iframe-api')) return;
+        var s = document.createElement('script');
+        s.id = 'yt-iframe-api';
+        s.src = 'https://www.youtube.com/iframe_api';
+        document.head.appendChild(s);
+      })();
+      window.onYouTubeIframeAPIReady = function () {
+        ytApiReady = true;
+        bindHeroPlayer();
+      };
+      /* Mavjud hero iframe'ga YT.Player ni bog'laymiz */
+      function bindHeroPlayer() {
+        if (ytHeroPlayer || !ytApiReady || !window.YT || !YT.Player) return;
+        var ifr = document.getElementById('hero-iframe');
+        if (!ifr || !ifr.src) return;
+        try {
+          ytHeroPlayer = new YT.Player('hero-iframe', {
+            events: {
+              onReady: function (e) {
+                if (heroMuted) e.target.mute();
+                else { e.target.unMute(); e.target.setVolume(80); }
+              },
+              onStateChange: function (e) {
+                /* Tugaganda qaytadan (loop) — loadVideoById URL loop'ini almashtiradi */
+                if (e.data === YT.PlayerState.ENDED && ytHeroPlayer) {
+                  ytHeroPlayer.seekTo(0); ytHeroPlayer.playVideo();
+                }
+              }
+            }
+          });
+        } catch (e) { /* ignore */ }
+      }
+      /* YouTube trailerни yuklash — API tayyor bo'lsa loadVideoById (qotmaydi),
+         aks holda iframe.src (fallback), keyin API tayyor bo'lganda bog'lanadi */
+      function loadHeroYouTube(videoId) {
+        var ifr = document.getElementById('hero-iframe');
+        if (!ifr) return;
+        if (ytHeroPlayer && ytHeroPlayer.loadVideoById) {
+          ytHeroPlayer.loadVideoById({ videoId: videoId });
+          if (heroMuted) ytHeroPlayer.mute();
+          else { ytHeroPlayer.unMute(); ytHeroPlayer.setVolume(80); }
+        } else {
+          var muteParam = heroMuted ? '1' : '0';
+          ifr.src = 'https://www.youtube-nocookie.com/embed/' + videoId
+            + '?autoplay=1&mute=' + muteParam + '&controls=0&loop=1&playlist=' + videoId
+            + '&rel=0&playsinline=1&enablejsapi=1&origin=' + window.location.origin;
+          if (ytApiReady) bindHeroPlayer();
+        }
+      }
 
       /* Hero filmlarni admin paneldan o'qish, aks holda default */
       var _DEFAULT_HERO_FILMS = [];
@@ -446,13 +501,10 @@
               }, 120);
             }
           } else if (d.trailer) {
-            /* YouTube */
+            /* YouTube — YT IFrame API orqali (ovozni qayta yuklamasdan yoqish uchun) */
             if (heroVideo) { heroVideo.src = ''; heroVideo.style.display = 'none'; heroVideo.classList.remove('visible'); }
             currentTrailerId = d.trailer;
-            var muteParam = heroMuted ? '1' : '0';
-            iframe.src = 'https://www.youtube-nocookie.com/embed/' + d.trailer
-              + '?autoplay=1&mute=' + muteParam + '&controls=0&loop=1&playlist=' + d.trailer
-              + '&rel=0&playsinline=1&enablejsapi=1&origin=' + window.location.origin;
+            loadHeroYouTube(d.trailer);
             heroFadeTimer = setTimeout(function() {
               iframe.classList.add('visible');
             }, 500);
@@ -510,28 +562,26 @@
         heroMuted = !heroMuted;
         var iframe = document.getElementById('hero-iframe');
         var heroVideo = document.getElementById('hero-video');
-        /* YouTube iframe */
+        /* YouTube — YT IFrame API orqali (QAYTA YUKLAMAYMIZ, shuning uchun
+           treyler qotmaydi/qaytadan boshlanmaydi, joyida davom etadi) */
         if (iframe && iframe.src) {
-          var isMobile = window.innerWidth <= 768 || /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
-          if (isMobile && currentTrailerId) {
-            /* Mobil: postMessage ishlamasligini hisobga olib iframe URL ni qayta yuklaymiz.
-               User gesture bo'lgani uchun brauzer mute=0 bilan autoplay ruxsat beradi. */
-            var muteVal = heroMuted ? '1' : '0';
-            iframe.classList.remove('visible');
-            iframe.src = 'https://www.youtube-nocookie.com/embed/' + currentTrailerId
-              + '?autoplay=1&mute=' + muteVal + '&controls=0&loop=1&playlist=' + currentTrailerId
-              + '&rel=0&playsinline=1&enablejsapi=1&origin=' + window.location.origin;
-            /* Yuklangandan so'ng ko'rsatamiz */
-            clearTimeout(heroFadeTimer);
-            heroFadeTimer = setTimeout(function() { iframe.classList.add('visible'); }, 1200);
-          } else {
-            /* Desktop: postMessage orqali mute/unmute */
+          if (ytHeroPlayer && ytHeroPlayer.unMute) {
             if (heroMuted) {
-              iframe.contentWindow.postMessage('{"event":"command","func":"mute","args":""}', '*');
+              ytHeroPlayer.mute();
             } else {
-              iframe.contentWindow.postMessage('{"event":"command","func":"unMute","args":""}', '*');
-              iframe.contentWindow.postMessage('{"event":"command","func":"setVolume","args":[80]}', '*');
+              ytHeroPlayer.unMute();
+              ytHeroPlayer.setVolume(80);
             }
+          } else {
+            /* API hali tayyor emas — postMessage (qayta yuklamasdan) */
+            try {
+              if (heroMuted) {
+                iframe.contentWindow.postMessage('{"event":"command","func":"mute","args":""}', '*');
+              } else {
+                iframe.contentWindow.postMessage('{"event":"command","func":"unMute","args":""}', '*');
+                iframe.contentWindow.postMessage('{"event":"command","func":"setVolume","args":[80]}', '*');
+              }
+            } catch (e) { /* ignore */ }
           }
         }
         /* S3 video — to'g'ridan-to'g'ri boshqariladi */
