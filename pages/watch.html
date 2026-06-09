@@ -70,6 +70,36 @@
       aspect-ratio: unset;
       height: 100vh;
     }
+
+    /* ── iOS uchun "soxta" fullscreen ──
+       iOS Safari'da <div> uchun haqiqiy fullscreen yo'q — native pleyer ochiladi
+       va sifat/subtitr/til tugmalari yo'qoladi. Shuning uchun SAYT pleyerini
+       CSS bilan butun ekranga yoyamiz (video `playsinline` — inline qoladi). */
+    .player-wrapper.pseudo-fs {
+      position: fixed;
+      inset: 0;
+      z-index: 100000;
+      width: 100vw;
+      height: 100vh;
+      aspect-ratio: unset;
+      margin: 0;
+      background: #000;
+    }
+    /* Telefon tik (portrait) bo'lsa — landscape ko'rinishga aylantiramiz */
+    @media (orientation: portrait) {
+      .player-wrapper.pseudo-fs {
+        inset: auto;
+        top: 0;
+        left: 100vw;
+        width: 100vh;
+        height: 100vw;
+        transform: rotate(90deg);
+        transform-origin: top left;
+      }
+    }
+    body.player-fs-lock {
+      overflow: hidden;
+    }
     /* Hide cursor when controls are not visible (playing state) */
     .player-wrapper:not(.show-ui),
     .player-wrapper:not(.show-ui) * {
@@ -1249,24 +1279,29 @@
     window.toggleFullscreen = async function () {
       const el = document.getElementById('player-wrapper');
       const reqFs = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen;
+      const isIOS = /iP(hone|od|ad)/.test(navigator.userAgent) ||
+                    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
-      // iOS Safari: <div> uchun requestFullscreen YO'Q — faqat <video> elementining
-      // native fullscreen'i (webkitEnterFullscreen) ishlaydi. Shuni ishlatamiz.
-      if (!reqFs && videoEl && typeof videoEl.webkitEnterFullscreen === 'function') {
-        try { videoEl.webkitEnterFullscreen(); } catch (e) {}
+      // iOS: haqiqiy div-fullscreen yo'q (native pleyer ochilib, sayt boshqaruvlari
+      // yo'qoladi) → CSS pseudo-fullscreen bilan SAYT pleyerini ekranga yoyamiz.
+      if (isIOS || !reqFs) {
+        const on = el.classList.toggle('pseudo-fs');
+        document.body.classList.toggle('player-fs-lock', on);
+        // Mavjud bo'lsa orientatsiyani landscape'ga urinib ko'ramiz (ko'pincha bloklangan)
+        try {
+          if (on && screen.orientation && screen.orientation.lock) {
+            screen.orientation.lock('landscape').catch(() => {});
+          } else if (!on && screen.orientation && screen.orientation.unlock) {
+            screen.orientation.unlock();
+          }
+        } catch (e) {}
         return;
       }
 
       if (!document.fullscreenElement && !document.webkitFullscreenElement) {
         try {
-          // Fullscreen so'rash (desktop / Android)
-          if (reqFs) {
-            await reqFs.call(el);
-          } else if (videoEl && typeof videoEl.webkitEnterFullscreen === 'function') {
-            videoEl.webkitEnterFullscreen();
-            return;
-          }
-          // Telefon landscape burilsin
+          // Haqiqiy fullscreen (desktop / Android)
+          await reqFs.call(el);
           if (screen.orientation && screen.orientation.lock) {
             await screen.orientation.lock('landscape').catch(() => {});
           } else if (window.screen && window.screen.lockOrientation) {
@@ -1276,7 +1311,6 @@
       } else {
         // Fullscreendan chiqish
         (document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen).call(document);
-        // Orientatsiyani qaytarish
         if (screen.orientation && screen.orientation.unlock) {
           screen.orientation.unlock();
         } else if (window.screen && window.screen.unlockOrientation) {
