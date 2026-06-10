@@ -75,27 +75,18 @@
        iOS Safari'da <div> uchun haqiqiy fullscreen yo'q — native pleyer ochiladi
        va sifat/subtitr/til tugmalari yo'qoladi. Shuning uchun SAYT pleyerini
        CSS bilan butun ekranga yoyamiz (video `playsinline` — inline qoladi). */
+    /* Joriy orientatsiyada ekranni to'ldiradi — MAJBURIY burilish YO'Q.
+       Video ichida (object-fit:contain), atrofida faqat qora. Telefon o'zi
+       gorizontalga burilsa — video butun landscape ekranni to'ldiradi. */
     .player-wrapper.pseudo-fs {
       position: fixed;
       inset: 0;
       z-index: 100000;
       width: 100vw;
-      height: 100vh;
+      height: 100dvh;
       aspect-ratio: unset;
       margin: 0;
       background: #000;
-    }
-    /* Telefon tik (portrait) bo'lsa — landscape ko'rinishga aylantiramiz */
-    @media (orientation: portrait) {
-      .player-wrapper.pseudo-fs {
-        inset: auto;
-        top: 0;
-        left: 100vw;
-        width: 100vh;
-        height: 100vw;
-        transform: rotate(90deg);
-        transform-origin: top left;
-      }
     }
     body.player-fs-lock {
       overflow: hidden;
@@ -1284,38 +1275,23 @@
 
       // iOS: haqiqiy div-fullscreen yo'q (native pleyer ochilib, sayt boshqaruvlari
       // yo'qoladi) → CSS pseudo-fullscreen bilan SAYT pleyerini ekranga yoyamiz.
+      // MUHIM: orientatsiyani MAJBURLAMAYMIZ — video joriy holatda to'ldiradi,
+      // telefon burilsa landscape bo'ladi.
       if (isIOS || !reqFs) {
         const on = el.classList.toggle('pseudo-fs');
         document.body.classList.toggle('player-fs-lock', on);
-        // Mavjud bo'lsa orientatsiyani landscape'ga urinib ko'ramiz (ko'pincha bloklangan)
-        try {
-          if (on && screen.orientation && screen.orientation.lock) {
-            screen.orientation.lock('landscape').catch(() => {});
-          } else if (!on && screen.orientation && screen.orientation.unlock) {
-            screen.orientation.unlock();
-          }
-        } catch (e) {}
+        if (on && typeof showControls === 'function') showControls(); // 3s keyin yashirinadi
         return;
       }
 
+      // Android / desktop: haqiqiy fullscreen — lekin orientatsiyani MAJBURLAMAYMIZ
       if (!document.fullscreenElement && !document.webkitFullscreenElement) {
         try {
-          // Haqiqiy fullscreen (desktop / Android)
           await reqFs.call(el);
-          if (screen.orientation && screen.orientation.lock) {
-            await screen.orientation.lock('landscape').catch(() => {});
-          } else if (window.screen && window.screen.lockOrientation) {
-            window.screen.lockOrientation('landscape');
-          }
+          if (typeof showControls === 'function') showControls();
         } catch(e) {}
       } else {
-        // Fullscreendan chiqish
         (document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen).call(document);
-        if (screen.orientation && screen.orientation.unlock) {
-          screen.orientation.unlock();
-        } else if (window.screen && window.screen.unlockOrientation) {
-          window.screen.unlockOrientation();
-        }
       }
     };
 
@@ -1395,10 +1371,16 @@
           hideTimer = setTimeout(hideControls, 1000);
         }
       });
-      // Click on video area (not controls) toggles play
+      // Video maydoniga teginish: mobilda boshqaruv yashiringan bo'lsa — avval
+      // uni ko'rsatadi (3s keyin yana yashirinadi); ko'rinib turganda play/pause.
+      // Desktopda esa har doim play/pause (sichqoncha mousemove bilan ko'rsatadi).
+      const isTouchDev = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
       pw.addEventListener('click', e => {
         if (e.target.closest('.player-controls') || e.target.closest('.player-center-btn')) return;
-        if (e.target === pw || e.target === videoEl || e.target.closest('#player-poster-wrap')) togglePlay();
+        if (e.target === pw || e.target === videoEl || e.target.closest('#player-poster-wrap')) {
+          if (isTouchDev && !pw.classList.contains('show-ui')) { showControls(); return; }
+          togglePlay();
+        }
       });
     }
 
