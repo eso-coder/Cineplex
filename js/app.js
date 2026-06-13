@@ -9,7 +9,7 @@ const App = {
     const t = document.getElementById('page-transition');
     if (t && !isHome) {
       t.classList.add('active');
-      setTimeout(() => { window.location.href = url; }, 220);
+      setTimeout(() => { window.location.href = url; }, 120);
     } else {
       window.location.href = url;
     }

@@ -12,6 +12,11 @@ const SORT_MAP = {
   views: { views: -1 },
 };
 
+// Vercel edge / CDN cache — ommaviy GET javoblari 2 daqiqa cache'da turadi,
+// 10 daqiqagacha eski javob beriladi va fonda yangilanadi. Bu serverless
+// cold start'ni ko'pchilik so'rovlar uchun butunlay yo'q qiladi.
+const PUBLIC_CACHE = 'public, max-age=0, s-maxage=120, stale-while-revalidate=600';
+
 // GET /api/movies
 const getMovies = asyncHandler(async (req, res) => {
   const { page, limit, genre, year, sort, search, type } = req.query;
@@ -48,6 +53,7 @@ const getMovies = asyncHandler(async (req, res) => {
     Movie.countDocuments(filter),
   ]);
 
+  res.set('Cache-Control', PUBLIC_CACHE);
   sendPaginated(res, movies, {
     page: Number(page),
     limit: Number(limit),
@@ -63,6 +69,7 @@ const getFeatured = asyncHandler(async (req, res) => {
     .sort({ createdAt: -1 })
     .limit(10)
     .lean();
+  res.set('Cache-Control', PUBLIC_CACHE);
   sendSuccess(res, movies);
 });
 
@@ -73,6 +80,7 @@ const getTrending = asyncHandler(async (req, res) => {
     .sort({ views: -1 })
     .limit(10)
     .lean();
+  res.set('Cache-Control', PUBLIC_CACHE);
   sendSuccess(res, movies);
 });
 
@@ -94,8 +102,10 @@ const searchMovies = asyncHandler(async (req, res) => {
 const getMovie = asyncHandler(async (req, res) => {
   const movie = await Movie.findById(req.params.id)
     .populate('genres', 'name slug')
-    .populate('createdBy', 'name');
+    .populate('createdBy', 'name')
+    .lean();
   if (!movie) throw ApiError.notFound('Movie');
+  res.set('Cache-Control', PUBLIC_CACHE);
   sendSuccess(res, movie);
 });
 

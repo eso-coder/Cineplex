@@ -30,6 +30,32 @@ const Auth = {
   isAdmin()     { const u = this.getUser(); return u && u.role === 'admin'; }
 };
 
+/* ─── Lightweight client cache (stale-while-revalidate) ───────────────────
+   Saqlaydi: trending/new ro'yxati, hero filmlar, har bir film detali.
+   Maqsad: qayta kirishda API javobini kutmasdan DARHOL ko'rsatish (qora ekran 0).
+   Ishlash: avval cache'dan chizamiz, keyin fonda yangisini olib cache'ni yangilaymiz. */
+const CPCache = {
+  get(key) {
+    try {
+      const raw = localStorage.getItem('cpc_' + key);
+      return raw ? JSON.parse(raw) : null; // { t, v }
+    } catch { return null; }
+  },
+  set(key, v) {
+    try { localStorage.setItem('cpc_' + key, JSON.stringify({ t: Date.now(), v })); }
+    catch {
+      // localStorage to'lib qolgan bo'lsa — eski film cache'larini tozalab qayta urinamiz
+      try {
+        Object.keys(localStorage).filter(k => k.startsWith('cpc_movie_')).slice(0, 50)
+          .forEach(k => localStorage.removeItem(k));
+        localStorage.setItem('cpc_' + key, JSON.stringify({ t: Date.now(), v }));
+      } catch {}
+    }
+  },
+  fresh(entry, maxAgeMs) { return !!entry && (Date.now() - entry.t) < maxAgeMs; }
+};
+if (typeof window !== 'undefined') window.CPCache = CPCache;
+
 /* ─── Silent token refresh (singleton — avoids duplicate refresh calls) ─── */
 let _refreshInFlight = null;
 async function _silentRefresh() {

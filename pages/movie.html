@@ -1332,19 +1332,41 @@
     };
 
     /* ─── Main boot ─── */
+    const _applyMovieDefaults = (m) => {
+      if (!m) return m;
+      m.genre = m.genre || [];
+      m.cast = m.cast || [];
+      m.description = m.description || '';
+      try {
+        const _castOv = JSON.parse(localStorage.getItem('cp_cast_overrides') || '{}');
+        if (_castOv[m.id] && _castOv[m.id].length) m.cast = _castOv[m.id];
+      } catch {}
+      return m;
+    };
+
     (async () => {
+      /* 1) Cache'dan DARHOL chizamiz — API javobini kutmasdan poster/banner darrov chiqadi.
+            (bosh sahifa kartochkalari allaqachon CPCache'ga saqlangan) */
+      if (!movie && typeof CPCache !== 'undefined') {
+        const c = CPCache.get('movie_' + id);
+        if (c && c.v) {
+          movie = _applyMovieDefaults(c.v);
+          /* Fonda to'liq detalni olib cache'ni yangilaymiz (ko'rish soni ham shu yerda sanaladi) */
+          if (typeof MoviesAPI !== 'undefined') {
+            MoviesAPI.getById(id)
+              .then(resp => { if (resp && resp.movie) CPCache.set('movie_' + id, resp.movie); })
+              .catch(() => {});
+          }
+        }
+      }
+
+      /* 2) Cache bo'lmasa — API'dan kutib olamiz (eski xatti-harakat) */
       if (!movie && typeof MoviesAPI !== 'undefined') {
         try {
           const resp = await MoviesAPI.getById(id);
-          movie = resp.movie;
+          movie = _applyMovieDefaults(resp.movie);
           _apiRelated = resp.related || [];
-          if (movie) {
-            movie.genre = movie.genre || [];
-            movie.cast = movie.cast || [];
-            movie.description = movie.description || '';
-            const _castOv = JSON.parse(localStorage.getItem('cp_cast_overrides') || '{}');
-            if (_castOv[movie.id] && _castOv[movie.id].length) movie.cast = _castOv[movie.id];
-          }
+          if (movie && typeof CPCache !== 'undefined') CPCache.set('movie_' + id, resp.movie);
         } catch { }
       }
 

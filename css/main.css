@@ -214,12 +214,28 @@ ul {
   background: var(--bg);
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.22s ease;
+  transition: opacity 0.12s ease;
 }
 
 #page-transition.active {
   opacity: 1;
   pointer-events: all;
+}
+
+/* ── Skeleton shimmer — rasm yuklanguncha qora o'rniga jonli fon ── */
+@keyframes cpShimmer {
+  0%   { background-position: -150% 0; }
+  100% { background-position:  150% 0; }
+}
+#hero-card,
+#mob-hero-img, .mob-hero-img,
+.dp-hero-img,
+#mob-info-poster-img {
+  background-color: #101015;
+  background-image: linear-gradient(100deg, #101015 30%, #1b1b24 50%, #101015 70%);
+  background-size: 200% 100%;
+  background-repeat: no-repeat;
+  animation: cpShimmer 1.4s linear infinite;
 }
 
 /* ═══════════════════════════════════════════════════════

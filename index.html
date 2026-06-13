@@ -307,18 +307,32 @@
       App.initAnimations();
 
       (async function loadHomeMovies() {
+        const tRow = document.getElementById("trending-row");
+        const nRow = document.getElementById("new-row");
+        const draw = (el, list, fb) =>
+          el.innerHTML = ((list && list.length) ? list : fb()).map(m => App.buildCard(m, "")).join("");
+
+        /* 1) Cache'dan DARHOL chizamiz — API javobini kutmasdan (qora ekran yo'q) */
+        const cT = CPCache.get('home_trending');
+        const cN = CPCache.get('home_new');
+        if (cT && cT.v) draw(tRow, cT.v, getTrending);
+        if (cN && cN.v) draw(nRow, cN.v, getNew);
+
+        /* 2) Fonda yangisini olib, cache'ni va ekranni yangilaymiz */
         try {
           const [trending, newMovies] = await Promise.all([
             MoviesAPI.trending(),
             MoviesAPI.newMovies()
           ]);
-          document.getElementById("trending-row").innerHTML =
-            (trending.length ? trending : getTrending()).map(m => App.buildCard(m, "")).join("");
-          document.getElementById("new-row").innerHTML =
-            (newMovies.length ? newMovies : getNew()).map(m => App.buildCard(m, "")).join("");
+          draw(tRow, trending, getTrending);
+          draw(nRow, newMovies, getNew);
+          CPCache.set('home_trending', trending);
+          CPCache.set('home_new', newMovies);
+          /* Har bir filmni id bo'yicha cache — movie sahifasi darhol ochilishi uchun */
+          [...trending, ...newMovies].forEach(m => { if (m && m.id) CPCache.set('movie_' + m.id, m); });
         } catch {
-          document.getElementById("trending-row").innerHTML = getTrending().map(m => App.buildCard(m, "")).join("");
-          document.getElementById("new-row").innerHTML = getNew().map(m => App.buildCard(m, "")).join("");
+          if (!(cT && cT.v)) draw(tRow, [], getTrending);
+          if (!(cN && cN.v)) draw(nRow, [], getNew);
         }
       })();
 
@@ -532,29 +546,44 @@
         bootHero();
       } else {
         (async function loadHeroFromBackend() {
+          function mapHero(list) {
+            return list.slice(0, 5).map(function(m) {
+              var age = m.age ? String(m.age) : '';
+              if (age && age.indexOf('+') < 0) age += '+';
+              return {
+                id:       m.id,
+                trailer:  m.trailer_id || m.trailerS3Url || '',
+                img:      m.banner_img || m.img || '',
+                logoImg:  m.logoUrl || m.logo_url || '',
+                logoMain: m.title || '',
+                logoSub:  '',
+                year:     m.year || '',
+                imdb:     m.rating || '',
+                age:      age,
+                duration: m.duration || '',
+                views:    m.views || ''
+              };
+            });
+          }
+
+          /* 1) Cache'dagi hero'ni DARHOL ko'rsatamiz (qora ekran yo'q) */
+          var cachedHero = CPCache.get('hero_films');
+          var booted = !!(cachedHero && cachedHero.v && cachedHero.v.length);
+          if (booted) { heroFilms = cachedHero.v; bootHero(); }
+
+          /* 2) Fonda yangilab, cache'ni yangilaymiz */
           try {
             var list = await MoviesAPI.newMovies();
             if (list && list.length) {
-              heroFilms = list.slice(0, 5).map(function(m) {
-                var age = m.age ? String(m.age) : '';
-                if (age && age.indexOf('+') < 0) age += '+';
-                return {
-                  id:       m.id,
-                  trailer:  m.trailer_id || m.trailerS3Url || '',
-                  img:      m.banner_img || m.img || '',
-                  logoImg:  m.logoUrl || m.logo_url || '',
-                  logoMain: m.title || '',
-                  logoSub:  '',
-                  year:     m.year || '',
-                  imdb:     m.rating || '',
-                  age:      age,
-                  duration: m.duration || '',
-                  views:    m.views || ''
-                };
-              });
+              var fresh = mapHero(list);
+              CPCache.set('hero_films', fresh);
+              if (!booted) { heroFilms = fresh; bootHero(); }
+            } else if (!booted) {
+              bootHero();
             }
-          } catch (e) { /* backend unavailable — hero stays hidden */ }
-          bootHero();
+          } catch (e) {
+            if (!booted) bootHero(); /* backend unavailable — hero stays hidden */
+          }
         })();
       }
 
