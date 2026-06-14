@@ -53,6 +53,15 @@ const movieSchema = new mongoose.Schema(
       label: { type: String, trim: true, default: '' },  // 'O\'zbek', 'Rus', 'Ingliz'
       url:   { type: String, trim: true, default: '' },  // VTT fayl URL
     }],
+    // Seriallar uchun qismlar ro'yxati (mavsumlarga bo'lingan)
+    episodeList: [{
+      season:   { type: Number, default: 1 },            // mavsum raqami
+      number:   { type: Number, default: 1 },            // qism raqami (mavsum ichida)
+      title:    { type: String, trim: true, default: '' },
+      videoUrl: { type: String, trim: true, default: '' },
+      duration: { type: String, trim: true, default: '' },
+      thumb:    { type: String, trim: true, default: '' },
+    }],
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   },
   {

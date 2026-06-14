@@ -27,7 +27,7 @@ const App = {
       { key: 'new',        label: T('nav.new', 'Yangi'),            href: root + 'pages/new.html' },
       { key: 'movies',     label: T('nav.movies', 'Filmlar'),       href: root + 'pages/movies.html' },
       { key: 'series',     label: T('nav.series', 'Seriallar'),     href: root + 'pages/series.html' },
-      { key: 'categories', label: T('nav.categories', 'Janrlar'),   href: root + 'pages/category.html' },
+      { key: 'actors',     label: T('nav.actors', 'Aktyorlar'),     href: root + 'pages/actors.html' },
     ];
     const curLang = (typeof I18N !== 'undefined' ? I18N.getLang() : 'uz');
     const LANG_LABELS = { uz: "O'zbekcha", ru: 'Русский', en: 'English' };
@@ -362,6 +362,68 @@ const App = {
       container.querySelectorAll('.genre-pill').forEach(p => p.classList.remove('active'));
       pill.classList.add('active');
       if (onSelect) onSelect(pill.dataset.genre || 'all');
+    });
+  },
+
+  /* ── Spotify-uslubidagi rangli janr kartalari (filmlar/seriallar sahifasi tepasida) ── */
+  GENRE_ORDER: ['action', 'drama', 'comedy', 'scifi', 'fantasy', 'thriller', 'historical'],
+  GENRE_LABELS: { action: 'Jangovar', comedy: 'Komediya', drama: 'Drama', scifi: 'Fantastika', fantasy: 'Fantaziya', thriller: 'Triller', historical: 'Tarixiy', all: 'Barchasi' },
+  GENRE_THEME: {
+    action:     { color: '#a8324a', tag: 'Mashhur' },
+    comedy:     { color: '#148a5f', tag: '' },
+    drama:      { color: '#477d95', tag: 'Trendda' },
+    scifi:      { color: '#7b2ff7', tag: '' },
+    fantasy:    { color: '#503aa8', tag: '' },
+    thriller:   { color: '#d9480f', tag: '' },
+    historical: { color: '#8a5a2b', tag: '' },
+    all:        { color: '#c2255c', tag: '' },
+  },
+  GENRE_FALLBACK: {
+    action:'https://rwvfilm.com/uploads/media/image/0001/02/2288cbf53f90b29cd77e29cf1716fe93a730a5b3.jpg',
+    comedy:'https://rwvfilm.com/uploads/media/image/0001/03/thumb_2896_image_medium.jpg',
+    drama:'https://rwvfilm.com/uploads/media/image/0001/05/thumb_4051_image_medium.jpg',
+    scifi:'https://rwvfilm.com/uploads/media/image/0001/03/thumb_2883_image_medium.jpg',
+    fantasy:'https://rwvfilm.com/uploads/media/image/0001/04/thumb_3841_image_medium.jpg',
+    thriller:'https://rwvfilm.com/uploads/media/image/0001/03/thumb_2919_image_medium.jpg',
+    historical:'https://rwvfilm.com/uploads/media/image/0001/02/a4de7120d6ec56f46ee8c2b6859a8b21ac88a8c6.jpg',
+    all:'https://rwvfilm.com/uploads/media/image/0001/03/thumb_2793_image_medium.jpg',
+  },
+
+  /* containerId — bo'sh div; movies — to'liq ro'yxat; unit — 'film'/'serial'; onSelect(genre) */
+  buildGenreBar(containerId, movies, unit, onSelect) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    const inGenre = (m, g) => (m.genre || []).includes(g);
+    const posterFor = (g) => {
+      const pool = g === 'all' ? movies : movies.filter(m => inGenre(m, g));
+      const best = [...pool]
+        .sort((a, b) => (parseFloat(b.rating) || 0) - (parseFloat(a.rating) || 0))
+        .find(m => m.img);
+      return (best && best.img) || this.GENRE_FALLBACK[g] || '';
+    };
+    /* Barcha janrlar ko'rsatiladi (mavjud bo'lmaganlari ham) */
+    const order = ['all', ...this.GENRE_ORDER];
+
+    container.innerHTML = order.map(g => {
+      const theme = this.GENRE_THEME[g] || { color: '#444', tag: '' };
+      const count = g === 'all' ? movies.length : movies.filter(m => inGenre(m, g)).length;
+      const poster = posterFor(g);
+      return `
+        <a class="category-card${g === 'all' ? ' selected' : ''}" data-genre="${g}" href="#"
+           style="background:${theme.color}">
+          <div class="cat-name">${this.GENRE_LABELS[g] || g}</div>
+          <div class="cat-count">${count} ta ${unit || ''}</div>
+          ${theme.tag ? `<span class="cat-tag">${theme.tag}</span>` : ''}
+          ${poster ? `<img class="cat-poster" src="${poster}" alt="" loading="lazy" onerror="this.style.display='none'">` : ''}
+        </a>`;
+    }).join('');
+
+    container.addEventListener('click', e => {
+      const card = e.target.closest('.category-card');
+      if (!card) return;
+      e.preventDefault();
+      container.querySelectorAll('.category-card').forEach(c => c.classList.toggle('selected', c === card));
+      if (onSelect) onSelect(card.dataset.genre || 'all');
     });
   },
 

@@ -157,8 +157,10 @@ function normalizeMovie(m) {
     }
   })();
   m.age         = m.age != null ? m.age : (m.ageRating || 0);
-  m.seasons     = m.seasons || 0;
-  m.episodes    = m.episodes || 0;
+  // Seriallar qismlari: [{season, number, title, videoUrl, duration, thumb}]
+  m.episodeList = (m.episodeList || []).filter(e => e && e.videoUrl);
+  m.seasons     = m.seasons || (m.episodeList.length ? new Set(m.episodeList.map(e => e.season || 1)).size : 0);
+  m.episodes    = m.episodes || m.episodeList.length || 0;
   // Convert duration from minutes (number) → "2h 30m" string
   if (typeof m.duration === 'number' && m.duration > 0) {
     const h = Math.floor(m.duration / 60);

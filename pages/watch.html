@@ -257,6 +257,33 @@
       margin-bottom: 14px;
     }
 
+    /* Season selector tabs */
+    .season-tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+    .season-tab {
+      padding: 7px 16px;
+      border-radius: 50px;
+      background: var(--glass-1);
+      border: 1px solid var(--border);
+      color: rgba(255,255,255,0.7);
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.18s, color 0.18s, border-color 0.18s;
+    }
+    .season-tab:hover { background: var(--glass-2); color: #fff; }
+    .season-tab.active {
+      background: #fff;
+      color: #000;
+      border-color: #fff;
+    }
+    .ep-title-num { color: rgba(255,255,255,0.4); font-weight: 800; margin-right: 4px; }
+
     .episode-item {
       display: flex;
       align-items: center;
@@ -679,6 +706,74 @@
     let movie = getMovieById(id);
     const videoEl = document.getElementById('real-player');
 
+    /* ── Series episodes (mavsumlarga bo'lingan) ── */
+    let EPISODES = [];          // movie.episodeList
+    let curSeason = 1;          // tanlangan mavsum
+    let curEpKey = '';          // aktiv qism: "season-number"
+
+    function initEpisodes(list) {
+      EPISODES = (list || []).filter(e => e && e.videoUrl);
+      if (!EPISODES.length) return;
+      const seasons = [...new Set(EPISODES.map(e => e.season || 1))].sort((a, b) => a - b);
+      curSeason = seasons[0];
+      const first = EPISODES.filter(e => (e.season || 1) === curSeason)
+        .sort((a, b) => (a.number || 0) - (b.number || 0))[0];
+      if (first) curEpKey = `${first.season || 1}-${first.number || 1}`;
+      renderEpisodesSection(seasons);
+    }
+
+    function renderEpisodesSection(seasons) {
+      const eps = EPISODES
+        .filter(e => (e.season || 1) === curSeason)
+        .sort((a, b) => (a.number || 0) - (b.number || 0));
+      const tabs = seasons.length > 1
+        ? `<div class="season-tabs">${seasons.map(s =>
+            `<button class="season-tab ${s === curSeason ? 'active' : ''}" onclick="selectSeason(${s})">${s}-Mavsum</button>`
+          ).join('')}</div>`
+        : '';
+      document.getElementById('episodes-section').innerHTML = `
+        <div class="episode-list">
+          <div class="episode-list-title">Qismlar${seasons.length > 1 ? '' : ' · ' + curSeason + '-Mavsum'}</div>
+          ${tabs}
+          ${eps.map(ep => {
+            const key = `${ep.season || 1}-${ep.number || 1}`;
+            const active = key === curEpKey;
+            const thumb = ep.thumb || movie.img;
+            const title = ep.title || `${ep.number || 1}-qism`;
+            return `
+              <div class="episode-item ${active ? 'active' : ''}" onclick="playEp(${ep.season || 1}, ${ep.number || 1})">
+                <div class="ep-num">${ep.number || 1}</div>
+                <div class="ep-thumb"><img src="${thumb}" alt="${title}" loading="lazy" onerror="this.src='${movie.img}'"></div>
+                <div class="ep-info">
+                  <div class="ep-title"><span class="ep-title-num">${ep.number || 1}.</span>${title}</div>
+                  <div class="ep-duration">${ep.duration || ''}</div>
+                </div>
+                ${active ? `<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="color:rgba(255,255,255,0.5)"><path d="M8 5v14l11-7z"/></svg>` : ''}
+              </div>`;
+          }).join('')}
+        </div>`;
+    }
+
+    window.selectSeason = function (s) {
+      curSeason = s;
+      const seasons = [...new Set(EPISODES.map(e => e.season || 1))].sort((a, b) => a - b);
+      renderEpisodesSection(seasons);
+    };
+
+    window.playEp = function (season, number) {
+      const ep = EPISODES.find(e => (e.season || 1) === season && (e.number || 1) === number);
+      if (!ep) return;
+      curEpKey = `${season}-${number}`;
+      const seasons = [...new Set(EPISODES.map(e => e.season || 1))].sort((a, b) => a - b);
+      renderEpisodesSection(seasons);
+      /* Tanlangan qism videosini yuklash */
+      videoEl.style.display = 'block';
+      initVideo(ep.videoUrl);
+      videoEl.play().catch(() => {});
+      showToast((ep.title || `${number}-qism`) + ' boshlanmoqda');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
     function renderWatchPage() {
       if (!movie) {
         document.getElementById('watch-info').innerHTML = '<p style="padding:40px 28px;color:rgba(255,255,255,0.4)">Film topilmadi. <a href="../index.html" style="color:#ffffff;text-decoration:underline">Bosh sahifaga qaytish</a></p>';
@@ -698,7 +793,14 @@
       document.getElementById('player-poster-img').alt = movie.title;
 
       /* ── Real video: use videoUrl from backend ── */
-      const videoUrl = movie.videoUrl || movie.video_url || '';
+      /* Serial bo'lsa, birinchi qism videosidan boshlaymiz */
+      let videoUrl = movie.videoUrl || movie.video_url || '';
+      if (movie.type === 'series' && Array.isArray(movie.episodeList) && movie.episodeList.length) {
+        const firstEp = [...movie.episodeList]
+          .filter(e => e && e.videoUrl)
+          .sort((a, b) => (a.season || 1) - (b.season || 1) || (a.number || 0) - (b.number || 0))[0];
+        if (firstEp) videoUrl = firstEp.videoUrl;
+      }
       if (videoUrl) {
         videoEl.style.display = 'block';
         initVideo(videoUrl); // handles both MP4 and M3U8/HLS
@@ -722,23 +824,8 @@
       `;
 
       /* ── Episodes (series) ── */
-      if (movie.type === 'series' && movie.episodes) {
-        const eps = Array.from({ length: Math.min(movie.episodes, 8) }, (_, i) => i + 1);
-        document.getElementById('episodes-section').innerHTML = `
-          <div class="episode-list">
-            <div class="episode-list-title">Qismlar · 1-Mavsum</div>
-            ${eps.map(n => `
-              <div class="episode-item ${n === 1 ? 'active' : ''}" onclick="playEp(${n})">
-                <div class="ep-num">${n}</div>
-                <div class="ep-thumb"><img src="${movie.img}" alt="Ep ${n}" loading="lazy"></div>
-                <div class="ep-info">
-                  <div class="ep-title">${n}-qism</div>
-                  <div class="ep-duration">42 min</div>
-                </div>
-                ${n === 1 ? `<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="color:rgba(255,255,255,0.5)"><path d="M8 5v14l11-7z"/></svg>` : ''}
-              </div>
-            `).join('')}
-          </div>`;
+      if (movie.type === 'series' && Array.isArray(movie.episodeList) && movie.episodeList.length) {
+        initEpisodes(movie.episodeList);
       }
 
       /* ── Related ── */
@@ -1309,13 +1396,6 @@
         if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock();
       }
     });
-
-    window.playEp = function (n) {
-      document.querySelectorAll('.episode-item').forEach((el, i) => el.classList.toggle('active', i + 1 === n));
-      if (hasRealVideo()) { videoEl.currentTime = 0; videoEl.play().catch(() => {}); }
-      else { progress = 0; playing = false; updatePlayIcons(); updateUI(); }
-      showToast(n + '-qism boshlanmoqda');
-    };
 
     /* ── Settings dropdowns ── */
     window.togglePsd = function (id) {

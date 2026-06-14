@@ -137,6 +137,17 @@ const createMovie = [
       catch { movieData.subtitles = []; }
     }
 
+    // Episodes JSON: [{season, number, title, videoUrl, duration, thumb}]
+    if (movieData.episodeList && typeof movieData.episodeList === 'string') {
+      try { movieData.episodeList = JSON.parse(movieData.episodeList).filter(e => e && e.videoUrl); }
+      catch { movieData.episodeList = []; }
+      // seasons/episodes hisoblarini qismlardan avtomatik chiqaramiz
+      if (Array.isArray(movieData.episodeList) && movieData.episodeList.length) {
+        movieData.seasons  = new Set(movieData.episodeList.map(e => e.season || 1)).size;
+        movieData.episodes = movieData.episodeList.length;
+      }
+    }
+
     if (typeof movieData.genres === 'string')
       movieData.genres = movieData.genres.split(',').map((g) => g.trim()).filter(Boolean);
     if (typeof movieData.cast === 'string')
@@ -189,6 +200,16 @@ const updateMovie = [
     if (updates.subtitles && typeof updates.subtitles === 'string') {
       try { updates.subtitles = JSON.parse(updates.subtitles).filter(s => s && s.url); }
       catch { updates.subtitles = []; }
+    }
+
+    // Episodes JSON: [{season, number, title, videoUrl, duration, thumb}]
+    if (updates.episodeList && typeof updates.episodeList === 'string') {
+      try { updates.episodeList = JSON.parse(updates.episodeList).filter(e => e && e.videoUrl); }
+      catch { updates.episodeList = []; }
+      if (Array.isArray(updates.episodeList) && updates.episodeList.length) {
+        updates.seasons  = new Set(updates.episodeList.map(e => e.season || 1)).size;
+        updates.episodes = updates.episodeList.length;
+      }
     }
 
     if (typeof updates.genres === 'string')

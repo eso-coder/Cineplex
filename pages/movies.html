@@ -25,16 +25,8 @@
       </div>
     </div>
 
-    <div class="catalog-genre-bar animate-in" id="genre-bar" style="transition-delay:0.06s">
-      <button class="genre-pill active" data-genre="all">Barchasi</button>
-      <button class="genre-pill" data-genre="action">Jangovar</button>
-      <button class="genre-pill" data-genre="drama">Drama</button>
-      <button class="genre-pill" data-genre="comedy">Komediya</button>
-      <button class="genre-pill" data-genre="scifi">Fantastika</button>
-      <button class="genre-pill" data-genre="fantasy">Fantaziya</button>
-      <button class="genre-pill" data-genre="historical">Tarixiy</button>
-      <button class="genre-pill" data-genre="thriller">Triller</button>
-    </div>
+    <!-- Spotify-uslubidagi janr kartalari -->
+    <div class="category-grid animate-in" id="genre-bar" style="transition-delay:0.06s;margin-bottom:32px"></div>
 
     <div class="catalog-grid animate-in" id="catalog-grid" style="transition-delay:0.12s"></div>
   </main>
@@ -63,9 +55,10 @@
         allMovies = getMoviesOnly();
       }
       render(allMovies);
-      App.initGenrePills('genre-bar', genre => {
+      App.buildGenreBar('genre-bar', allMovies, 'film', genre => {
         const filtered = genre === 'all' ? allMovies : allMovies.filter(m => (m.genre || []).includes(genre));
         render(filtered);
+        document.getElementById('catalog-grid').scrollIntoView({ behavior: 'smooth', block: 'start' });
       });
     })();
   </script>
