@@ -2758,6 +2758,20 @@ main {
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
+.dp-gallery-head {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 0 50px;
+  margin-bottom: 24px;
+}
+
+.dp-gallery-head .dp-section-label {
+  flex: 1;
+  padding: 0;
+  margin: 0;
+}
+
 .dp-view-all-btn {
   flex-shrink: 0;
   display: inline-flex;
