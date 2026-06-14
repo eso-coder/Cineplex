@@ -2758,6 +2758,35 @@ main {
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
+.dp-view-all-btn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+  cursor: pointer;
+  transition: color 0.18s;
+}
+
+.dp-view-all-btn svg {
+  transition: transform 0.18s;
+}
+
+.dp-view-all-btn:hover {
+  color: #fff;
+}
+
+.dp-view-all-btn:hover svg {
+  transform: translateX(2px);
+}
+
 .dp-gallery-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
