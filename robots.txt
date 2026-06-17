@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+
+# Maxfiy / kirish sahifalari indekslanmasin
+Disallow: /pages/admin.html
+Disallow: /pages/login.html
+Disallow: /pages/register.html
+Disallow: /pages/profile.html
+Disallow: /api/
+
+Sitemap: https://cineplex.uz/sitemap.xml
