@@ -8,4 +8,4 @@ Disallow: /pages/register.html
 Disallow: /pages/profile.html
 Disallow: /api/
 
-Sitemap: https://cineplex.uz/sitemap.xml
+Sitemap: https://www.cineplex.uz/sitemap.xml
