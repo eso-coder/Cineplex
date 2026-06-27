@@ -1,0 +1,23 @@
+{
+  "name": "fars-v3",
+  "version": "3.0.0",
+  "description": "FARS v3 — Avtomatik kino qo'shish pipeline",
+  "main": "dist/index.js",
+  "scripts": {
+    "start": "ts-node src/index.ts",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.600.0",
+    "axios": "^1.7.2",
+    "dotenv": "^16.4.5",
+    "p-limit": "^3.1.0",
+    "playwright": "^1.44.1",
+    "tus-js-client": "^4.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.5"
+  }
+}

@@ -898,6 +898,11 @@
       // Destroy previous HLS instance if exists
       if (hls) { hls.destroy(); hls = null; }
 
+      // Audio tanlash tugmasini boshda yashiramiz — faqat HLS'da bir nechta
+      // audio trek topilsa buildAudioMenu uni ko'rsatadi (soxta menyu chiqmaydi)
+      const _aw = document.getElementById('audio-wrap');
+      if (_aw) _aw.style.display = 'none';
+
       // Strip any surrounding/embedded quotes from the stored videoUrl
       const url = sanitizeHlsUrl(rawUrl);
       if (!url) return;
@@ -998,8 +1003,15 @@
     }
 
     function buildAudioMenu(tracks) {
-      if (!tracks || !tracks.length) return;
+      const wrap = document.getElementById('audio-wrap');
       const dd = document.getElementById('audio-dd');
+      // Bitta yoki undan kam audio trek bo'lsa — tanlash shart emas.
+      // Soxta statik menyuni ko'rsatmaslik uchun butun tugmani yashiramiz.
+      if (!tracks || tracks.length <= 1) {
+        if (wrap) wrap.style.display = 'none';
+        return;
+      }
+      if (wrap) wrap.style.display = '';
       dd.innerHTML = `
         <div class="psd-head">Audio</div>
         ${tracks.map((t, i) => `
