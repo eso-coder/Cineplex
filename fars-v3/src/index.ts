@@ -17,7 +17,7 @@ function log(msg: string) { console.log(msg); }
 function step(n: string, title: string) { console.log(`\n[${n}] ${title}`); }
 
 async function main() {
-  const input = process.argv[2];
+  let input = process.argv[2];
   if (!input) {
     console.error('❌ Foydalanish:');
     console.error('   Lokal:  npx ts-node src/index.ts "C:\\Movies\\Inception.2010.mkv"');
@@ -34,11 +34,28 @@ async function main() {
       filename = decodeURIComponent(new URL(input).pathname.split('/').pop() || 'video.mkv');
     } catch { filename = 'video.mkv'; }
   } else {
-    const absolutePath = path.resolve(input);
+    let absolutePath = path.resolve(input);
     if (!fs.existsSync(absolutePath)) {
       console.error(`❌ Fayl topilmadi: ${absolutePath}`);
       process.exit(1);
     }
+    if (fs.statSync(absolutePath).isDirectory()) {
+      const VIDEO_EXT = ['.mkv', '.mp4', '.avi', '.mov', '.m4v', '.wmv'];
+      const found = fs.readdirSync(absolutePath)
+        .filter(f => VIDEO_EXT.includes(path.extname(f).toLowerCase()))
+        .map(f => {
+          const full = path.join(absolutePath, f);
+          return { full, size: fs.statSync(full).size };
+        })
+        .sort((a, b) => b.size - a.size)[0];
+      if (!found) {
+        console.error(`❌ Papkada video fayl topilmadi: ${absolutePath}`);
+        process.exit(1);
+      }
+      absolutePath = found.full;
+      console.log(`📂 Papka berildi — video fayl topildi: ${path.basename(absolutePath)}`);
+    }
+    input = absolutePath;
     filename = path.basename(absolutePath);
   }
 

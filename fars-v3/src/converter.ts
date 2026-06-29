@@ -83,7 +83,7 @@ function cfrVideoArgs(enc: HWEncoder): string[] {
     case 'h264_qsv':
       return ['-c:v', 'h264_qsv', '-global_quality', '21', '-fps_mode', 'cfr', '-pix_fmt', 'nv12'];
     case 'h264_amf':
-      return ['-c:v', 'h264_amf', '-rc', 'cqp', '-qp_i', '21', '-qp_p', '21', '-quality', 'balanced', '-fps_mode', 'cfr', '-pix_fmt', 'yuv420p'];
+      return ['-c:v', 'h264_amf', '-rc', 'cqp', '-qp_i', '21', '-qp_p', '21', '-quality', 'speed', '-fps_mode', 'cfr', '-pix_fmt', 'yuv420p'];
     default:
       return ['-c:v', 'libx264', '-preset', 'veryfast', '-crf', '20', '-fps_mode', 'cfr', '-pix_fmt', 'yuv420p'];
   }

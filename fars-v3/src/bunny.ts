@@ -91,7 +91,7 @@ async function uploadFile(c: BunnyCfg, guid: string, filePath: string, title: st
     });
 
     // Avvalgi yarim upload bo'lsa — o'sha joydan davom ettir
-    upload.findPreviousUploads().then((prev) => {
+    upload.findPreviousUploads().then((prev: tus.PreviousUpload[]) => {
       if (prev.length > 0) {
         upload.resumeFromPreviousUpload(prev[0]);
         console.log('  ♻️  Avvalgi upload topildi — o\'sha joydan davom etilmoqda...');
