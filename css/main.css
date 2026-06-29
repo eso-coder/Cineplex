@@ -2926,6 +2926,15 @@ body.movie-page .dp-hero {
   background: transparent;
 }
 
+/* Navbar'ning backdrop-filter'i (blur+saturate) scroll paytida orqadagi
+   rasm-boy fonni har kadrida qayta hisoblaydi — bu desktop'da movie
+   page'ni sekinlashtiradi. Shu sahifada blur o'rniga qattiq fon ishlatamiz. */
+body.movie-page .navbar.scrolled {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: rgba(8, 8, 10, 0.92);
+}
+
 .reviews-header {
   display: flex;
   align-items: center;
