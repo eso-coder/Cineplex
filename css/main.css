@@ -12,10 +12,13 @@
   --border: rgba(255, 255, 255, 0.09);
   --border-h: rgba(255, 255, 255, 0.2);
   --text: #ffffff;
-  --text-dim: rgba(255, 255, 255, 0.52);
-  --text-muted: rgba(255, 255, 255, 0.28);
-  --gold: #ffffff;
+  --text-dim: rgba(255, 255, 255, 0.72);
+  --text-muted: rgba(255, 255, 255, 0.46);
+  --gold: #f5c518;
   --accent: #ffffff;
+  --youtube-red: #ff0000;
+  --telegram-blue: #29b6f6;
+  --instagram-pink: #e1306c;
   --avatar-grad: linear-gradient(135deg, #3a3a3a, #121212);
   --navbar-h: 66px;
   --max-w: 1200px;
@@ -53,6 +56,7 @@ body {
   min-height: 100vh;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
 }
 
@@ -2388,8 +2392,8 @@ main {
 }
 
 .footer-social {
-  width: 34px;
-  height: 34px;
+  width: 38px;
+  height: 38px;
   border-radius: 9px;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.09);
@@ -2406,6 +2410,24 @@ main {
   background: rgba(255, 255, 255, 0.1);
   color: #ffffff;
   border-color: var(--border-h);
+}
+
+/* Ijtimoiy tarmoq ikonlari — hover'da o'z brend rangida yonadi */
+.footer-social-youtube:hover {
+  color: var(--youtube-red);
+  border-color: var(--youtube-red);
+  background: rgba(255, 0, 0, 0.12);
+}
+
+.footer-social-instagram:hover {
+  color: var(--instagram-pink);
+  border-color: var(--instagram-pink);
+  background: rgba(225, 48, 108, 0.12);
+}
+
+.footer-social-x:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.18);
 }
 
 /* ═══════════════════════════════════════════════════════
