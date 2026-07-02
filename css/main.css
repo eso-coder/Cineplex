@@ -6,11 +6,11 @@
 /* ── DESIGN TOKENS ── */
 :root {
   --bg: #000000;
-  --glass-1: rgba(255, 255, 255, 0.045);
-  --glass-2: rgba(255, 255, 255, 0.08);
-  --glass-3: rgba(255, 255, 255, 0.11);
-  --border: rgba(255, 255, 255, 0.09);
-  --border-h: rgba(255, 255, 255, 0.2);
+  --glass-1: rgba(255, 255, 255, 0.10);
+  --glass-2: rgba(255, 255, 255, 0.15);
+  --glass-3: rgba(255, 255, 255, 0.20);
+  --border: rgba(255, 255, 255, 0.18);
+  --border-h: rgba(255, 255, 255, 0.35);
   --text: #ffffff;
   --text-dim: rgba(255, 255, 255, 0.72);
   --text-muted: rgba(255, 255, 255, 0.46);
