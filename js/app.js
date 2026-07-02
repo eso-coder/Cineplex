@@ -19,6 +19,15 @@ const App = {
     return new URLSearchParams(window.location.search).get(name) || '';
   },
 
+  /* HTML-ni zararsizlantirish: sarlavha/tavsif kabi matnlar innerHTML ga
+     qo'yilishidan oldin maxsus belgilarni escape qiladi. Ham xavfsizlik
+     (XSS), ham to'g'ri ko'rinish (apostrof/&/< bo'lgan nomlar) uchun. */
+  esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, c => (
+      { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+    ));
+  },
+
   _navHTML(activePage, root) {
     root = root || '';
     const T = (k, fb) => (typeof I18N !== 'undefined' ? I18N.t(k) : fb);
@@ -314,7 +323,7 @@ const App = {
       const navAv = document.querySelector('.nav-avatar');
       if (navAv) {
         if (user.avatar) {
-          navAv.innerHTML = `<img src="${user.avatar}" alt="${user.name || ''}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+          navAv.innerHTML = `<img src="${App.esc(user.avatar)}" alt="${App.esc(user.name || '')}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
         } else {
           navAv.textContent = inits;
         }
@@ -325,7 +334,7 @@ const App = {
       if (pddAv) {
         if (user.avatar) {
           pddAv.style.overflow = 'hidden';
-          pddAv.innerHTML = `<img src="${user.avatar}" alt="${user.name || ''}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+          pddAv.innerHTML = `<img src="${App.esc(user.avatar)}" alt="${App.esc(user.name || '')}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
         } else {
           pddAv.textContent = inits;
         }
@@ -438,26 +447,28 @@ const App = {
     const seriesInfo = isSeries && m.seasons
       ? `${m.seasons} mavsum · ${m.episodes} qism`
       : '';
-    return `<div class="movie-card" data-id="${m.id}" data-genre="${(m.genre||[]).join(' ')}"
+    const E = App.esc;
+    const titleAttr = E(m.title);
+    return `<div class="movie-card" data-id="${E(m.id)}" data-genre="${E((m.genre||[]).join(' '))}"
 onclick="App.go('${href}')">
   <div class="movie-poster">
-    <img src="${m.img || ''}" alt="${m.title}" loading="lazy" ${!m.img ? 'style="display:none"' : ''}>
+    <img src="${E(m.img || '')}" alt="${titleAttr}" loading="lazy" ${!m.img ? 'style="display:none"' : ''}>
     ${badge}
     <div class="movie-card-overlay">
       <div class="mco-top">
         <button class="mco-like-btn${isLiked(m.id) ? ' active' : ''}" type="button"
-          data-id="${m.id}"
-          data-title="${(m.title||'').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}"
-          data-img="${m.img||''}"
-          data-year="${m.year||''}"
+          data-id="${E(m.id)}"
+          data-title="${titleAttr}"
+          data-img="${E(m.img||'')}"
+          data-year="${E(m.year||'')}"
           onclick="event.stopPropagation();event.preventDefault();toggleLikeCard(this);return false;" title="Yoqdi">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
         </button>
         <button class="mco-wl-btn${isInWatchlist(m.id) ? ' active' : ''}" type="button"
-          data-id="${m.id}"
-          data-title="${(m.title||'').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}"
-          data-img="${m.img||''}"
-          data-year="${m.year||''}"
+          data-id="${E(m.id)}"
+          data-title="${titleAttr}"
+          data-img="${E(m.img||'')}"
+          data-year="${E(m.year||'')}"
           onclick="event.stopPropagation();event.preventDefault();toggleWatchlistCard(this);return false;" title="Watchlist">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
         </button>
@@ -468,18 +479,18 @@ onclick="App.go('${href}')">
         </div>
       </div>
       <div class="mco-bottom">
-        <div class="mco-title">${m.title}</div>
+        <div class="mco-title">${titleAttr}</div>
         <div class="mco-meta">
-          <span class="mco-rating">★ ${m.rating}</span>
+          <span class="mco-rating">★ ${E(m.rating)}</span>
           <div class="mco-dot"></div>
-          <span>${m.year}</span>
-          ${seriesInfo ? `<div class="mco-dot"></div><span>${seriesInfo}</span>` : genre1 ? `<div class="mco-dot"></div><span>${genre1}</span>` : ''}
+          <span>${E(m.year)}</span>
+          ${seriesInfo ? `<div class="mco-dot"></div><span>${seriesInfo}</span>` : genre1 ? `<div class="mco-dot"></div><span>${E(genre1)}</span>` : ''}
         </div>
-        ${m.description ? `<div class="mco-desc">${m.description}</div>` : ''}
+        ${m.description ? `<div class="mco-desc">${E(m.description)}</div>` : ''}
       </div>
     </div>
   </div>
-  <div class="movie-title">${m.title}</div>
+  <div class="movie-title">${titleAttr}</div>
   ${seriesInfo ? `<div class="movie-series-row">${seriesInfo}</div>` : ''}
   <div class="movie-meta-row">
     <div class="movie-rating">

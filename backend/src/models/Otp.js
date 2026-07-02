@@ -6,6 +6,8 @@ const otpSchema = new mongoose.Schema(
     code: { type: String, required: true }, // 6-digit code (stored as string)
     expiresAt: { type: Date, required: true },
     used: { type: Boolean, default: false },
+    // Noto'g'ri urinishlar soni — brute-force (1 000 000 kombinatsiya) oldini olish uchun.
+    attempts: { type: Number, default: 0 },
     // Snapshot of signup data so we only create the User after verification.
     payload: { type: mongoose.Schema.Types.Mixed, default: null },
   },

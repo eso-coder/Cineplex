@@ -1269,6 +1269,14 @@
       return html + '</div>';
     }
 
+    /* XSS himoyasi: foydalanuvchi kiritgan matn (ism, sharh, avatar URL) innerHTML
+       ga qo'yilishidan oldin HTML maxsus belgilarini zararsizlantiramiz. */
+    function escHtml(s) {
+      return String(s == null ? '' : s).replace(/[&<>"']/g, c => (
+        { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+      ));
+    }
+
     function buildReviews(reviews) {
       if (!reviews.length) {
         return `<div style="text-align:center;padding:24px 0;color:rgba(255,255,255,0.35);font-size:14px">
@@ -1856,9 +1864,9 @@
         document.getElementById('mob-review-count').textContent = data.total + ' ta';
         if (data.total > 0) {
           const rv = data.data.map(r => ({
-            id: r.id, name: r.user_name, avatar: r.user_avatar || '',
-            initials: (r.user_name || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2),
-            rating: r.rating, date: r.created_at.slice(0, 10), text: r.body
+            id: r.id, name: escHtml(r.user_name), avatar: escHtml(r.user_avatar || ''),
+            initials: escHtml((r.user_name || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)),
+            rating: r.rating, date: r.created_at.slice(0, 10), text: escHtml(r.body)
           }));
           document.getElementById('mob-reviews-list').innerHTML = buildReviews(rv);
         } else {
@@ -1874,10 +1882,10 @@
         const data = await ReviewsAPI.getByMovie(movie.id);
         if (data.total > 0) {
           const rv = data.data.map(r => ({
-            id: r.id, name: r.user_name,
-            initials: (r.user_name || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2),
-            avatar: r.user_avatar || '', color: 'linear-gradient(135deg,#3a3a3a,#121212)',
-            rating: r.rating, date: r.created_at.slice(0, 10), text: r.body, helpful: r.helpful
+            id: r.id, name: escHtml(r.user_name),
+            initials: escHtml((r.user_name || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)),
+            avatar: escHtml(r.user_avatar || ''), color: 'linear-gradient(135deg,#3a3a3a,#121212)',
+            rating: r.rating, date: r.created_at.slice(0, 10), text: escHtml(r.body), helpful: Number(r.helpful) || 0
           }));
           const desktopBuild = reviews => reviews.map(r => {
             const av = r.avatar

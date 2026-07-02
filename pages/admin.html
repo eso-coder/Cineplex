@@ -1056,7 +1056,7 @@ async function refreshAccessToken() {
 
 /* ─── API Helper ─── */
 async function api(method, path, body) {
-  const authHeader = (TOKEN && TOKEN !== 'local_admin') ? { Authorization: 'Bearer ' + TOKEN } : {};
+  const authHeader = TOKEN ? { Authorization: 'Bearer ' + TOKEN } : {};
   const r = await fetch(API + path, {
     method,
     headers: { 'Content-Type': 'application/json', ...authHeader },
@@ -1066,7 +1066,7 @@ async function api(method, path, body) {
   const d = await r.json().catch(() => ({}));
 
   // Auto-refresh on 401 then retry once
-  if (r.status === 401 && TOKEN && TOKEN !== 'local_admin') {
+  if (r.status === 401 && TOKEN) {
     const refreshed = await refreshAccessToken();
     if (refreshed) {
       const retry = await fetch(API + path, {
@@ -1092,7 +1092,7 @@ async function api(method, path, body) {
 
 /* ─── FormData API helper (for file uploads) ─── */
 async function apiForm(method, path, formData) {
-  const authHeader = (TOKEN && TOKEN !== 'local_admin') ? { Authorization: 'Bearer ' + TOKEN } : {};
+  const authHeader = TOKEN ? { Authorization: 'Bearer ' + TOKEN } : {};
   const r = await fetch(API + path, {
     method,
     headers: { ...authHeader },
@@ -1102,7 +1102,7 @@ async function apiForm(method, path, formData) {
   const d = await r.json().catch(() => ({}));
 
   // Auto-refresh on 401 then retry once
-  if (r.status === 401 && TOKEN && TOKEN !== 'local_admin') {
+  if (r.status === 401 && TOKEN) {
     const refreshed = await refreshAccessToken();
     if (refreshed) {
       const retry = await fetch(API + path, {
@@ -1175,18 +1175,9 @@ document.getElementById('confirm-ok').onclick = () => {
 };
 
 /* ─── Auth ─── */
-const LOCAL_ADMIN = { email: 'admin@cineplex.uz', pass: 'admin123', name: 'Admin' };
-function _localLogin(name) {
-  TOKEN = 'local_admin';
-  localStorage.setItem('cp_admin_token', TOKEN);
-  document.getElementById('sb-name').textContent = name;
-  document.getElementById('sb-av').textContent   = name[0].toUpperCase();
-  document.getElementById('login-screen').style.display = 'none';
-  loadApiGenres();
-  loadDashboard();
-}
+// Eslatma: bu yerda hardcoded "local admin" backdoor bo'lgan — xavfsizlik uchun
+// olib tashlandi. Kirish faqat haqiqiy admin hisobi (backend JWT) orqali amalga oshadi.
 async function checkAuth() {
-  if (TOKEN === 'local_admin') { _localLogin(LOCAL_ADMIN.name); return; }
   if (!TOKEN) { showLogin(); return; }
   try {
     const resp = await api('GET', '/auth/me');
@@ -1206,7 +1197,6 @@ document.getElementById('login-btn').onclick = async () => {
   const pass  = document.getElementById('l-pass').value;
   const err   = document.getElementById('login-err');
   err.style.display = 'none';
-  if (email === LOCAL_ADMIN.email && pass === LOCAL_ADMIN.pass) { _localLogin(LOCAL_ADMIN.name); return; }
   try {
     const d = await api('POST', '/auth/login', { email, password: pass });
     if (!d.data?.user || d.data.user.role !== 'admin') throw new Error('Admin huquqi yo\'q');

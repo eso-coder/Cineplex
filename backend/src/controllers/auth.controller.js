@@ -9,10 +9,19 @@ const { generateOtp, sendOtpEmail } = require('../utils/mailer');
 const { uploadImage, deleteImage } = require('../utils/upload');
 const { handleUpload } = require('../middleware/upload.middleware');
 const { imageUpload } = require('../config/s3');
-const { google: googleCfg, apple: appleCfg } = require('../config/env');
+const { google: googleCfg, apple: appleCfg, nodeEnv } = require('../config/env');
 const logger = require('../utils/logger');
 
 const OTP_TTL_MS = 10 * 60 * 1000; // 10 minutes
+
+// Rasm URL'lari faqat https:// yoki xavfsiz raster data:image bo'lishi mumkin.
+// data:image/svg+xml ga RUXSAT BERILMAYDI — SVG ichida script bo'lib, stored XSS
+// vektori bo'lishi mumkin. http:// (shifrlanmagan) ham rad etiladi.
+const isSafeImageUrl = (url) => {
+  if (typeof url !== 'string') return false;
+  if (url.startsWith('https://')) return true;
+  return /^data:image\/(png|jpe?g|gif|webp|avif);base64,[a-z0-9+/=]+$/i.test(url);
+};
 
 const generateTokens = async (user) => {
   const payload = { id: user._id, role: user.role };
@@ -96,7 +105,20 @@ const verifyOtp = asyncHandler(async (req, res) => {
   const otp = await Otp.findOne({ email, used: false }).sort({ createdAt: -1 });
   if (!otp) throw ApiError.badRequest('No pending verification. Please sign up again.');
   if (otp.expiresAt.getTime() < Date.now()) throw ApiError.badRequest('Code has expired. Request a new one.');
-  if (otp.code !== code) throw ApiError.badRequest('Incorrect code');
+
+  // Brute-force himoyasi: 5 ta noto'g'ri urinishdan so'ng kod bloklanadi.
+  const MAX_OTP_ATTEMPTS = 5;
+  if (otp.attempts >= MAX_OTP_ATTEMPTS) {
+    await Otp.deleteMany({ email });
+    throw ApiError.badRequest('Too many incorrect attempts. Please request a new code.');
+  }
+
+  if (otp.code !== code) {
+    otp.attempts += 1;
+    await otp.save();
+    const left = MAX_OTP_ATTEMPTS - otp.attempts;
+    throw ApiError.badRequest(left > 0 ? `Incorrect code. ${left} attempt(s) left.` : 'Too many incorrect attempts. Please request a new code.');
+  }
 
   otp.used = true;
   await otp.save();
@@ -215,10 +237,16 @@ const oauthLogin = (provider, verifier) =>
 
     let profile = await verifier(idToken);
     if (!profile) {
-      // Stub fallback (no configured credentials / SDK): trust provided email.
+      // XAVFSIZLIK: production'da HECH QACHON email'ga ishonmaymiz — bu autentifikatsiya
+      // bypass'i bo'lardi (istalgan kishi istalgan email, jumladan admin bilan kira olardi).
+      // Stub fallback faqat development muhitida, OAuth sozlanmagan holatda ishlaydi.
+      if (nodeEnv === 'production') {
+        throw ApiError.unauthorized(`${provider} token verification failed`);
+      }
       if (!bodyEmail) {
         throw ApiError.badRequest(`${provider} sign-in is not configured. Provide an email to continue in stub mode.`);
       }
+      logger.warn(`[auth] ${provider} STUB login (dev only) for ${bodyEmail}`);
       profile = { email: bodyEmail, firstName, lastName, avatar: '' };
     }
 
@@ -328,10 +356,7 @@ const changePassword = asyncHandler(async (req, res) => {
 const saveAvatarUrl = asyncHandler(async (req, res) => {
   const { avatarUrl } = req.body;
   if (!avatarUrl) throw ApiError.badRequest('avatarUrl required');
-  // Accept https:// or data:image/ only
-  if (!avatarUrl.startsWith('http') && !avatarUrl.startsWith('data:image/')) {
-    throw ApiError.badRequest('Invalid avatar URL');
-  }
+  if (!isSafeImageUrl(avatarUrl)) throw ApiError.badRequest('Invalid avatar URL');
   const user = await User.findById(req.user._id);
   user.avatar = { url: avatarUrl, public_id: '' };
   await user.save({ validateBeforeSave: false });
@@ -343,9 +368,7 @@ const saveAvatarUrl = asyncHandler(async (req, res) => {
 const saveCoverUrl = asyncHandler(async (req, res) => {
   const { coverUrl } = req.body;
   if (!coverUrl) throw ApiError.badRequest('coverUrl required');
-  if (!coverUrl.startsWith('http') && !coverUrl.startsWith('data:image/')) {
-    throw ApiError.badRequest('Invalid cover URL');
-  }
+  if (!isSafeImageUrl(coverUrl)) throw ApiError.badRequest('Invalid cover URL');
   const user = await User.findById(req.user._id);
   user.coverImage = { url: coverUrl, public_id: '' };
   await user.save({ validateBeforeSave: false });

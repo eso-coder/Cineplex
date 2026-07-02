@@ -22,11 +22,31 @@ const { UPLOAD_ROOT } = require('./utils/upload');
 
 const app = express();
 
+// Vercel/reverse-proxy orqasida ishlaymiz — client IP X-Forwarded-For'dan olinadi.
+// Bu rate-limit'ning to'g'ri (haqiqiy IP bo'yicha) ishlashi uchun zarur.
+app.set('trust proxy', 1);
+
 // Frontend fayllari (backend/.. papkasi = loyiha ildizi)
 const FRONTEND_DIR = path.join(__dirname, '../../');
 
 // ─── Security ────────────────────────────────────────────────────────────────
-app.use(helmet({ contentSecurityPolicy: false }));
+// CSP frontend'da ko'p inline script bo'lgani uchun o'chirilgan, ammo qolgan
+// himoya sarlavhalari (HSTS, X-Frame-Options, X-Content-Type-Options,
+// Referrer-Policy, ...) yoqilgan. HSTS HTTPS'ni majburiy qiladi.
+app.use(
+  helmet({
+    contentSecurityPolicy: false,
+    crossOriginEmbedderPolicy: false, // YouTube/S3 embed'lari uchun
+    crossOriginResourcePolicy: { policy: 'cross-origin' }, // rasm/media boshqa originlardan
+    hsts: { maxAge: 15552000, includeSubDomains: true },
+  })
+);
+
+// API javoblari hech qachon cache'lanmasligi va sniff qilinmasligi kerak
+app.use('/api', (req, res, next) => {
+  res.set('X-Content-Type-Options', 'nosniff');
+  next();
+});
 
 // CORS: bir nechta ruxsat etilgan originlar (Vercel + localhost + custom domain)
 const allowedOrigins = clientUrl

@@ -5,14 +5,18 @@ const validate = require('../middleware/validate.middleware');
 const v = require('../validators/auth.validator');
 const rateLimit = require('express-rate-limit');
 
+const isDev = (process.env.NODE_ENV || 'development') !== 'production';
+
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 20,
   message: { success: false, message: 'Too many attempts. Try again in 15 minutes.' },
   standardHeaders: true,
   legacyHeaders: false,
-  // Skip rate limiting for localhost (dev/admin tools)
-  skip: (req) => req.ip === '127.0.0.1' || req.ip === '::1' || req.ip === '::ffff:127.0.0.1',
+  // Faqat development'da localhost'ni cheklovdan ozod qilamiz. Production'da
+  // buni qilmaymiz — aks holda X-Forwarded-For: 127.0.0.1 spoof qilib chetlab
+  // o'tish mumkin bo'lardi.
+  skip: (req) => isDev && (req.ip === '127.0.0.1' || req.ip === '::1' || req.ip === '::ffff:127.0.0.1'),
 });
 
 // ── Public OAuth config (qaysi providerlar yoqilgan) ──
