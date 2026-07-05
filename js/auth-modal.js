@@ -167,7 +167,7 @@
     var menu = $('#am-cc-menu');
     menu.innerHTML = COUNTRIES.map(function (c) {
       return '<button class="am-cc-opt" type="button" data-cc="' + c.c + '">' +
-        '<span class="am-flag" style="font-size:18px">' + c.f + '</span><span>' + c.n + '</span>' +
+        '<span class="am-flag" style="font-size: 27px">' + c.f + '</span><span>' + c.n + '</span>' +
         '<span class="am-dial">' + c.d + '</span></button>';
     }).join('');
     menu.querySelectorAll('.am-cc-opt').forEach(function (opt) {

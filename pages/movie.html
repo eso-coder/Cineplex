@@ -32,6 +32,13 @@
       min-height: 100vh;
     }
 
+    /* .ambient-bg (qattiq qora fon) #movie-bg-blur (poster blur fon)dan KEYIN
+       DOM'da joylashgani uchun uni to'liq yopib qo'yardi — desktop'da blur
+       banner umuman ko'rinmasdi. Shu sahifada ambient-bg o'chiriladi. */
+    body.movie-page .ambient-bg {
+      display: none;
+    }
+
     /* ── Actor Modal ── */
     .actor-modal-overlay {
       position: fixed;
@@ -123,7 +130,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 24px;
+      font-size: 36px;
       font-weight: 900;
       color: #ffffff;
       flex-shrink: 0;
@@ -132,13 +139,13 @@
     }
 
     .actor-modal-name {
-      font-size: 22px;
+      font-size: 33px;
       font-weight: 800;
       margin-bottom: 4px;
     }
 
     .actor-modal-role {
-      font-size: 13px;
+      font-size: 19.5px;
       color: rgba(255, 255, 255, 0.42);
     }
 
@@ -147,14 +154,14 @@
     }
 
     .actor-modal-bio {
-      font-size: 14px;
+      font-size: 21px;
       line-height: 1.65;
       color: rgba(255, 255, 255, 0.6);
       margin-bottom: 24px;
     }
 
     .actor-modal-films-label {
-      font-size: 11px;
+      font-size: 16.5px;
       font-weight: 700;
       color: rgba(255, 255, 255, 0.3);
       text-transform: uppercase;
@@ -172,7 +179,7 @@
       text-align: center;
       padding: 28px 0;
       color: rgba(255, 255, 255, 0.3);
-      font-size: 14px;
+      font-size: 21px;
     }
 
     /* ══════════════════════════════════
@@ -216,7 +223,7 @@
         border: 1px solid rgba(255, 255, 255, 0.12);
         border-radius: 50px;
         color: #fff;
-        font-size: 13px;
+        font-size: 19.5px;
         font-weight: 600;
         padding: 10px 25px;
         cursor: pointer;
@@ -243,7 +250,7 @@
         border: 1px solid rgba(255, 255, 255, 0.12);
         border-radius: 20px;
         color: rgba(255, 255, 255, 0.9);
-        font-size: 11.5px;
+        font-size: 17.25px;
         font-weight: 600;
         padding: 5px 10px;
         white-space: nowrap;
@@ -330,7 +337,7 @@
         border: 1px solid rgba(255, 255, 255, 0.18);
         border-radius: 999px;
         color: #fff;
-        font-size: 13px;
+        font-size: 19.5px;
         font-weight: 700;
         padding: 9px 16px 9px 10px;
         cursor: pointer;
@@ -460,7 +467,7 @@
       }
 
       .mob-title {
-        font-size: 26px;
+        font-size: 39px;
         font-weight: 900;
         color: #fff;
         line-height: 1.08;
@@ -493,26 +500,26 @@
       }
       .mob-title-rating {
         display: inline-flex; align-items: center; gap: 5px;
-        color: #f5c518; font-size: 13px; font-weight: 800;
+        color: #f5c518; font-size: 19.5px; font-weight: 800;
       }
       .mob-title-dur {
         display: inline-flex; align-items: center; gap: 5px;
-        color: rgba(255,255,255,0.45); font-size: 12px; font-weight: 600;
+        color: rgba(255,255,255,0.45); font-size: 18px; font-weight: 600;
       }
 
       .mob-meta-row {
         display: flex; align-items: center; flex-wrap: wrap; gap: 0;
-        font-size: 11.5px; font-weight: 500;
+        font-size: 17.25px; font-weight: 500;
         color: rgba(255,255,255,0.38);
         text-transform: uppercase; letter-spacing: 0.03em;
         margin-bottom: 0;
       }
-      .mob-meta-dot { margin: 0 5px; opacity: 0.3; font-size: 8px; }
+      .mob-meta-dot { margin: 0 5px; opacity: 0.3; font-size: 12px; }
       .mob-imdb-badge { display: none; }
 
       .mob-desc-wrap { margin-bottom: 20px; }
       .mob-desc {
-        font-size: 13.5px; line-height: 1.72;
+        font-size: 20.25px; line-height: 1.72;
         color: rgba(255,255,255,0.52);
         display: -webkit-box;
         -webkit-line-clamp: 4;
@@ -523,7 +530,7 @@
       .mob-read-more {
         margin-top: 7px;
         display: inline-flex; align-items: center; gap: 4px;
-        font-size: 11.5px; font-weight: 700;
+        font-size: 17.25px; font-weight: 700;
         color: rgba(255,255,255,0.42);
         background: none; border: none; padding: 0;
         cursor: pointer; font-family: inherit;
@@ -542,7 +549,7 @@
         width: 100%;
         display: flex; align-items: center; justify-content: center; gap: 9px;
         background: #fff; color: #0a0a0a;
-        font-size: 14.5px; font-weight: 800;
+        font-size: 21.75px; font-weight: 800;
         border: none; border-radius: 14px; padding: 15px 20px;
         cursor: pointer; font-family: inherit; letter-spacing: -0.01em;
         box-shadow: 0 4px 20px rgba(255,255,255,0.1);
@@ -555,7 +562,7 @@
         display: flex; align-items: center; justify-content: center; gap: 7px;
         background: rgba(255,255,255,0.07);
         border: 1px solid rgba(255,255,255,0.12);
-        color: rgba(255,255,255,0.8); font-size: 13px; font-weight: 700;
+        color: rgba(255,255,255,0.8); font-size: 19.5px; font-weight: 700;
         border-radius: 14px; padding: 13px 14px;
         cursor: pointer; font-family: inherit;
         backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
@@ -586,7 +593,7 @@
       }
 
       .mob-section-title {
-        font-size: 18px;
+        font-size: 27px;
         font-weight: 800;
         color: #fff;
         margin-bottom: 14px;
@@ -609,7 +616,7 @@
 
       /* ── View All tugmasi ── */
       .mob-view-all-btn {
-        font-size: 11.5px; font-weight: 700;
+        font-size: 17.25px; font-weight: 700;
         color: rgba(255,255,255,0.45);
         background: none; border: none; padding: 0;
         cursor: pointer; font-family: inherit;
@@ -685,13 +692,13 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 22px;
+        font-size: 33px;
         font-weight: 900;
         color: rgba(255, 255, 255, 0.6);
       }
 
       .mob-cast-name {
-        font-size: 11.5px;
+        font-size: 17.25px;
         font-weight: 700;
         color: #fff;
         white-space: nowrap;
@@ -701,7 +708,7 @@
       }
 
       .mob-cast-char {
-        font-size: 10.5px;
+        font-size: 15.75px;
         color: rgba(255, 255, 255, 0.4);
         white-space: nowrap;
         overflow: hidden;
@@ -722,7 +729,7 @@
         border: 1px solid rgba(255, 255, 255, 0.12);
         border-radius: 20px;
         color: rgba(255, 255, 255, 0.7);
-        font-size: 12px;
+        font-size: 18px;
         font-weight: 600;
         padding: 5px 12px;
       }
@@ -760,7 +767,7 @@
       }
 
       .mob-related-title {
-        font-size: 12.5px;
+        font-size: 18.75px;
         font-weight: 700;
         color: #fff;
         white-space: nowrap;
@@ -770,7 +777,7 @@
       }
 
       .mob-related-meta {
-        font-size: 11px;
+        font-size: 16.5px;
         color: rgba(255, 255, 255, 0.4);
       }
 
@@ -809,7 +816,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 13px;
+        font-size: 19.5px;
         font-weight: 700;
         color: #fff;
         flex-shrink: 0;
@@ -817,18 +824,18 @@
       }
 
       .mob-review-name {
-        font-size: 13px;
+        font-size: 19.5px;
         font-weight: 700;
         color: #fff;
       }
 
       .mob-review-date {
-        font-size: 11px;
+        font-size: 16.5px;
         color: rgba(255, 255, 255, 0.4);
       }
 
       .mob-review-text {
-        font-size: 13px;
+        font-size: 19.5px;
         line-height: 1.6;
         color: rgba(255, 255, 255, 0.65);
       }
@@ -849,7 +856,7 @@
         border-radius: 10px;
         padding: 10px 12px;
         color: #fff;
-        font-size: 14px;
+        font-size: 21px;
         font-family: inherit;
         resize: none;
         min-height: 80px;
@@ -868,7 +875,7 @@
       }
 
       .mob-star-btn {
-        font-size: 22px;
+        font-size: 33px;
         background: none;
         border: none;
         color: rgba(255, 255, 255, 0.2);
@@ -885,7 +892,7 @@
         width: 100%;
         background: #fff;
         color: #000;
-        font-size: 14px;
+        font-size: 21px;
         font-weight: 800;
         font-family: inherit;
         border: none;
@@ -940,7 +947,7 @@
       border-bottom: 1px solid rgba(255,255,255,0.07);
       flex-shrink: 0;
     }
-    .gallery-modal-title { font-size: 15px; font-weight: 700; color: #fff; }
+    .gallery-modal-title { font-size: 22.5px; font-weight: 700; color: #fff; }
     .gallery-modal-close {
       width: 36px; height: 36px; border-radius: 50%;
       background: var(--glass-2); border: 1px solid rgba(255,255,255,0.14);
@@ -990,7 +997,7 @@
       backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur);
       border: 1px solid rgba(255,255,255,0.18);
       display: flex; align-items: center; justify-content: center;
-      color: #fff; cursor: pointer; font-size: 18px;
+      color: #fff; cursor: pointer; font-size: 27px;
       transition: background 0.15s;
     }
     .img-lightbox-close:hover { background: var(--glass-3); }
@@ -1008,7 +1015,7 @@
     .img-lightbox-next { right: 14px; }
     .img-lightbox-counter {
       position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%);
-      font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.5);
+      font-size: 18px; font-weight: 600; color: rgba(255,255,255,0.5);
       letter-spacing: 0.05em;
     }
 
@@ -1227,7 +1234,7 @@
     <div class="mob-reviews" id="mob-reviews">
       <div class="mob-reviews-header">
         <div class="mob-section-title" style="margin-bottom:0">Sharhlar</div>
-        <span style="font-size:12px;color:rgba(255,255,255,0.4)" id="mob-review-count"></span>
+        <span style="font-size: 18px;color:rgba(255,255,255,0.4)" id="mob-review-count"></span>
       </div>
       <div id="mob-review-write-area"></div>
       <div id="mob-reviews-list"></div>
@@ -1286,7 +1293,7 @@
 
     function buildReviews(reviews) {
       if (!reviews.length) {
-        return `<div style="text-align:center;padding:24px 0;color:rgba(255,255,255,0.35);font-size:14px">
+        return `<div style="text-align:center;padding:24px 0;color:rgba(255,255,255,0.35);font-size: 21px">
           Hozircha sharhlar yo'q. Birinchi bo'lib fikr bildiring!</div>`;
       }
       return reviews.map(r => {
@@ -1400,14 +1407,14 @@
           document.getElementById('mob-page').style.display = 'block';
           document.getElementById('mob-info').innerHTML = `
             <div style="text-align:center;padding:80px 0;color:rgba(255,255,255,0.4)">
-              <p style="font-size:18px;font-weight:700;margin-bottom:12px">Film topilmadi</p>
-              <a href="../index.html" style="color:#fff;font-size:14px">Bosh sahifaga qaytish</a>
+              <p style="font-size: 27px;font-weight:700;margin-bottom:12px">Film topilmadi</p>
+              <a href="../index.html" style="color:#fff;font-size: 21px">Bosh sahifaga qaytish</a>
             </div>`;
         } else {
           document.getElementById('detail-root').innerHTML = `
             <div style="text-align:center;padding:120px 20px;color:rgba(255,255,255,0.4);">
-              <h2 style="font-size:20px;font-weight:700;color:rgba(255,255,255,0.5);margin-bottom:8px;">Film topilmadi</h2>
-              <a href="../index.html" style="color:#fff;font-size:14px;text-decoration:underline">Bosh sahifaga qaytish</a>
+              <h2 style="font-size: 30px;font-weight:700;color:rgba(255,255,255,0.5);margin-bottom:8px;">Film topilmadi</h2>
+              <a href="../index.html" style="color:#fff;font-size: 21px;text-decoration:underline">Bosh sahifaga qaytish</a>
             </div>`;
         }
         return;
@@ -1594,7 +1601,7 @@
             <div class="mob-review-write">
               <div class="mob-review-header" style="margin-bottom:10px">
                 ${avEl}
-                <span style="font-size:13px;color:rgba(255,255,255,0.55)">${name}, fikringizni yozing…</span>
+                <span style="font-size: 19.5px;color:rgba(255,255,255,0.55)">${name}, fikringizni yozing…</span>
               </div>
               <div class="mob-review-stars" id="mob-star-input">
                 ${[1,2,3,4,5].map(s => `<button class="mob-star-btn" data-s="${s}">★</button>`).join('')}
@@ -1613,8 +1620,8 @@
         } else {
           document.getElementById('mob-review-write-area').innerHTML = `
             <div class="mob-review-write" style="text-align:center">
-              <p style="font-size:13px;color:rgba(255,255,255,0.45);margin-bottom:12px">Sharh qoldirish uchun hisobingizga kiring</p>
-              <a href="/pages/login.html" style="display:inline-block;background:#fff;color:#000;font-weight:700;font-size:13px;border-radius:8px;padding:10px 22px;text-decoration:none">Kirish</a>
+              <p style="font-size: 19.5px;color:rgba(255,255,255,0.45);margin-bottom:12px">Sharh qoldirish uchun hisobingizga kiring</p>
+              <a href="/pages/login.html" style="display:inline-block;background:#fff;color:#000;font-weight:700;font-size: 19.5px;border-radius:8px;padding:10px 22px;text-decoration:none">Kirish</a>
             </div>`;
         }
 
@@ -1878,7 +1885,7 @@
           document.getElementById('mob-reviews-list').innerHTML = buildReviews(rv);
         } else {
           document.getElementById('mob-reviews-list').innerHTML =
-            `<div style="text-align:center;padding:24px 0;color:rgba(255,255,255,0.35);font-size:14px">Hozircha sharhlar yo'q.</div>`;
+            `<div style="text-align:center;padding:24px 0;color:rgba(255,255,255,0.35);font-size: 21px">Hozircha sharhlar yo'q.</div>`;
         }
       } catch { }
     }
@@ -2182,12 +2189,12 @@
       if (actorData) {
         if (actorData.birthDate) {
           const d = new Date(actorData.birthDate);
-          metaHTML += `<span style="font-size:11px;color:var(--text-muted);margin-right:10px">📅 ${d.toLocaleDateString('uz-UZ', { year: 'numeric', month: 'long', day: 'numeric' })}</span>`;
+          metaHTML += `<span style="font-size: 16.5px;color:var(--text-muted);margin-right:10px">📅 ${d.toLocaleDateString('uz-UZ', { year: 'numeric', month: 'long', day: 'numeric' })}</span>`;
         }
-        if (actorData.birthPlace) metaHTML += `<span style="font-size:11px;color:var(--text-muted);margin-right:10px">📍 ${actorData.birthPlace}</span>`;
+        if (actorData.birthPlace) metaHTML += `<span style="font-size: 16.5px;color:var(--text-muted);margin-right:10px">📍 ${actorData.birthPlace}</span>`;
       }
       document.getElementById('am-name').textContent = name;
-      document.getElementById('am-bio').innerHTML = `${metaHTML ? `<div style="margin-bottom:10px;display:flex;flex-wrap:wrap;gap:4px">${metaHTML}</div>` : ''}<span>${bio}</span>${actorData ? `<a href="../pages/actor-profile.html?id=${actorData.id}" style="display:inline-flex;align-items:center;gap:5px;margin-top:12px;font-size:12px;color:rgba(255,255,255,0.45);transition:color 0.15s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.45)'">To'liq profil ko'rish →</a>` : ''}`;
+      document.getElementById('am-bio').innerHTML = `${metaHTML ? `<div style="margin-bottom:10px;display:flex;flex-wrap:wrap;gap:4px">${metaHTML}</div>` : ''}<span>${bio}</span>${actorData ? `<a href="../pages/actor-profile.html?id=${actorData.id}" style="display:inline-flex;align-items:center;gap:5px;margin-top:12px;font-size: 18px;color:rgba(255,255,255,0.45);transition:color 0.15s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.45)'">To'liq profil ko'rish →</a>` : ''}`;
       const grid = document.getElementById('am-grid');
       grid.innerHTML = films.length ? films.map(m => App.buildCard(m, '../')).join('') : '<div class="actor-modal-empty">Bu kutubxonada filmlar topilmadi.</div>';
       document.getElementById('actor-modal-overlay').classList.add('open');

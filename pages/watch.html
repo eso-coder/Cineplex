@@ -23,38 +23,59 @@
       padding-top: var(--navbar-h);
     }
 
+    /* Floating, ixcham overlay — player ustida, boshqaruvlar bilan birga
+       avtomatik yashiriladi/ko'rinadi (show-ui), statik joy egallamaydi. */
     .watch-top-bar {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      z-index: 11;
       display: flex;
       align-items: center;
-      gap: 14px;
-      padding: 14px 28px;
-      background: rgba(0,0,0,0.6);
-      backdrop-filter: blur(12px);
+      gap: 12px;
+      padding: 16px 20px;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.65) 0%, transparent 100%);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+    .player-wrapper.show-ui .watch-top-bar {
+      opacity: 1;
+      pointer-events: all;
     }
 
     .watch-back {
       display: flex;
       align-items: center;
-      gap: 7px;
-      color: rgba(255,255,255,0.7);
-      font-size: 13px;
-      font-weight: 500;
+      justify-content: center;
+      width: 38px; height: 38px;
+      flex-shrink: 0;
+      border-radius: 50%;
+      background: var(--glass-2, rgba(25,30,37,0.62));
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255,255,255,0.14);
+      color: rgba(255,255,255,0.85);
       cursor: pointer;
-      transition: color 0.18s;
+      transition: background 0.18s, color 0.18s, transform 0.15s;
     }
 
     .watch-back:hover {
+      background: var(--glass-3, rgba(25,30,37,0.78));
       color: #ffffff;
+      transform: scale(1.06);
     }
 
     .watch-top-title {
-      font-size: 14px;
+      font-size: 22.5px;
       font-weight: 700;
+      line-height: 1.25;
+      text-shadow: 0 1px 6px rgba(0,0,0,0.5);
     }
 
     .watch-top-year {
-      font-size: 12px;
-      color: rgba(255,255,255,0.4);
+      font-size: 18px;
+      color: rgba(255,255,255,0.55);
+      text-shadow: 0 1px 6px rgba(0,0,0,0.5);
     }
 
     /* ═══ CINEPLEX PLAYER ═══ */
@@ -213,12 +234,12 @@
       border-radius: 8px;
       display: flex; align-items: center; justify-content: center;
       transition: color 0.15s, background 0.15s;
-      font-size: 11px; font-weight: 800; letter-spacing: 0.3px;
+      font-size: 16.5px; font-weight: 800; letter-spacing: 0.3px;
     }
     .player-ctrl-btn:hover { color: #ffffff; background: rgba(255,255,255,0.1); }
     .player-ctrl-btn.active-ctrl { color: #4e4e4e; }
     .player-time {
-      font-size: 12px; font-weight: 600;
+      font-size: 18px; font-weight: 600;
       color: rgba(255,255,255,0.65);
       padding: 0 10px; white-space: nowrap;
     }
@@ -240,7 +261,7 @@
       display: flex; align-items: center; justify-content: center;
       width: 24px; height: 15px;
       border: 1.8px solid currentColor; border-radius: 3px;
-      font-size: 9px; font-weight: 800; letter-spacing: 0.2px;
+      font-size: 13.5px; font-weight: 800; letter-spacing: 0.2px;
     }
     .psd-label-btn { min-width: 40px; justify-content: center; }
     .psd-group { display: flex; align-items: center; gap: 2px; }
@@ -252,7 +273,7 @@
     }
 
     .episode-list-title {
-      font-size: 16px;
+      font-size: 24px;
       font-weight: 700;
       margin-bottom: 14px;
     }
@@ -271,7 +292,7 @@
       border: 1px solid var(--border);
       color: rgba(255,255,255,0.7);
       font-family: inherit;
-      font-size: 13px;
+      font-size: 19.5px;
       font-weight: 600;
       cursor: pointer;
       transition: background 0.18s, color 0.18s, border-color 0.18s;
@@ -310,7 +331,7 @@
     }
 
     .ep-num {
-      font-size: 18px;
+      font-size: 27px;
       font-weight: 800;
       color: rgba(255,255,255,0.2);
       width: 32px;
@@ -338,13 +359,13 @@
     }
 
     .ep-title {
-      font-size: 13px;
+      font-size: 19.5px;
       font-weight: 600;
       margin-bottom: 3px;
     }
 
     .ep-duration {
-      font-size: 11px;
+      font-size: 16.5px;
       color: var(--text-dim);
     }
 
@@ -364,7 +385,7 @@
     }
 
     .psd-label-btn {
-      font-size: 10px !important;
+      font-size: 15px !important;
       font-weight: 800 !important;
       letter-spacing: 0.3px;
       min-width: 38px;
@@ -379,7 +400,7 @@
       height: 14px;
       border: 1.5px solid currentColor;
       border-radius: 3px;
-      font-size: 9px;
+      font-size: 13.5px;
       font-weight: 800;
       letter-spacing: 0.2px;
       line-height: 1;
@@ -411,7 +432,7 @@
     }
 
     .psd-head {
-      font-size: 10px;
+      font-size: 15px;
       font-weight: 700;
       color: rgba(255,255,255,0.3);
       text-transform: uppercase;
@@ -425,7 +446,7 @@
       align-items: center;
       justify-content: space-between;
       padding: 10px 14px;
-      font-size: 13px;
+      font-size: 19.5px;
       color: rgba(255,255,255,0.62);
       cursor: pointer;
       transition: background 0.14s, color 0.14s;
@@ -469,23 +490,25 @@
 
     .sub-line {
       display: inline-block;
-      background: rgba(0,0,0,0.68);
-      backdrop-filter: blur(3px);
-      -webkit-backdrop-filter: blur(3px);
+      background: rgba(10, 11, 13, 0.72);
+      backdrop-filter: blur(14px) saturate(1.3);
+      -webkit-backdrop-filter: blur(14px) saturate(1.3);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       color: #ffffff;
       font-family: 'Outfit', sans-serif;
-      font-size: clamp(13px, 1.9vw, 21px);
-      font-weight: 500;
-      line-height: 1.55;
-      letter-spacing: 0.018em;
-      padding: 4px 20px 5px;
-      border-radius: 6px;
-      text-shadow: 0 1px 6px rgba(0,0,0,0.55);
-      animation: subIn 0.18s cubic-bezier(0.16,1,0.3,1) both;
+      font-size: clamp(21px, 3vw, 33px);
+      font-weight: 600;
+      line-height: 1.5;
+      letter-spacing: 0.01em;
+      padding: 7px 22px 8px;
+      border-radius: 14px;
+      box-shadow: 0 6px 22px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06);
+      text-shadow: 0 1px 4px rgba(0,0,0,0.4);
+      animation: subIn 0.28s cubic-bezier(0.16,1,0.3,1) both;
     }
     @keyframes subIn {
-      from { opacity: 0; transform: translateY(6px); }
-      to   { opacity: 1; transform: translateY(0); }
+      from { opacity: 0; transform: translateY(8px) scale(0.97); filter: blur(3px); }
+      to   { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
     }
 
     /* ══ Volume HUD — "Reactive Equalizer Capsule" ══
@@ -569,7 +592,7 @@
 
     .volume-hud__value {
       min-width: 30px;
-      font: 600 13px/1 'Outfit', sans-serif;
+      font: 600 19.5px/1 'Outfit', sans-serif;
       color: #f4f4f5;
       font-variant-numeric: tabular-nums;
     }
@@ -585,6 +608,74 @@
       .volume-hud__bars { height: 18px; }
     }
 
+    /* ══ Seek HUD — +10s / -10s ko'rsatkichi ══ */
+    .seek-hud {
+      position: absolute;
+      top: 50%;
+      z-index: 60;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      padding: 18px 22px;
+      border-radius: 999px;
+      background: var(--glass-solid, rgba(12, 12, 14, 0.8));
+      backdrop-filter: blur(18px) saturate(1.4);
+      -webkit-backdrop-filter: blur(18px) saturate(1.4);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.35), inset 0 0 0 1px rgba(255,255,255,0.03);
+      color: #ffffff;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(-50%) scale(0.8);
+      filter: blur(6px);
+      transition: opacity 0.18s ease, filter 0.28s ease;
+    }
+    .seek-hud--left  { left: 40px; }
+    .seek-hud--right { right: 40px; }
+
+    .seek-hud.is-visible {
+      opacity: 1;
+      filter: blur(0px);
+      transform: translateY(-50%) scale(1);
+    }
+    .seek-hud.is-pulse {
+      animation: seekPulse 0.38s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    @keyframes seekPulse {
+      0%   { transform: translateY(-50%) scale(0.85); }
+      55%  { transform: translateY(-50%) scale(1.12); }
+      100% { transform: translateY(-50%) scale(1); }
+    }
+    .seek-hud.is-hiding {
+      opacity: 0;
+      filter: blur(8px);
+      transform: translateY(-50%) scale(0.9);
+      transition: opacity 0.35s ease, filter 0.4s ease, transform 0.4s ease;
+    }
+
+    .seek-hud__icon {
+      width: 26px; height: 26px;
+      display: flex; align-items: center; justify-content: center;
+      color: #7dd3fc;
+    }
+    .seek-hud--right .seek-hud__icon { color: #fbbf24; }
+    .seek-hud__icon svg { width: 100%; height: 100%; }
+
+    .seek-hud__text {
+      font: 600 19.5px/1 'Outfit', sans-serif;
+      color: #f4f4f5;
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+
+    @media (max-width: 640px) {
+      .seek-hud { padding: 14px 18px; }
+      .seek-hud--left  { left: 18px; }
+      .seek-hud--right { right: 18px; }
+      .seek-hud__icon { width: 22px; height: 22px; }
+    }
+
     /* ── Responsive: tablet ── */
     @media (max-width: 860px) {
       .watch-top-bar { padding: 12px 16px; }
@@ -594,37 +685,39 @@
     /* ── Responsive: mobile (≤640px) ── */
     @media (max-width: 640px) {
       .watch-top-bar { padding: 10px 12px; gap: 10px; }
-      .watch-top-title { font-size: 13px; }
-      #top-fav-btn { padding: 6px 10px !important; font-size: 11px !important; }
+      .watch-top-title { font-size: 19.5px; }
+      #top-fav-btn { padding: 6px 10px !important; font-size: 16.5px !important; }
 
       .player-controls { padding: 0 10px 12px; }
       .player-progress-wrap { margin-bottom: 10px; }
       .player-bar { gap: 0; }
       .player-ctrl-btn { padding: 6px 5px; }
       .player-ctrl-btn svg { width: 18px; height: 18px; }
-      .player-time { font-size: 11px; padding: 0 6px; }
+      .player-time { font-size: 16.5px; padding: 0 6px; }
       /* Hide the volume slider on phones — keep the mute toggle */
       .player-vol-slider { display: none; }
-      .player-center-btn { width: 60px; height: 60px; }
-      .player-center-btn svg { width: 22px; height: 22px; }
-      .psd-label-btn { min-width: 30px; font-size: 9px !important; }
+      .player-center-btn { width: 70px; height: 70px; }
+      .player-center-btn svg { width: 27px; height: 27px; }
+      .psd-label-btn { min-width: 30px; font-size: 13.5px !important; }
       .player-settings-dd { min-width: 150px; }
 
       .related-section { padding: 20px 12px 0; }
       .episode-item { gap: 10px; padding: 9px 10px; }
       .ep-thumb { width: 68px; height: 42px; }
-      .ep-num { width: 22px; font-size: 15px; }
-      .ep-title { font-size: 12px; }
+      .ep-num { width: 22px; font-size: 22.5px; }
+      .ep-title { font-size: 18px; }
       .sub-overlay { max-width: 90%; }
     }
 
     /* ── Responsive: small phone (≤400px) ── */
     @media (max-width: 400px) {
       /* Drop the +10s/-10s skip buttons to avoid control overflow */
-      .player-bar .player-ctrl-btn[onclick="skipBack()"],
-      .player-bar .player-ctrl-btn[onclick="skipFwd()"] { display: none; }
+      .player-bar .player-ctrl-btn[onclick="skipBackHud()"],
+      .player-bar .player-ctrl-btn[onclick="skipFwdHud()"] { display: none; }
       .player-ctrl-btn { padding: 6px 4px; }
-      .watch-top-title { font-size: 12px; }
+      .watch-top-title { font-size: 18px; }
+      .player-center-btn { width: 56px; height: 56px; }
+      .player-center-btn svg { width: 22px; height: 22px; }
     }
   </style>
 </head>
@@ -633,26 +726,25 @@
   <div id="navbar-placeholder"></div>
 
   <main>
-    <!-- ── TOP BAR ── -->
-    <div class="watch-top-bar">
-      <div class="watch-back" onclick="history.back()">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <path d="m15 18-6-6 6-6" />
-        </svg>
-        Orqaga
-      </div>
-      <div style="flex:1">
-        <div class="watch-top-title" id="watch-top-title">Yuklanmoqda…</div>
-        <div class="watch-top-year" id="watch-top-year"></div>
-      </div>
-      <button class="btn-secondary" id="top-fav-btn" style="padding:7px 14px;font-size:12px;" onclick="toggleFavAPI()">
-        <span id="top-fav-icon"></span>
-        <span id="top-fav-label">Saqlangan</span>
-      </button>
-    </div>
-
     <!-- ── PLAYER ── -->
     <div class="player-wrapper" id="player-wrapper">
+      <!-- ── TOP BAR (player ustida floating, boshqaruvlar bilan yashiriladi) ── -->
+      <div class="watch-top-bar">
+        <div class="watch-back" onclick="history.back()" title="Orqaga">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="m15 18-6-6 6-6" />
+          </svg>
+        </div>
+        <div style="flex:1;min-width:0">
+          <div class="watch-top-title" id="watch-top-title">Yuklanmoqda…</div>
+          <div class="watch-top-year" id="watch-top-year"></div>
+        </div>
+        <button class="btn-secondary" id="top-fav-btn" style="padding:7px 14px;font-size: 18px;" onclick="toggleFavAPI()">
+          <span id="top-fav-icon"></span>
+          <span id="top-fav-label">Saqlangan</span>
+        </button>
+      </div>
+
       <img class="player-bg" id="player-bg" src="" alt="">
       <div class="player-poster" id="player-poster-wrap">
         <img id="player-poster-img" src="" alt="" style="height:100%;width:auto;max-width:100%;object-fit:contain;">
@@ -680,6 +772,12 @@
         <div class="volume-hud__value" id="volumeValue">80</div>
       </div>
 
+      <!-- Seek HUD (ArrowLeft/ArrowRight yoki +10/-10 tugmasi paytida chiqadi) -->
+      <div id="seekHud" class="seek-hud" aria-hidden="true">
+        <div class="seek-hud__icon" id="seekHudIcon"></div>
+        <div class="seek-hud__text" id="seekHudText">10 soniya</div>
+      </div>
+
       <!-- Bottom gradient overlay -->
       <div class="player-grad-overlay"></div>
 
@@ -704,14 +802,14 @@
               <path d="M8 5v14l11-7z" />
             </svg>
           </button>
-          <button class="player-ctrl-btn" onclick="skipBack()" title="-10s">
+          <button class="player-ctrl-btn" onclick="skipBackHud()" title="-10s">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="1 4 1 10 7 10" />
               <path d="M3.51 15a9 9 0 1 0 .49-4.08" /><text x="8" y="15" font-size="5" fill="currentColor"
                 stroke="none">10</text>
             </svg>
           </button>
-          <button class="player-ctrl-btn" onclick="skipFwd()" title="+10s">
+          <button class="player-ctrl-btn" onclick="skipFwdHud()" title="+10s">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="23 4 23 10 17 10" />
               <path d="M20.49 15a9 9 0 1 1-.49-4.08" /><text x="8" y="15" font-size="5" fill="currentColor"
@@ -924,7 +1022,7 @@
           <span>${movie.year || ''}</span><span>·</span>
           <span style="color:var(--gold);font-weight:600">★ ${movie.rating || 0} IMDB</span><span>·</span>
           <span>${movie.type === 'series' ? (movie.seasons || 1) + ' mavsum' : (movie.duration || '')}</span>
-          ${(movie.genre || []).map(g => `<span style="background:rgba(255,255,255,0.07);padding:2px 9px;border-radius:50px;font-size:11px">${g}</span>`).join('')}
+          ${(movie.genre || []).map(g => `<span style="background:rgba(255,255,255,0.07);padding:2px 9px;border-radius:50px;font-size: 16.5px">${g}</span>`).join('')}
         </div>
         <div class="watch-desc">${movie.description || ''}</div>
       `;
@@ -1095,11 +1193,11 @@
                            .sort((a, b) => (b.height || 0) - (a.height || 0));
       dd.innerHTML = `
         <div class="psd-head">Sifat</div>
-        <div class="psd-item" onclick="setHlsQuality(-1)">Avto <span style="font-size:9px;opacity:.5">AI tanlaydi</span></div>
+        <div class="psd-item" onclick="setHlsQuality(-1)">Avto <span style="font-size: 13.5px;opacity:.5">AI tanlaydi</span></div>
         ${sorted.map(l => `
           <div class="psd-item" data-lvl="${l.origIndex}" onclick="setHlsQuality(${l.origIndex})">
             ${heightFullLabel(l.height)}
-            ${l.bitrate ? `<span style="font-size:9px;opacity:.45">${Math.round(l.bitrate/1000)}k</span>` : ''}
+            ${l.bitrate ? `<span style="font-size: 13.5px;opacity:.45">${Math.round(l.bitrate/1000)}k</span>` : ''}
           </div>`).join('')}
       `;
       // Default: highest quality
@@ -1541,6 +1639,48 @@
       showVolumeHud(next, next === 0);
     };
 
+    /* ══════════════════════════════════════════
+       SEEK HUD — +10s / -10s ko'rsatkichi
+       Tez-tez bosilsa soniyalar jamlanib ko'rsatiladi (YouTube uslubida).
+    ══════════════════════════════════════════ */
+    const SEEK_ICON_BACK = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.08"/></svg>`;
+    const SEEK_ICON_FWD  = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.49-4.08"/></svg>`;
+
+    let seekHudHideTimer = null;
+    let seekAccum = 0;
+    let seekDir   = 0; // -1 orqaga, +1 oldinga
+
+    function showSeekHud(deltaSeconds) {
+      const hud  = document.getElementById('seekHud');
+      const icon = document.getElementById('seekHudIcon');
+      const text = document.getElementById('seekHudText');
+      if (!hud) return;
+      const dir = deltaSeconds > 0 ? 1 : -1;
+      if (dir !== seekDir) { seekAccum = 0; seekDir = dir; }
+      seekAccum += Math.abs(deltaSeconds);
+
+      hud.classList.toggle('seek-hud--left', dir < 0);
+      hud.classList.toggle('seek-hud--right', dir > 0);
+      icon.innerHTML = dir < 0 ? SEEK_ICON_BACK : SEEK_ICON_FWD;
+      text.textContent = seekAccum + ' soniya' + (dir < 0 ? ' orqaga' : ' oldinga');
+
+      hud.classList.remove('is-hiding', 'is-pulse');
+      void hud.offsetWidth; // reflow — pulse animatsiyasini qayta boshlash uchun
+      hud.classList.add('is-visible', 'is-pulse');
+      hud.setAttribute('aria-hidden', 'false');
+
+      clearTimeout(seekHudHideTimer);
+      seekHudHideTimer = setTimeout(() => {
+        hud.classList.remove('is-visible');
+        hud.classList.add('is-hiding');
+        hud.setAttribute('aria-hidden', 'true');
+        seekAccum = 0; seekDir = 0;
+      }, 700);
+    }
+
+    window.skipBackHud = function () { skipBack(); showSeekHud(-10); };
+    window.skipFwdHud  = function () { skipFwd();  showSeekHud(10); };
+
     window.toggleFullscreen = async function () {
       const el = document.getElementById('player-wrapper');
       const reqFs = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen;
@@ -1647,25 +1787,61 @@
       // uni ko'rsatadi (3s keyin yana yashirinadi); ko'rinib turganda play/pause.
       // Desktopda esa har doim play/pause (sichqoncha mousemove bilan ko'rsatadi).
       const isTouchDev = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+
+      /* Mobilda: ekranning chap/o'ng yarmiga qo'sh-bosish → 10s orqaga/oldinga.
+         Bitta bosish (play/pause yoki boshqaruvlarni ko'rsatish) DOUBLE_TAP_MS
+         kechiktiriladi — shu vaqt ichida ikkinchi bosish kelsa, seek ishga tushadi
+         va yagona-bosish harakati bekor qilinadi. */
+      const DOUBLE_TAP_MS = 300;
+      let lastTapTime = 0;
+      let lastTapSide = null;
+      let tapTimer = null;
+
       pw.addEventListener('click', e => {
-        if (e.target.closest('.player-controls') || e.target.closest('.player-center-btn')) return;
-        if (e.target === pw || e.target === videoEl || e.target.closest('#player-poster-wrap')) {
-          if (isTouchDev && !pw.classList.contains('show-ui')) { showControls(); return; }
-          togglePlay();
+        if (e.target.closest('.player-controls') || e.target.closest('.player-center-btn') || e.target.closest('.watch-top-bar')) return;
+        const isPlayerArea = e.target === pw || e.target === videoEl || e.target.closest('#player-poster-wrap');
+        if (!isPlayerArea) return;
+
+        if (!isTouchDev) { togglePlay(); return; }
+
+        const rect = pw.getBoundingClientRect();
+        const side = (e.clientX - rect.left) < rect.width / 2 ? 'left' : 'right';
+        const now = Date.now();
+
+        if (tapTimer && (now - lastTapTime) < DOUBLE_TAP_MS && side === lastTapSide) {
+          clearTimeout(tapTimer);
+          tapTimer = null;
+          lastTapTime = 0; lastTapSide = null;
+          if (side === 'left') skipBackHud(); else skipFwdHud();
+          return;
         }
+
+        lastTapTime = now; lastTapSide = side;
+        clearTimeout(tapTimer);
+        tapTimer = setTimeout(() => {
+          tapTimer = null;
+          if (!pw.classList.contains('show-ui')) { showControls(); return; }
+          togglePlay();
+        }, DOUBLE_TAP_MS);
       });
     }
 
     /* ── Keyboard shortcuts ── */
     document.addEventListener('keydown', e => {
-      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-      if (e.code === 'Space' || e.code === 'KeyK') { e.preventDefault(); togglePlay(); }
-      else if (e.code === 'ArrowLeft')  { e.preventDefault(); skipBack(); }
-      else if (e.code === 'ArrowRight') { e.preventDefault(); skipFwd(); }
-      else if (e.code === 'ArrowUp')    { e.preventDefault(); adjustVolumeHud(5); }
-      else if (e.code === 'ArrowDown')  { e.preventDefault(); adjustVolumeHud(-5); }
-      else if (e.code === 'KeyM')       { toggleMute(); showVolumeHud(muted ? 0 : (document.getElementById('vol-slider')?.value || 80), muted); }
-      else if (e.code === 'KeyF')       { toggleFullscreen(); }
+      const tag = e.target.tagName;
+      // Faqat matn kiritish maydonlarida bloklaymiz — vol-slider (range) bunga kirmaydi,
+      // aks holda u fokusda bo'lganda Up/Down HUD ishlamay qolardi.
+      const isTypingField = (tag === 'INPUT' && e.target.type !== 'range') || tag === 'TEXTAREA';
+      if (isTypingField) return;
+      try {
+        if (e.code === 'Space' || e.code === 'KeyK') { e.preventDefault(); togglePlay(); }
+        else if (e.code === 'ArrowLeft')  { e.preventDefault(); skipBackHud(); }
+        else if (e.code === 'ArrowRight') { e.preventDefault(); skipFwdHud(); }
+        else if (e.code === 'ArrowUp')    { e.preventDefault(); adjustVolumeHud(5); }
+        else if (e.code === 'ArrowDown')  { e.preventDefault(); adjustVolumeHud(-5); }
+        else if (e.code === 'KeyM')       { toggleMute(); const vs = document.getElementById('vol-slider'); showVolumeHud(muted ? 0 : (vs ? +vs.value : 80), muted); }
+        else if (e.code === 'KeyF')       { toggleFullscreen(); }
+      } catch (err) { console.error('Player keyboard shortcut xato:', err); }
     });
 
     /* ── Favorite toggle (local) ── */

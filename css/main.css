@@ -6,7 +6,7 @@
 /* ── DESIGN TOKENS ── */
 :root {
   --bg: #000000;
-  --glass-1: rgba(25, 30, 37, 0.45);
+  --glass-1: rgba(78, 78, 78, 0.45);
   --glass-2: rgba(25, 30, 37, 0.62);
   --glass-3: rgba(25, 30, 37, 0.78);
   --glass-solid: rgba(25, 30, 37, 0.8);
@@ -44,7 +44,7 @@
 }
 
 html {
-  font-size: 16px;
+  font-size: 24px;
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
   height: 100%;
@@ -123,7 +123,7 @@ ul {
 }
 
 .intro-logo-name {
-  font-size: 58px;
+  font-size: 87px;
   font-weight: 800;
   letter-spacing: 10px;
   text-transform: uppercase;
@@ -149,7 +149,7 @@ ul {
 }
 
 .intro-logo-sub {
-  font-size: 12px;
+  font-size: 18px;
   font-weight: 300;
   letter-spacing: 7px;
   text-transform: uppercase;
@@ -289,7 +289,7 @@ ul {
 }
 
 .logo-wordmark {
-  font-size: 20px;
+  font-size: 30px;
   font-weight: 800;
   letter-spacing: 4px;
   text-transform: uppercase;
@@ -311,7 +311,7 @@ ul {
 
 .nav-links li a {
   color: var(--text-dim);
-  font-size: 15px;
+  font-size: 22.5px;
   font-weight: 500;
   padding: 7px 14px;
   border-radius: 50px;
@@ -375,7 +375,7 @@ ul {
   outline: none;
   color: #ffffff;
   font-family: "Outfit", sans-serif;
-  font-size: 14px;
+  font-size: 21px;
   width: 100%;
 }
 
@@ -424,7 +424,7 @@ ul {
   left: 0;
   right: 0;
   z-index: 499;
-  background: rgba(9, 9, 9, 0.97);
+  background: var(--glass-solid);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
@@ -463,7 +463,7 @@ ul {
   outline: none;
   color: #ffffff;
   font-family: "Outfit", sans-serif;
-  font-size: 15px;
+  font-size: 22.5px;
   width: 100%;
 }
 .mobile-search input::placeholder {
@@ -480,7 +480,7 @@ ul {
 .mobile-links li a {
   display: block;
   color: var(--text-dim);
-  font-size: 16px;
+  font-size: 24px;
   font-weight: 500;
   padding: 13px 14px;
   border-radius: 12px;
@@ -509,7 +509,7 @@ ul {
   border: 1px solid rgba(255, 255, 255, 0.09);
   color: var(--text-dim);
   font-family: "Outfit", sans-serif;
-  font-size: 13px;
+  font-size: 19.5px;
   font-weight: 600;
   cursor: pointer;
   transition:
@@ -553,7 +553,7 @@ body.menu-open {
   text-align: center;
   padding: 12px 0;
   border-radius: 11px;
-  font-size: 14px;
+  font-size: 21px;
   font-weight: 600;
   transition:
     background 0.18s,
@@ -598,7 +598,7 @@ body.menu-open {
   border: 1px solid var(--border-h);
   background: transparent;
   color: rgba(255, 255, 255, 0.75);
-  font-size: 12.5px;
+  font-size: 18.75px;
   font-weight: 700;
   letter-spacing: 0.4px;
   cursor: pointer;
@@ -646,7 +646,7 @@ body.menu-open {
   border-radius: 9px;
   background: transparent;
   color: rgba(255, 255, 255, 0.78);
-  font-size: 13px;
+  font-size: 19.5px;
   font-weight: 600;
   cursor: pointer;
   transition:
@@ -678,7 +678,7 @@ body.menu-open {
   border: 1px solid var(--border-h);
   background: transparent;
   color: rgba(255, 255, 255, 0.7);
-  font-size: 12.5px;
+  font-size: 18.75px;
   font-weight: 600;
   letter-spacing: 0.3px;
   text-decoration: none;
@@ -702,7 +702,7 @@ body.menu-open {
   border: 1px solid rgba(255, 255, 255, 0.4);
   background: rgba(255, 255, 255, 0.08);
   color: var(--gold);
-  font-size: 12.5px;
+  font-size: 18.75px;
   font-weight: 600;
   letter-spacing: 0.3px;
   text-decoration: none;
@@ -796,12 +796,12 @@ body.menu-open {
 }
 
 .notif-dd-title {
-  font-size: 16px;
+  font-size: 24px;
   font-weight: 700;
 }
 
 .notif-dd-clear {
-  font-size: 12px;
+  font-size: 18px;
   color: rgba(255, 255, 255, 0.38);
   cursor: pointer;
   transition: color 0.18s;
@@ -842,7 +842,7 @@ body.menu-open {
 }
 
 .notif-emoji {
-  font-size: 22px;
+  font-size: 33px;
   flex-shrink: 0;
   margin-top: 1px;
 }
@@ -853,19 +853,19 @@ body.menu-open {
 }
 
 .notif-item-title {
-  font-size: 14px;
+  font-size: 21px;
   font-weight: 600;
   margin-bottom: 3px;
 }
 
 .notif-item-text {
-  font-size: 13px;
+  font-size: 19.5px;
   color: rgba(255, 255, 255, 0.5);
   line-height: 1.4;
 }
 
 .notif-item-time {
-  font-size: 11.5px;
+  font-size: 17.25px;
   color: rgba(255, 255, 255, 0.28);
   margin-top: 5px;
 }
@@ -886,7 +886,7 @@ body.menu-open {
 }
 
 .notif-dd-footer a {
-  font-size: 13px;
+  font-size: 19.5px;
   color: rgba(255, 255, 255, 0.42);
   transition: color 0.18s;
 }
@@ -924,7 +924,7 @@ body.menu-open {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 11px;
+  font-size: 16.5px;
   font-weight: 800;
   color: #ffffff;
   flex-shrink: 0;
@@ -938,7 +938,7 @@ body.menu-open {
 }
 
 .nav-user-name {
-  font-size: 14px;
+  font-size: 21px;
   font-weight: 600;
 }
 
@@ -1051,7 +1051,7 @@ body.menu-open {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 15px;
+  font-size: 22.5px;
   font-weight: 800;
   color: #ffffff;
 }
@@ -1062,14 +1062,14 @@ body.menu-open {
 }
 
 .pdd-name {
-  font-size: 14px;
+  font-size: 21px;
   font-weight: 700;
   color: #ffffff;
   margin-bottom: 2px;
 }
 
 .pdd-email {
-  font-size: 11px;
+  font-size: 16.5px;
   color: rgba(255, 255, 255, 0.38);
   white-space: nowrap;
   overflow: hidden;
@@ -1081,7 +1081,7 @@ body.menu-open {
   align-items: center;
   gap: 4px;
   margin-top: 5px;
-  font-size: 9px;
+  font-size: 13.5px;
   font-weight: 700;
   letter-spacing: 0.8px;
   text-transform: uppercase;
@@ -1110,7 +1110,7 @@ body.menu-open {
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.07);
   color: rgba(255, 255, 255, 0.62);
-  font-size: 10px;
+  font-size: 15px;
   font-weight: 600;
   cursor: pointer;
   text-decoration: none;
@@ -1156,7 +1156,7 @@ body.menu-open {
   align-items: center;
   gap: 12px;
   padding: 11px 18px;
-  font-size: 13px;
+  font-size: 19.5px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.7);
   cursor: pointer;
@@ -1333,7 +1333,7 @@ main {
 }
 
 .hero-year {
-  font-size: 13px;
+  font-size: 19.5px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.45);
   letter-spacing: 2px;
@@ -1351,7 +1351,7 @@ main {
 }
 
 .logo-main {
-  font-size: 80px;
+  font-size: 120px;
   font-weight: 800;
   letter-spacing: 5px;
   line-height: 0.88;
@@ -1363,7 +1363,7 @@ main {
 }
 
 .logo-sub {
-  font-size: 19px;
+  font-size: 28.5px;
   font-weight: 300;
   letter-spacing: 16px;
   color: rgba(255, 255, 255, 0.6);
@@ -1437,7 +1437,7 @@ main {
   display: flex;
   align-items: center;
   gap: 16px;
-  font-size: 14px;
+  font-size: 21px;
   color: rgba(255, 255, 255, 0.5);
   margin-bottom: 28px;
 }
@@ -1462,7 +1462,7 @@ main {
   border-radius: 50px;
   background: #ffffff;
   color: #050505;
-  font-size: 16px;
+  font-size: 24px;
   font-weight: 700;
   font-family: "Outfit", sans-serif;
   border: none;
@@ -1492,7 +1492,7 @@ main {
   border-radius: 50px;
   background: var(--glass-2);
   color: #ffffff;
-  font-size: 15px;
+  font-size: 22.5px;
   font-weight: 600;
   font-family: "Outfit", sans-serif;
   border: 1.5px solid rgba(255, 255, 255, 0.28);
@@ -1520,7 +1520,7 @@ main {
 }
 
 .now-watching-header {
-  font-size: 17px;
+  font-size: 25.5px;
   font-weight: 700;
   margin-bottom: 4px;
 }
@@ -1586,7 +1586,7 @@ main {
   background: rgba(0, 0, 0, 0.65);
   border-radius: 5px;
   padding: 1px 5px;
-  font-size: 10px;
+  font-size: 15px;
   font-weight: 700;
   color: #ffffff;
 }
@@ -1597,7 +1597,7 @@ main {
 }
 
 .watch-name {
-  font-size: 14px;
+  font-size: 21px;
   font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
@@ -1611,7 +1611,7 @@ main {
 }
 
 .watch-tag {
-  font-size: 11px;
+  font-size: 16.5px;
   color: rgba(255, 255, 255, 0.38);
   background: rgba(255, 255, 255, 0.06);
   padding: 2px 7px;
@@ -1623,7 +1623,7 @@ main {
   align-items: center;
   gap: 4px;
   margin-top: 4px;
-  font-size: 12px;
+  font-size: 18px;
   color: rgba(255, 255, 255, 0.38);
 }
 
@@ -1646,7 +1646,7 @@ main {
 }
 
 .genre-label-line {
-  font-size: 11px;
+  font-size: 16.5px;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.28);
   text-transform: uppercase;
@@ -1674,7 +1674,7 @@ main {
   background: var(--glass-1);
   border: 1px solid rgba(255, 255, 255, 0.09);
   color: rgba(255, 255, 255, 0.6);
-  font-size: 14px;
+  font-size: 21px;
   font-weight: 500;
   white-space: nowrap;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
@@ -1710,12 +1710,12 @@ main {
 }
 
 .section-title {
-  font-size: 21px;
+  font-size: 31.5px;
   font-weight: 700;
 }
 
 .section-link {
-  font-size: 14px;
+  font-size: 21px;
   color: var(--text-dim);
   transition: color 0.18s;
 }
@@ -1905,7 +1905,7 @@ main {
 }
 
 .mco-title {
-  font-size: 25px;
+  font-size: 37.5px;
   font-weight: 700;
   color: #ffffff;
   line-height: 1.35;
@@ -1922,7 +1922,7 @@ main {
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 12px;
+  font-size: 18px;
   color: rgba(255, 255, 255, 0.55);
   flex-wrap: wrap;
 }
@@ -1941,7 +1941,7 @@ main {
 }
 
 .mco-desc {
-  font-size: 9.5px;
+  font-size: 14.25px;
   line-height: 1.5;
   color: rgba(255, 255, 255, 0.52);
   margin-top: 6px;
@@ -2022,7 +2022,7 @@ main {
   backdrop-filter: blur(8px);
   border-radius: 6px;
   padding: 2px 8px;
-  font-size: 10px;
+  font-size: 15px;
   font-weight: 700;
   color: rgba(255, 255, 255, 0.9);
   border: 1px solid rgba(255, 255, 255, 0.12);
@@ -2035,7 +2035,7 @@ main {
 }
 
 .movie-series-row {
-  font-size: 10px;
+  font-size: 15px;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.42);
   margin-bottom: 2px;
@@ -2053,7 +2053,7 @@ main {
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: 13px;
+  font-size: 19.5px;
   color: rgba(255, 255, 255, 0.4);
   transition: opacity 0.2s;
 }
@@ -2073,7 +2073,7 @@ main {
 }
 
 .movie-title {
-  font-size: 20px;
+  font-size: 30px;
   font-weight: 600;
   line-height: 1.35;
   margin-bottom: 3px;
@@ -2099,7 +2099,7 @@ main {
 
 .studios-label {
   text-align: center;
-  font-size: 12px;
+  font-size: 18px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.22);
   text-transform: uppercase;
@@ -2140,7 +2140,7 @@ main {
 
 .studio-item {
   padding: 0 46px;
-  font-size: 15px;
+  font-size: 22.5px;
   font-weight: 800;
   color: rgba(255, 255, 255, 0.18);
   letter-spacing: 3px;
@@ -2187,7 +2187,7 @@ main {
 /* Text-only studio item (no logo) */
 .studio-text-item {
   padding: 0 40px;
-  font-size: 14px;
+  font-size: 21px;
   font-weight: 800;
   color: rgba(255, 255, 255, 0.18);
   letter-spacing: 3px;
@@ -2248,7 +2248,7 @@ main {
   font-weight: 400;
   text-transform: lowercase;
   letter-spacing: 1px;
-  font-size: 13px;
+  font-size: 19.5px;
 }
 .studio-amazon:hover {
   color: #888888;
@@ -2281,7 +2281,7 @@ main {
   color: rgba(235, 235, 235, 0.55);
   font-weight: 900;
   letter-spacing: 8px;
-  font-size: 13px;
+  font-size: 19.5px;
 }
 .studio-a24:hover {
   color: #ebebeb;
@@ -2345,14 +2345,14 @@ main {
 }
 
 .footer-tagline {
-  font-size: 14px;
+  font-size: 21px;
   color: rgba(255, 255, 255, 0.38);
   line-height: 1.7;
   max-width: 220px;
 }
 
 .footer-col-title {
-  font-size: 11px;
+  font-size: 16.5px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 1.2px;
@@ -2367,7 +2367,7 @@ main {
 }
 
 .footer-links a {
-  font-size: 14px;
+  font-size: 21px;
   color: rgba(255, 255, 255, 0.48);
   transition: color 0.18s;
 }
@@ -2385,7 +2385,7 @@ main {
 }
 
 .footer-copy {
-  font-size: 13px;
+  font-size: 19.5px;
   color: rgba(255, 255, 255, 0.28);
 }
 
@@ -2446,13 +2446,13 @@ main {
 }
 
 .catalog-title {
-  font-size: 26px;
+  font-size: 39px;
   font-weight: 800;
   letter-spacing: -0.5px;
 }
 
 .catalog-count {
-  font-size: 15px;
+  font-size: 22.5px;
   color: var(--text-dim);
   font-weight: 400;
   margin-top: 3px;
@@ -2466,7 +2466,7 @@ main {
   border: 1px solid var(--border);
   border-radius: var(--r-sm);
   padding: 8px 14px;
-  font-size: 14px;
+  font-size: 21px;
   color: var(--text-dim);
   cursor: pointer;
   backdrop-filter: var(--glass-blur);
@@ -2585,7 +2585,7 @@ main {
 }
 
 .dp-hero-title {
-  font-size: 60px;
+  font-size: 90px;
   font-weight: 800;
   letter-spacing: -1.5px;
   line-height: 1;
@@ -2598,13 +2598,13 @@ main {
   align-items: baseline;
   gap: 6px;
   margin-bottom: 10px;
-  font-size: 22px;
+  font-size: 33px;
   font-weight: 700;
   color: var(--gold);
 }
 
 .dp-hero-rating .rating-denom {
-  font-size: 15px;
+  font-size: 22.5px;
   font-weight: 400;
   color: rgba(255, 255, 255, 0.38);
 }
@@ -2613,7 +2613,7 @@ main {
   display: flex;
   align-items: center;
   gap: 0;
-  font-size: 14px;
+  font-size: 21px;
   color: rgba(255, 255, 255, 0.5);
   flex-wrap: wrap;
 }
@@ -2657,7 +2657,7 @@ main {
 }
 
 .dp-detail-line {
-  font-size: 15px;
+  font-size: 22.5px;
   line-height: 1.65;
   margin-bottom: 6px;
   color: rgba(255, 255, 255, 0.62);
@@ -2669,7 +2669,7 @@ main {
 }
 
 .dp-synopsis {
-  font-size: 15px;
+  font-size: 22.5px;
   line-height: 1.78;
   color: rgba(255, 255, 255, 0.58);
   margin-bottom: 22px;
@@ -2685,7 +2685,7 @@ main {
 }
 
 .dp-genre-pill {
-  font-size: 13px;
+  font-size: 19.5px;
   font-weight: 500;
   padding: 6px 20px;
   border-radius: 50px;
@@ -2709,7 +2709,7 @@ main {
   border-radius: var(--r-sm);
   background: #ffffff;
   color: #050505;
-  font-size: 15px;
+  font-size: 22.5px;
   font-weight: 700;
   border: none;
   cursor: pointer;
@@ -2732,7 +2732,7 @@ main {
   border-radius: var(--r-sm);
   background: var(--glass-1);
   color: rgba(255, 255, 255, 0.78);
-  font-size: 15px;
+  font-size: 22.5px;
   font-weight: 600;
   border: 1px solid var(--border);
   cursor: pointer;
@@ -2761,7 +2761,7 @@ main {
   display: flex;
   align-items: center;
   gap: 20px;
-  font-size: 11px;
+  font-size: 16.5px;
   font-weight: 700;
   letter-spacing: 4px;
   text-transform: uppercase;
@@ -2807,7 +2807,7 @@ main {
   background: none;
   border: none;
   padding: 0;
-  font-size: 11px;
+  font-size: 16.5px;
   font-weight: 700;
   letter-spacing: 2px;
   text-transform: uppercase;
@@ -2893,7 +2893,7 @@ main {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 21px;
+  font-size: 31.5px;
   font-weight: 800;
   color: #ffffff;
   margin: 0 auto 10px;
@@ -2909,7 +2909,7 @@ main {
 }
 
 .dp-cast-name {
-  font-size: 12px;
+  font-size: 18px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.58);
   line-height: 1.35;
@@ -2923,12 +2923,12 @@ main {
 }
 
 .dp-related-section .section-title {
-  font-size: 19px;
+  font-size: 28.5px;
 }
 
 /* ── Detail tag (legacy compat) ── */
 .detail-tag {
-  font-size: 12px;
+  font-size: 18px;
   font-weight: 600;
   padding: 3px 12px;
   border-radius: 50px;
@@ -2970,12 +2970,12 @@ body.movie-page .navbar.scrolled {
 }
 
 .reviews-title {
-  font-size: 21px;
+  font-size: 31.5px;
   font-weight: 700;
 }
 
 .reviews-count {
-  font-size: 14px;
+  font-size: 21px;
   color: var(--text-dim);
 }
 
@@ -3005,14 +3005,14 @@ body.movie-page .navbar.scrolled {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 13px;
+  font-size: 19.5px;
   font-weight: 800;
   color: #ffffff;
   flex-shrink: 0;
 }
 
 .review-write-label {
-  font-size: 15px;
+  font-size: 22.5px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.55);
 }
@@ -3028,7 +3028,7 @@ body.movie-page .navbar.scrolled {
   border: none;
   cursor: pointer;
   color: rgba(255, 255, 255, 0.22);
-  font-size: 24px;
+  font-size: 36px;
   transition:
     color 0.15s,
     transform 0.15s;
@@ -3049,7 +3049,7 @@ body.movie-page .navbar.scrolled {
   padding: 13px 16px;
   color: #ffffff;
   font-family: "Outfit", sans-serif;
-  font-size: 15px;
+  font-size: 22.5px;
   resize: vertical;
   min-height: 92px;
   transition: border-color 0.2s;
@@ -3070,7 +3070,7 @@ body.movie-page .navbar.scrolled {
   border-radius: var(--r-sm);
   background: #ffffff;
   color: #060606;
-  font-size: 15px;
+  font-size: 22.5px;
   font-weight: 700;
   cursor: pointer;
   border: none;
@@ -3125,19 +3125,19 @@ body.movie-page .navbar.scrolled {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
+  font-size: 21px;
   font-weight: 800;
   color: #ffffff;
   flex-shrink: 0;
 }
 
 .review-name {
-  font-size: 15px;
+  font-size: 22.5px;
   font-weight: 600;
 }
 
 .review-date {
-  font-size: 12.5px;
+  font-size: 18.75px;
   color: var(--text-muted);
   margin-top: 1px;
 }
@@ -3148,7 +3148,7 @@ body.movie-page .navbar.scrolled {
 }
 
 .review-text {
-  font-size: 15px;
+  font-size: 22.5px;
   line-height: 1.72;
   color: rgba(255, 255, 255, 0.72);
   margin-bottom: 14px;
@@ -3164,7 +3164,7 @@ body.movie-page .navbar.scrolled {
   display: flex;
   align-items: center;
   gap: 7px;
-  font-size: 13px;
+  font-size: 19.5px;
   color: var(--text-muted);
   cursor: pointer;
   transition: color 0.18s;
@@ -3182,7 +3182,7 @@ body.movie-page .navbar.scrolled {
 }
 
 .review-badge {
-  font-size: 11px;
+  font-size: 16.5px;
   font-weight: 700;
   padding: 2px 9px;
   border-radius: 4px;
@@ -3348,7 +3348,7 @@ body.movie-page .navbar.scrolled {
 }
 
 .player-time {
-  font-size: 13px;
+  font-size: 19.5px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.7);
   white-space: nowrap;
@@ -3388,7 +3388,7 @@ body.movie-page .navbar.scrolled {
 }
 
 .watch-title {
-  font-size: 35px;
+  font-size: 52.5px;
   font-weight: 800;
   letter-spacing: -0.5px;
   margin-bottom: 10px;
@@ -3398,13 +3398,13 @@ body.movie-page .navbar.scrolled {
   display: flex;
   align-items: center;
   gap: 14px;
-  font-size: 13.5px;
+  font-size: 20.25px;
   color: var(--text-dim);
   margin-bottom: 16px;
 }
 
 .watch-desc {
-  font-size: 15px;
+  font-size: 22.5px;
   line-height: 1.7;
   color: rgba(255, 255, 255, 0.55);
   max-width: 720px;
@@ -3448,7 +3448,7 @@ body.movie-page .navbar.scrolled {
   outline: none;
   color: #ffffff;
   font-family: "Outfit", sans-serif;
-  font-size: 19px;
+  font-size: 28.5px;
   font-weight: 500;
 }
 
@@ -3457,7 +3457,7 @@ body.movie-page .navbar.scrolled {
 }
 
 .search-results-label {
-  font-size: 15px;
+  font-size: 22.5px;
   color: var(--text-dim);
   margin-bottom: 18px;
 }
@@ -3478,14 +3478,14 @@ body.movie-page .navbar.scrolled {
 }
 
 .search-empty h3 {
-  font-size: 20px;
+  font-size: 30px;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.48);
   margin-bottom: 7px;
 }
 
 .search-empty p {
-  font-size: 15px;
+  font-size: 22.5px;
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -3537,7 +3537,7 @@ body.movie-page .navbar.scrolled {
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
   color: rgba(255, 255, 255, 0.8);
-  font-size: 14px;
+  font-size: 21px;
   font-weight: 500;
   cursor: pointer;
   transition:
@@ -3568,7 +3568,7 @@ body.movie-page .navbar.scrolled {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 36px;
+  font-size: 54px;
   font-weight: 900;
   color: #ffffff;
   flex-shrink: 0;
@@ -3607,14 +3607,14 @@ body.movie-page .navbar.scrolled {
 }
 
 .profile-name {
-  font-size: 27px;
+  font-size: 40.5px;
   font-weight: 800;
   letter-spacing: -0.5px;
   margin-bottom: 4px;
 }
 
 .profile-email {
-  font-size: 15px;
+  font-size: 22.5px;
   color: var(--text-dim);
   margin-bottom: 10px;
 }
@@ -3629,7 +3629,7 @@ body.movie-page .navbar.scrolled {
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: 12px;
+  font-size: 18px;
   font-weight: 700;
   padding: 4px 12px;
   border-radius: 50px;
@@ -3674,13 +3674,13 @@ body.movie-page .navbar.scrolled {
 }
 
 .stat-num {
-  font-size: 29px;
+  font-size: 43.5px;
   font-weight: 800;
   line-height: 1;
 }
 
 .stat-label {
-  font-size: 13px;
+  font-size: 19.5px;
   color: var(--text-muted);
   margin-top: 5px;
 }
@@ -3697,12 +3697,12 @@ body.movie-page .navbar.scrolled {
 }
 
 .profile-section-title {
-  font-size: 18px;
+  font-size: 27px;
   font-weight: 700;
 }
 
 .profile-section-action {
-  font-size: 14px;
+  font-size: 21px;
   color: var(--text-dim);
   cursor: pointer;
   transition: color 0.18s;
@@ -3756,12 +3756,12 @@ body.movie-page .navbar.scrolled {
 
 .setting-label {
   flex: 1;
-  font-size: 15px;
+  font-size: 22.5px;
   font-weight: 500;
 }
 
 .setting-value {
-  font-size: 14px;
+  font-size: 21px;
   color: var(--text-dim);
 }
 
@@ -3810,14 +3810,14 @@ body.movie-page .navbar.scrolled {
 }
 
 .category-hero-title {
-  font-size: 34px;
+  font-size: 51px;
   font-weight: 800;
   letter-spacing: -0.8px;
   margin-bottom: 8px;
 }
 
 .category-hero-sub {
-  font-size: 16px;
+  font-size: 24px;
   color: var(--text-dim);
 }
 
@@ -3865,7 +3865,7 @@ body.movie-page .navbar.scrolled {
 }
 
 .cat-name {
-  font-size: 22px;
+  font-size: 33px;
   font-weight: 800;
   letter-spacing: -0.3px;
   margin-bottom: 5px;
@@ -3873,7 +3873,7 @@ body.movie-page .navbar.scrolled {
 }
 
 .cat-count {
-  font-size: 13.5px;
+  font-size: 20.25px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.78);
 }
@@ -3882,7 +3882,7 @@ body.movie-page .navbar.scrolled {
   position: absolute;
   top: 16px;
   right: 16px;
-  font-size: 10px;
+  font-size: 15px;
   font-weight: 800;
   letter-spacing: 0.8px;
   text-transform: uppercase;
@@ -3960,13 +3960,13 @@ body.movie-page .navbar.scrolled {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 30px;
+  font-size: 45px;
   font-weight: 900;
   color: #fff;
 }
 
 .cat-actor-name {
-  font-size: 13.5px;
+  font-size: 20.25px;
   font-weight: 700;
   color: #fff;
   margin-bottom: 3px;
@@ -3976,7 +3976,7 @@ body.movie-page .navbar.scrolled {
 }
 
 .cat-actor-known {
-  font-size: 11.5px;
+  font-size: 17.25px;
   color: var(--text-muted);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -4017,7 +4017,7 @@ body.movie-page .navbar.scrolled {
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 12px;
   padding: 12px 24px;
-  font-size: 15px;
+  font-size: 22.5px;
   font-weight: 500;
   color: #ffffff;
   z-index: 9000;
@@ -4152,7 +4152,7 @@ body.movie-page .navbar.scrolled {
   background: #ffffff;
   border: none;
   color: #090909;
-  font-size: 11px;
+  font-size: 16.5px;
   font-weight: 700;
   font-family: "Outfit", sans-serif;
   cursor: pointer;
@@ -4173,7 +4173,7 @@ body.movie-page .navbar.scrolled {
   background: transparent;
   border: 1.5px solid rgba(255, 255, 255, 0.3);
   color: rgba(255, 255, 255, 0.8);
-  font-size: 18px;
+  font-size: 27px;
   line-height: 1;
   display: flex;
   align-items: center;
@@ -4194,7 +4194,7 @@ body.movie-page .navbar.scrolled {
   align-items: center;
   gap: 5px;
   flex-wrap: wrap;
-  font-size: 9.5px;
+  font-size: 14.25px;
   color: rgba(255, 255, 255, 0.5);
   font-weight: 500;
 }
@@ -4331,10 +4331,10 @@ video.hero-bg-iframe {
     grid-template-columns: repeat(4, 1fr);
   }
   .dp-hero-title {
-    font-size: 44px;
+    font-size: 66px;
   }
   .logo-main {
-    font-size: 66px;
+    font-size: 99px;
   }
   .hero-content {
     right: 38%;
@@ -4409,7 +4409,7 @@ video.hero-bg-iframe {
     margin-right: 0;
   }
   .logo-wordmark {
-    font-size: 17px;
+    font-size: 25.5px;
     letter-spacing: 3px;
   }
   .lang-wrap .lang-btn span {
@@ -4425,7 +4425,7 @@ video.hero-bg-iframe {
   }
   .nav-login-btn {
     padding: 7px 12px;
-    font-size: 12px;
+    font-size: 18px;
   }
 
   /* Hero */
@@ -4452,7 +4452,7 @@ video.hero-bg-iframe {
     bottom: 30px;
   }
   .hero-year {
-    font-size: 11px;
+    font-size: 16.5px;
     letter-spacing: 1.5px;
     margin-bottom: 8px;
   }
@@ -4466,27 +4466,27 @@ video.hero-bg-iframe {
     max-width: 220px;
   }
   .logo-main {
-    font-size: 34px;
+    font-size: 51px;
     letter-spacing: 0;
     line-height: 0.96;
   }
   .logo-sub {
-    font-size: 12px;
+    font-size: 18px;
     letter-spacing: 6px;
   }
   .hero-meta {
-    font-size: 12px;
+    font-size: 18px;
     gap: 10px;
     margin-bottom: 18px;
     flex-wrap: wrap;
   }
   .hero-play-btn {
     padding: 11px 22px;
-    font-size: 14px;
+    font-size: 21px;
   }
   .hero-trailer-btn {
     padding: 11px 18px;
-    font-size: 13px;
+    font-size: 19.5px;
   }
   .hero-volume-btn {
     width: 40px;
@@ -4495,11 +4495,15 @@ video.hero-bg-iframe {
     right: 16px;
   }
 
-  /* Hero indicators — volume btn dan chap tomonda */
+  /* Hero indicators — Ko'rish/Batafsil tugmalari qatoridan YUQORIDA,
+     markazlashtirilgan — tugmalar bilan bir xil balandlikda tortishib
+     qolmasligi uchun. */
   .hero-indicators {
-    bottom: 36px;
-    right: 128px;
-    max-width: calc(100vw - 144px); /* volume btn bilan to'qnashmaydi */
+    left: 20px;
+    right: 20px;
+    bottom: 108px;
+    justify-content: center;
+    max-width: none;
     flex-wrap: nowrap;
     overflow: hidden;
   }
@@ -4532,7 +4536,7 @@ video.hero-bg-iframe {
     gap: 10px;
   }
   .section-title {
-    font-size: 17px;
+    font-size: 25.5px;
   }
 
   /* Detail page — banner trailer stays visible (main media) */
@@ -4541,14 +4545,14 @@ video.hero-bg-iframe {
     min-height: 200px;
   }
   .dp-hero-title {
-    font-size: 26px;
+    font-size: 39px;
     letter-spacing: -0.5px;
   }
   .dp-hero-rating {
-    font-size: 20px;
+    font-size: 30px;
   }
   .dp-hero-meta {
-    font-size: 12px;
+    font-size: 18px;
     flex-wrap: wrap;
     gap: 4px 0;
   }
@@ -4597,7 +4601,7 @@ video.hero-bg-iframe {
     padding: 32px 16px 44px;
   }
   .reviews-title {
-    font-size: 18px;
+    font-size: 27px;
   }
   .review-write-card {
     padding: 16px;
@@ -4614,18 +4618,18 @@ video.hero-bg-iframe {
     padding: 14px;
   }
   .cat-name {
-    font-size: 16px;
+    font-size: 24px;
     margin-bottom: 3px;
   }
   .cat-count {
-    font-size: 11.5px;
+    font-size: 17.25px;
   }
   .cat-tag {
     top: auto;
     right: auto;
     bottom: 11px;
     left: 14px;
-    font-size: 8.5px;
+    font-size: 12.75px;
     padding: 2px 6px;
     letter-spacing: 0.5px;
   }
@@ -4641,10 +4645,10 @@ video.hero-bg-iframe {
     gap: 14px;
   }
   .cat-actor-name {
-    font-size: 12px;
+    font-size: 18px;
   }
   .cat-actor-known {
-    font-size: 10.5px;
+    font-size: 15.75px;
   }
 
   /* Footer — 4-col grid → 2-col on phones */
@@ -4675,33 +4679,33 @@ video.hero-bg-iframe {
     gap: 12px 7px;
   }
   .logo-main {
-    font-size: 28px;
+    font-size: 42px;
   }
   .logo-sub {
-    font-size: 11px;
+    font-size: 16.5px;
     letter-spacing: 4px;
   }
   .hero-meta {
-    font-size: 11px;
+    font-size: 16.5px;
     gap: 8px;
   }
   .hero-play-btn {
     padding: 10px 18px;
-    font-size: 13px;
+    font-size: 19.5px;
   }
   .hero-trailer-btn {
     padding: 10px 14px;
-    font-size: 12px;
+    font-size: 18px;
   }
   .dp-hero-title {
-    font-size: 22px;
+    font-size: 33px;
   }
   .logo-wordmark {
-    font-size: 16px;
+    font-size: 24px;
     letter-spacing: 2.5px;
   }
   .section-title {
-    font-size: 16px;
+    font-size: 24px;
   }
 }
 
