@@ -617,7 +617,7 @@
       width: 108px; height: 108px;
       border-radius: 50%;
       display: flex;
-      flex-direction: column;
+      flex-direction: row;
       align-items: center;
       justify-content: center;
       gap: 4px;
@@ -707,10 +707,9 @@
     }
 
     .seek-hud__text {
-      font: 700 16.5px/1 'Outfit', sans-serif;
+      font: 700 18px/1 'Outfit', sans-serif;
       color: #f4f4f5;
       white-space: nowrap;
-      width: 80px;
       font-variant-numeric: tabular-nums;
     }
 
@@ -820,12 +819,12 @@
 
       <!-- Seek HUD (ArrowLeft/ArrowRight yoki +10/-10 tugmasi paytida chiqadi) -->
       <div id="seekHud" class="seek-hud" aria-hidden="true">
+        <div class="seek-hud__text" id="seekHudText">10s</div>
         <div class="seek-hud__chevrons" id="seekHudChevrons">
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8.59 16.59 13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8.59 16.59 13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8.59 16.59 13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
         </div>
-        <div class="seek-hud__text" id="seekHudText">10 soniya</div>
       </div>
 
       <!-- Bottom gradient overlay -->
@@ -1707,7 +1706,7 @@
 
       hud.classList.toggle('seek-hud--left', dir < 0);
       hud.classList.toggle('seek-hud--right', dir > 0);
-      text.textContent = seekAccum + ' soniya' + (dir < 0 ? ' orqaga' : ' oldinga');
+      text.textContent = seekAccum + 's';
 
       hud.classList.remove('is-hiding', 'is-pulse');
       void hud.offsetWidth; // reflow — pulse animatsiyasini qayta boshlash uchun
