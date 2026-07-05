@@ -7,9 +7,9 @@
 :root {
   --bg: #000000;
   --glass-1: rgba(78, 78, 78, 0.45);
-  --glass-2: rgba(25, 30, 37, 0.62);
-  --glass-3: rgba(25, 30, 37, 0.78);
-  --glass-solid: rgba(25, 30, 37, 0.8);
+  --glass-2: rgba(78, 78, 78, 0.45);
+  --glass-3: rgba(78, 78, 78, 0.45);
+  --glass-solid: rgba(78, 78, 78, 0.45);
   --border: rgba(255, 255, 255, 0.18);
   --border-h: rgba(255, 255, 255, 0.35);
   --text: #ffffff;
@@ -2523,6 +2523,21 @@ main {
   object-fit: cover;
   object-position: center 18%;
   display: block;
+  /* Pastga borgan sayin rasm shaffofga eriydi — ostidagi #movie-bg-blur
+     (xuddi shu poster, blur bilan) ko'rinib, qattiq chiziq o'rniga
+     tabiiy blur o'tish hosil bo'ladi (mobil versiyadagi kabi). */
+  -webkit-mask-image: linear-gradient(to bottom,
+    black 0%,
+    black 55%,
+    rgba(0,0,0,0.6) 78%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(to bottom,
+    black 0%,
+    black 55%,
+    rgba(0,0,0,0.6) 78%,
+    transparent 100%
+  );
 }
 
 .dp-hero-overlay {
@@ -2532,8 +2547,8 @@ main {
     to bottom,
     rgba(5, 5, 5, 0.12) 0%,
     rgba(5, 5, 5, 0.18) 35%,
-    rgba(5, 5, 5, 0.72) 72%,
-    #050505 100%
+    rgba(5, 5, 5, 0.55) 72%,
+    transparent 100%
   );
 }
 
@@ -4266,10 +4281,9 @@ video.hero-bg-iframe {
   background: linear-gradient(
     to bottom,
     rgba(5, 5, 5, 0) 0%,
-    rgba(5, 5, 5, 0.55) 58%,
-    #050505 100%
+    rgba(5, 5, 5, 0.45) 58%,
+    rgba(5, 5, 5, 0.65) 100%
   );
-  box-shadow: inset 0 -48px 60px -12px #050505;
 }
 
 /* Banner trailer controls — mute toggle + fullscreen */
