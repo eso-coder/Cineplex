@@ -275,6 +275,18 @@
         z-index: 1;
         overflow: hidden;
         border-radius: 0;
+        -webkit-mask-image: linear-gradient(to bottom,
+          black 0%,
+          black 45%,
+          rgba(0,0,0,0.6) 68%,
+          transparent 88%
+        );
+        mask-image: linear-gradient(to bottom,
+          black 0%,
+          black 45%,
+          rgba(0,0,0,0.6) 68%,
+          transparent 88%
+        );
       }
 
       /* ── Gradient blur: hero ham mob-info ni qoplaydi ── */
@@ -298,27 +310,10 @@
         pointer-events: none;
       }
 
-      /* Qatlam 1 — o'rta: engil qorayish */
-      .mob-hero-gradient::before {
-        background: linear-gradient(
-          to bottom,
-          transparent 0%,
-          rgba(8, 8, 10, 0.25) 50%,
-          rgba(8, 8, 10, 0.55) 75%,
-          transparent 100%
-        );
-      }
-
-      /* Qatlam 2 — pastki qism: hero'dan fonga silliq o'tish */
+      /* Gradientlar olib tashlandi — mask-image mob-hero-img'ning o'zida */
+      .mob-hero-gradient::before,
       .mob-hero-gradient::after {
-        background: linear-gradient(
-          to bottom,
-          transparent 0%,
-          rgba(8, 8, 10, 0.60) 35%,
-          rgba(8, 8, 10, 0.88) 58%,
-          #08080a 75%,
-          #08080a 100%
-        );
+        display: none;
       }
 
       .mob-hero-trailer-btn {
