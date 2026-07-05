@@ -2623,7 +2623,7 @@ main {
   display: flex;
   gap: 34px;
   padding: 36px 50px 42px;
-  background: #050505;
+  background: rgba(8, 8, 10, 0.55);
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
@@ -2776,7 +2776,7 @@ main {
 /* ── Gallery ── */
 .dp-gallery {
   padding: 52px 0 0;
-  background: #050505;
+  background: rgba(8, 8, 10, 0.55);
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
@@ -2858,7 +2858,7 @@ main {
 /* ── Cast section ── */
 .dp-cast-section {
   padding: 52px 50px;
-  background: #050505;
+  background: rgba(8, 8, 10, 0.55);
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
@@ -2913,7 +2913,7 @@ main {
 /* ── Related section ── */
 .dp-related-section {
   padding: 52px 50px;
-  background: #050505;
+  background: rgba(8, 8, 10, 0.55);
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
@@ -2937,7 +2937,7 @@ main {
 ═══════════════════════════════════════════════════════ */
 .reviews-section {
   padding: 52px 50px 60px;
-  background: #050505;
+  background: rgba(8, 8, 10, 0.55);
 }
 
 /* ── Movie detail (desktop) — telefon formatdagidek: bo'limlar shaffof,
