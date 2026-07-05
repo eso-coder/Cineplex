@@ -28,7 +28,8 @@ const getMovies = asyncHandler(async (req, res) => {
   }
 
   if (search) {
-    filter.$text = { $search: search };
+    const re = new RegExp(search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+    filter.$or = [{ title: re }, { description: re }];
   }
 
   if (genre) {
@@ -89,9 +90,10 @@ const searchMovies = asyncHandler(async (req, res) => {
   const q = req.query.q?.trim();
   if (!q) throw ApiError.badRequest('Search query required');
 
-  const movies = await Movie.find({ $text: { $search: q } })
+  const re = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+  const movies = await Movie.find({ $or: [{ title: re }, { description: re }] })
     .populate('genres', 'name slug')
-    .sort({ score: { $meta: 'textScore' } })
+    .sort({ createdAt: -1 })
     .limit(20)
     .lean();
 
