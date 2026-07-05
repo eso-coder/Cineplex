@@ -1256,6 +1256,8 @@
     let _apiRelated = null;
     let _mobTrailerInfo = null;
     let selectedStars = 0;
+    window._cpHeroTrailer = null;
+    window._cpHeroMuted = true;
 
     /* ─── Gradient palette for cast avatars ─── */
     const CAST_GRADS = Array(8).fill('linear-gradient(135deg,#3a3a3a,#121212)');
@@ -2087,9 +2089,6 @@
     };
 
     /* ─── Hero trailer controls (desktop) ─── */
-    window._cpHeroTrailer = null;
-    window._cpHeroMuted = true;
-
     window.toggleHeroTrailerMute = function () {
       const info = window._cpHeroTrailer;
       const t = document.getElementById('dp-trailer');
