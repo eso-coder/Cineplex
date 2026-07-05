@@ -55,9 +55,9 @@
     }
 
     .actor-modal {
-      background: rgba(9, 9, 9, 0.88);
-      backdrop-filter: blur(52px) saturate(180%);
-      -webkit-backdrop-filter: blur(52px) saturate(180%);
+      background: var(--glass-solid);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
       border: 1px solid rgba(255, 255, 255, 0.12);
       border-radius: 24px;
       padding: 0;
@@ -925,8 +925,8 @@
     /* ── Gallery "View All" modal ── */
     .gallery-modal {
       position: fixed; inset: 0; z-index: 9400;
-      background: rgba(0,0,0,0.97);
-      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      background: rgba(8,9,11,0.97);
+      backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur);
       display: none; flex-direction: column;
       overflow-y: auto;
     }
@@ -935,19 +935,20 @@
       position: sticky; top: 0; z-index: 2;
       display: flex; align-items: center; justify-content: space-between;
       padding: 16px 20px;
-      background: rgba(0,0,0,0.75);
-      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      background: var(--glass-solid);
+      backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur);
       border-bottom: 1px solid rgba(255,255,255,0.07);
       flex-shrink: 0;
     }
     .gallery-modal-title { font-size: 15px; font-weight: 700; color: #fff; }
     .gallery-modal-close {
       width: 36px; height: 36px; border-radius: 50%;
-      background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.14);
+      background: var(--glass-2); border: 1px solid rgba(255,255,255,0.14);
+      backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur);
       display: flex; align-items: center; justify-content: center;
       color: #fff; cursor: pointer; transition: background 0.15s;
     }
-    .gallery-modal-close:hover { background: rgba(255,255,255,0.2); }
+    .gallery-modal-close:hover { background: var(--glass-3); }
     .gallery-modal-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -967,9 +968,9 @@
     /* ── Lightbox (har ikkala formatda) ── */
     .img-lightbox {
       position: fixed; inset: 0; z-index: 9500;
-      background: rgba(0,0,0,0.94);
+      background: rgba(8,9,11,0.94);
       display: none; align-items: center; justify-content: center;
-      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur);
     }
     .img-lightbox.open { display: flex; }
     .img-lightbox-img {
@@ -985,22 +986,24 @@
     .img-lightbox-close {
       position: absolute; top: 18px; right: 18px;
       width: 40px; height: 40px; border-radius: 50%;
-      background: rgba(255,255,255,0.12);
+      background: var(--glass-2);
+      backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur);
       border: 1px solid rgba(255,255,255,0.18);
       display: flex; align-items: center; justify-content: center;
       color: #fff; cursor: pointer; font-size: 18px;
       transition: background 0.15s;
     }
-    .img-lightbox-close:hover { background: rgba(255,255,255,0.22); }
+    .img-lightbox-close:hover { background: var(--glass-3); }
     .img-lightbox-nav {
       position: absolute; top: 50%; transform: translateY(-50%);
       width: 40px; height: 40px; border-radius: 50%;
-      background: rgba(255,255,255,0.1);
+      background: var(--glass-2);
+      backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur);
       border: 1px solid rgba(255,255,255,0.15);
       display: flex; align-items: center; justify-content: center;
       color: #fff; cursor: pointer; transition: background 0.15s;
     }
-    .img-lightbox-nav:hover { background: rgba(255,255,255,0.22); }
+    .img-lightbox-nav:hover { background: var(--glass-3); }
     .img-lightbox-prev { left: 14px; }
     .img-lightbox-next { right: 14px; }
     .img-lightbox-counter {
