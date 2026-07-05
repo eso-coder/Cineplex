@@ -4222,6 +4222,26 @@ body.movie-page .navbar.scrolled {
 .dp-hero-trailer.visible {
   opacity: 1;
 }
+
+/* Background trailer video — brauzerning avtomatik hover play/pause/skip
+   overlay'ini butunlay o'chirish (controls atributi yo'q, lekin ba'zi
+   brauzerlar hover'da o'zining media boshqaruvini chiqaradi). */
+video.dp-hero-trailer::-webkit-media-controls,
+video.dp-hero-trailer::-webkit-media-controls-panel,
+video.dp-hero-trailer::-webkit-media-controls-overlay-play-button,
+video.dp-hero-trailer::-webkit-media-controls-start-playback-button {
+  display: none !important;
+  -webkit-appearance: none !important;
+  opacity: 0 !important;
+}
+video.hero-bg-iframe::-webkit-media-controls,
+video.hero-bg-iframe::-webkit-media-controls-panel,
+video.hero-bg-iframe::-webkit-media-controls-overlay-play-button,
+video.hero-bg-iframe::-webkit-media-controls-start-playback-button {
+  display: none !important;
+  -webkit-appearance: none !important;
+  opacity: 0 !important;
+}
 /* S3 video element uchun object-fit */
 video.dp-hero-trailer,
 video.hero-bg-iframe {

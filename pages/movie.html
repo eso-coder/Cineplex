@@ -1692,7 +1692,7 @@
         const heroTrailerInfo = (function () {
           if (movie.trailerS3Url) return {
             type: 'video',
-            html: `<video class="dp-hero-trailer" id="dp-trailer" src="${movie.trailerS3Url}" autoplay muted loop playsinline></video>`
+            html: `<video class="dp-hero-trailer" id="dp-trailer" src="${movie.trailerS3Url}" autoplay muted loop playsinline disablepictureinpicture disableremoteplayback controlslist="nodownload nofullscreen noremoteplayback noplaybackrate"></video>`
           };
           const raw = (typeof TRAILER_IDS !== 'undefined' && TRAILER_IDS[movie.id]) || movie.trailer_id || movie.trailerUrl || movie.trailer_url;
           const htid = raw && typeof extractYouTubeId === 'function' ? (extractYouTubeId(raw) || raw) : raw;
