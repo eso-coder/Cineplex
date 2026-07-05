@@ -494,7 +494,7 @@ onclick="App.go('${href}')">
   ${seriesInfo ? `<div class="movie-series-row">${seriesInfo}</div>` : ''}
   <div class="movie-meta-row">
     <div class="movie-rating">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+      <svg width="22" height="12" viewBox="0 0 40 20"><rect width="40" height="20" rx="4" fill="#f5c518"/><text x="20" y="14.5" font-family="Arial,Helvetica,sans-serif" font-weight="900" font-size="11" fill="#000000" text-anchor="middle">IMDb</text></svg>
       ${m.rating}
     </div>
     <span>·</span>

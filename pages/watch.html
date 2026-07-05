@@ -5,6 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Tomosha — CINEPLEX</title>
+  <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap"
@@ -608,17 +609,18 @@
       .volume-hud__bars { height: 18px; }
     }
 
-    /* ══ Seek HUD — +10s / -10s ko'rsatkichi ══ */
+    /* ══ Seek HUD — YouTube uslubida "ripple + chevron sweep" ══ */
     .seek-hud {
       position: absolute;
       top: 50%;
       z-index: 60;
+      width: 108px; height: 108px;
+      border-radius: 50%;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 6px;
-      padding: 18px 22px;
-      border-radius: 999px;
+      justify-content: center;
+      gap: 4px;
       background: var(--glass-solid, rgba(12, 12, 14, 0.8));
       backdrop-filter: blur(18px) saturate(1.4);
       -webkit-backdrop-filter: blur(18px) saturate(1.4);
@@ -627,12 +629,32 @@
       color: #ffffff;
       opacity: 0;
       pointer-events: none;
-      transform: translateY(-50%) scale(0.8);
+      transform: translateY(-50%) scale(0.7);
       filter: blur(6px);
       transition: opacity 0.18s ease, filter 0.28s ease;
+      overflow: visible;
     }
     .seek-hud--left  { left: 40px; }
     .seek-hud--right { right: 40px; }
+
+    /* Tashqi kengayib-yo'qoluvchi halqa — "ripple" effekti */
+    .seek-hud::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 2px solid rgba(255, 255, 255, 0.35);
+      opacity: 0;
+      transform: scale(1);
+      pointer-events: none;
+    }
+    .seek-hud.is-pulse::before {
+      animation: seekRipple 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes seekRipple {
+      0%   { opacity: 0.8; transform: scale(0.9); }
+      100% { opacity: 0; transform: scale(1.35); }
+    }
 
     .seek-hud.is-visible {
       opacity: 1;
@@ -640,40 +662,63 @@
       transform: translateY(-50%) scale(1);
     }
     .seek-hud.is-pulse {
-      animation: seekPulse 0.38s cubic-bezier(0.34, 1.56, 0.64, 1);
+      animation: seekPulse 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
     @keyframes seekPulse {
-      0%   { transform: translateY(-50%) scale(0.85); }
-      55%  { transform: translateY(-50%) scale(1.12); }
+      0%   { transform: translateY(-50%) scale(0.82); }
+      55%  { transform: translateY(-50%) scale(1.1); }
       100% { transform: translateY(-50%) scale(1); }
     }
     .seek-hud.is-hiding {
       opacity: 0;
       filter: blur(8px);
-      transform: translateY(-50%) scale(0.9);
+      transform: translateY(-50%) scale(0.85);
       transition: opacity 0.35s ease, filter 0.4s ease, transform 0.4s ease;
     }
 
-    .seek-hud__icon {
-      width: 26px; height: 26px;
-      display: flex; align-items: center; justify-content: center;
-      color: #7dd3fc;
+    /* Ketma-ket "sirg'anib o'tuvchi" 3 ta chevron — tezlik/harakat hissi uchun */
+    .seek-hud__chevrons {
+      display: flex;
+      align-items: center;
+      gap: -2px;
+      color: #fbbf24;
     }
-    .seek-hud--right .seek-hud__icon { color: #fbbf24; }
-    .seek-hud__icon svg { width: 100%; height: 100%; }
+    .seek-hud--left .seek-hud__chevrons {
+      color: #7dd3fc;
+      transform: scaleX(-1); /* orqaga — chevronlar chapga qarab "oqadi" */
+    }
+    .seek-hud__chevrons svg {
+      width: 15px; height: 15px;
+      margin-left: -5px;
+      opacity: 0.25;
+    }
+    .seek-hud__chevrons svg:first-child { margin-left: 0; }
+    .seek-hud.is-pulse .seek-hud__chevrons svg {
+      animation: chevSweep 0.9s ease-in-out infinite;
+    }
+    .seek-hud.is-pulse .seek-hud__chevrons svg:nth-child(1) { animation-delay: 0ms; }
+    .seek-hud.is-pulse .seek-hud__chevrons svg:nth-child(2) { animation-delay: 120ms; }
+    .seek-hud.is-pulse .seek-hud__chevrons svg:nth-child(3) { animation-delay: 240ms; }
+    @keyframes chevSweep {
+      0%   { opacity: 0.25; transform: translateX(-3px); }
+      35%  { opacity: 1;    transform: translateX(0); }
+      70%  { opacity: 0.25; transform: translateX(3px); }
+      100% { opacity: 0.25; transform: translateX(3px); }
+    }
 
     .seek-hud__text {
-      font: 600 19.5px/1 'Outfit', sans-serif;
+      font: 700 16.5px/1 'Outfit', sans-serif;
       color: #f4f4f5;
       white-space: nowrap;
       font-variant-numeric: tabular-nums;
     }
 
     @media (max-width: 640px) {
-      .seek-hud { padding: 14px 18px; }
+      .seek-hud { width: 84px; height: 84px; }
       .seek-hud--left  { left: 18px; }
       .seek-hud--right { right: 18px; }
-      .seek-hud__icon { width: 22px; height: 22px; }
+      .seek-hud__chevrons svg { width: 12px; height: 12px; }
+      .seek-hud__text { font-size: 13.5px; }
     }
 
     /* ── Responsive: tablet ── */
@@ -774,7 +819,11 @@
 
       <!-- Seek HUD (ArrowLeft/ArrowRight yoki +10/-10 tugmasi paytida chiqadi) -->
       <div id="seekHud" class="seek-hud" aria-hidden="true">
-        <div class="seek-hud__icon" id="seekHudIcon"></div>
+        <div class="seek-hud__chevrons" id="seekHudChevrons">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8.59 16.59 13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8.59 16.59 13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8.59 16.59 13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>
+        </div>
         <div class="seek-hud__text" id="seekHudText">10 soniya</div>
       </div>
 
@@ -1643,16 +1692,12 @@
        SEEK HUD — +10s / -10s ko'rsatkichi
        Tez-tez bosilsa soniyalar jamlanib ko'rsatiladi (YouTube uslubida).
     ══════════════════════════════════════════ */
-    const SEEK_ICON_BACK = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.08"/></svg>`;
-    const SEEK_ICON_FWD  = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.49-4.08"/></svg>`;
-
     let seekHudHideTimer = null;
     let seekAccum = 0;
     let seekDir   = 0; // -1 orqaga, +1 oldinga
 
     function showSeekHud(deltaSeconds) {
       const hud  = document.getElementById('seekHud');
-      const icon = document.getElementById('seekHudIcon');
       const text = document.getElementById('seekHudText');
       if (!hud) return;
       const dir = deltaSeconds > 0 ? 1 : -1;
@@ -1661,7 +1706,6 @@
 
       hud.classList.toggle('seek-hud--left', dir < 0);
       hud.classList.toggle('seek-hud--right', dir > 0);
-      icon.innerHTML = dir < 0 ? SEEK_ICON_BACK : SEEK_ICON_FWD;
       text.textContent = seekAccum + ' soniya' + (dir < 0 ? ' orqaga' : ' oldinga');
 
       hud.classList.remove('is-hiding', 'is-pulse');

@@ -5,6 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Film — CINEPLEX</title>
+  <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap"
@@ -1483,8 +1484,8 @@
         /* Rating + Duration — title tagida */
         document.getElementById('mob-title-meta').innerHTML = `
           ${movie.rating ? `<span class="mob-title-rating">
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-            ${movie.rating} IMDB
+            <svg width="18" height="10" viewBox="0 0 40 20"><rect width="40" height="20" rx="4" fill="#f5c518"/><text x="20" y="14.5" font-family="Arial,Helvetica,sans-serif" font-weight="900" font-size="11" fill="#000000" text-anchor="middle">IMDb</text></svg>
+            ${movie.rating}
           </span>` : ''}
           ${dur ? `<span class="mob-title-dur">
             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
@@ -1739,7 +1740,7 @@
                 : `<h1 class="dp-hero-title">${movie.title}</h1>`
               }
               <div class="dp-hero-rating">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg width="36" height="20" viewBox="0 0 40 20"><rect width="40" height="20" rx="4" fill="#f5c518"/><text x="20" y="14.5" font-family="Arial,Helvetica,sans-serif" font-weight="900" font-size="11" fill="#000000" text-anchor="middle">IMDb</text></svg>
                 ${movie.rating}<span class="rating-denom">/10</span>
               </div>
               <div class="dp-hero-meta">
