@@ -373,6 +373,7 @@ ul {
   font-weight: 500;
   padding: 7px 14px;
   border-radius: 50px;
+  white-space: nowrap;
   transition:
     color 0.18s,
     background 0.18s;
@@ -2194,7 +2195,7 @@ main {
   text-align: center;
   font-size: 16px;
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgb(255, 255, 255);
   text-transform: uppercase;
   letter-spacing: 3px;
   white-space: nowrap;
@@ -2238,20 +2239,13 @@ main {
   animation: studioScroll 32s linear infinite;
 }
 
-.studios-inner:hover {
-  animation-play-state: paused;
-}
-
 /* Har bir studiya — rangli logotip, karta fonida, hover'da ko'tarilib porlaydi */
 .studio-item {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0 34px;
+  padding: 100px 50px;
   height: 84px;
-  border-radius: var(--r-lg);
-  background: var(--glass-1);
-  border: 1px solid var(--border);
   cursor: default;
   transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
               border-color 0.25s ease,
@@ -2259,27 +2253,15 @@ main {
               background 0.25s ease;
 }
 
-.studio-item:hover {
-  transform: translateY(-5px);
-  background: var(--glass-2);
-  border-color: var(--studio-color, rgba(255, 255, 255, 0.3));
-  box-shadow: 0 14px 34px -8px var(--studio-color, rgba(255, 255, 255, 0.25));
-}
-
 .studio-logo-img {
-  height: 42px;
+  height: 65px;
   width: auto;
-  max-width: 150px;
+  max-width: 170px;
   object-fit: contain;
-  opacity: 0.92;
   transition: opacity 0.25s ease, transform 0.25s ease;
   display: block;
 }
 
-.studio-item:hover .studio-logo-img {
-  opacity: 1;
-  transform: scale(1.06);
-}
 
 /* Text-only studio item (logotipsiz — masalan A24, Lionsgate) */
 .studio-text-item {
@@ -2291,111 +2273,6 @@ main {
   white-space: nowrap;
   opacity: 0.85;
   transition: opacity 0.25s ease;
-}
-
-.studio-text-item:hover {
-  opacity: 1;
-}
-
-/* Brand-specific studio colors */
-.studio-netflix {
-  color: rgba(57, 57, 57, 0.55);
-  font-weight: 900;
-  letter-spacing: 2px;
-}
-.studio-netflix:hover {
-  color: #ffffff;
-}
-.studio-hbo {
-  color: rgba(74, 74, 74, 0.55);
-  font-weight: 800;
-  letter-spacing: 3px;
-}
-.studio-hbo:hover {
-  color: #4a4a4a;
-}
-.studio-disney {
-  color: rgba(96, 96, 96, 0.55);
-  font-weight: 800;
-  letter-spacing: 2px;
-}
-.studio-disney:hover {
-  color: #606060;
-}
-.studio-marvel {
-  color: rgba(62, 62, 62, 0.55);
-  font-weight: 900;
-  letter-spacing: 3px;
-}
-.studio-marvel:hover {
-  color: #3e3e3e;
-}
-.studio-apple {
-  color: rgba(201, 201, 201, 0.55);
-  font-weight: 300;
-  letter-spacing: 1px;
-}
-.studio-apple:hover {
-  color: #c9c9c9;
-}
-.studio-amazon {
-  color: rgba(136, 136, 136, 0.55);
-  font-weight: 400;
-  text-transform: lowercase;
-  letter-spacing: 1px;
-  font-size: 19.5px;
-}
-.studio-amazon:hover {
-  color: #888888;
-}
-.studio-warner {
-  color: rgba(94, 94, 94, 0.55);
-  font-weight: 800;
-  letter-spacing: 3px;
-}
-.studio-warner:hover {
-  color: #5e5e5e;
-}
-.studio-paramount {
-  color: rgba(74, 74, 74, 0.55);
-  font-weight: 800;
-  letter-spacing: 2px;
-}
-.studio-paramount:hover {
-  color: #4a4a4a;
-}
-.studio-sony {
-  color: rgba(191, 191, 191, 0.55);
-  font-weight: 500;
-  letter-spacing: 4px;
-}
-.studio-sony:hover {
-  color: #bebebe;
-}
-.studio-a24 {
-  color: rgba(235, 235, 235, 0.55);
-  font-weight: 900;
-  letter-spacing: 8px;
-  font-size: 19.5px;
-}
-.studio-a24:hover {
-  color: #ebebeb;
-}
-.studio-universal {
-  color: rgba(107, 107, 107, 0.55);
-  font-weight: 700;
-  letter-spacing: 2px;
-}
-.studio-universal:hover {
-  color: #6b6b6b;
-}
-.studio-lionsgate {
-  color: rgba(177, 177, 177, 0.55);
-  font-weight: 800;
-  letter-spacing: 2px;
-}
-.studio-lionsgate:hover {
-  color: #b1b1b1;
 }
 
 @keyframes studioScroll {

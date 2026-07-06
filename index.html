@@ -714,9 +714,8 @@
         function buildItem(s) {
           var color = s.color || 'ffffff';
           if (s.logoUrl) {
-            var coloredUrl = s.logoUrl + '/' + color;
-            return '<span class="studio-item studio-logo-item" style="--studio-color:#' + color + '" title="' + s.name + '">'
-              + '<img src="' + coloredUrl + '" class="studio-logo-img" alt="' + s.name + '" loading="lazy">'
+            return '<span class="studio-item studio-logo-item" title="' + s.name + '">'
+              + '<img src="' + s.logoUrl + '" class="studio-logo-img" alt="' + s.name + '" loading="lazy">'
               + '</span>';
           }
           return '<span class="studio-item studio-text-item" style="--studio-color:#' + color + '">' + s.name + '</span>';
