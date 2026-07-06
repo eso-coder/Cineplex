@@ -1754,8 +1754,14 @@
           <div class="dp-info-section animate-in" style="transition-delay:0.06s">
             <div class="dp-poster"><img src="${movie.img}" alt="${movie.title}"></div>
             <div class="dp-details">
-              <div class="dp-detail-line"><strong>Cast:</strong> <span>${movie.cast.join(', ')}</span></div>
-              <div class="dp-synopsis">${movie.description}</div>
+              <div class="dp-text-collapse" id="dp-text-collapse">
+                <div class="dp-detail-line"><strong>Cast:</strong> <span>${movie.cast.join(', ')}</span></div>
+                <div class="dp-synopsis">${movie.description}</div>
+              </div>
+              <button class="dp-more-btn" id="dp-more-btn" onclick="toggleDpMore()" style="display:none">
+                <span id="dp-more-label">Ko'proq</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg>
+              </button>
               <div class="dp-genres">
                 ${movie.genre.map(g => `<span class="dp-genre-pill">${g.charAt(0).toUpperCase() + g.slice(1)}</span>`).join('')}
               </div>
@@ -1823,6 +1829,18 @@
         App.initAnimations();
         window._cpHeroTrailer = heroTrailerInfo;
         window._cpHeroMuted = true;
+
+        /* Cast/tavsif matni 355px'dan uzun bo'lsa — "Ko'proq" tugmasini ko'rsatish */
+        const dpCollapse = document.getElementById('dp-text-collapse');
+        const dpMoreBtn = document.getElementById('dp-more-btn');
+        if (dpCollapse && dpMoreBtn) {
+          if (dpCollapse.scrollHeight > 355) {
+            dpMoreBtn.style.display = 'flex';
+          } else {
+            dpMoreBtn.style.display = 'none';
+            dpCollapse.classList.add('expanded'); // qisqa matnda pastdagi fade ko'rinmasin
+          }
+        }
 
         const dpTrailer = document.getElementById('dp-trailer');
         if (dpTrailer) {
@@ -1998,6 +2016,23 @@
     });
 
     /* ─── Desktop like ─── */
+    /* ─── Cast/tavsif "Ko'proq" tugmasi ─── */
+    window.toggleDpMore = function () {
+      const collapse = document.getElementById('dp-text-collapse');
+      const btn = document.getElementById('dp-more-btn');
+      const label = document.getElementById('dp-more-label');
+      if (!collapse || !btn) return;
+      const isExpanded = collapse.classList.toggle('expanded');
+      btn.classList.toggle('expanded', isExpanded);
+      if (isExpanded) {
+        collapse.style.maxHeight = collapse.scrollHeight + 'px';
+        if (label) label.textContent = 'Kamroq';
+      } else {
+        collapse.style.maxHeight = '355px';
+        if (label) label.textContent = "Ko'proq";
+      }
+    };
+
     window.toggleLikeDesktop = function () {
       if (!movie) return;
       const movieObj = { id: String(movie.id), title: movie.title, img: movie.img, year: movie.year, posterUrl: movie.img };

@@ -2746,6 +2746,57 @@ main {
   max-width: 680px;
 }
 
+/* ── Cast/tavsif matnini 355px'da qisqartirish, "Ko'proq" bilan ochish ── */
+.dp-text-collapse {
+  position: relative;
+  max-height: 355px;
+  overflow: hidden;
+  transition: max-height 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dp-text-collapse::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 60px;
+  background: linear-gradient(to bottom, transparent 0%, rgba(8, 8, 10, 0.9) 100%);
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+.dp-text-collapse.expanded::after {
+  opacity: 0;
+}
+
+.dp-more-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 10px 0 18px;
+  padding: 0;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  font-family: 'Outfit', sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.18s;
+}
+
+.dp-more-btn:hover {
+  color: #ffffff;
+}
+
+.dp-more-btn svg {
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dp-more-btn.expanded svg {
+  transform: rotate(180deg);
+}
+
 .dp-genres {
   display: flex;
   gap: 9px;
