@@ -4857,36 +4857,22 @@ video.hero-bg-iframe {
 }
 
 /* ════════════════════════════════════════════════════════════════
-   MOBIL SCROLL PERFORMANCE — silliq (120fps-dek) scroll
+   MOBIL SCROLL — yengillashtirilgan soyalar
    ----------------------------------------------------------------
-   Sabab: `backdrop-filter: blur()` fixed/scroll elementlarda har bir
-   scroll kadrida orqadagi pikselni qayta blur qiladi. Telefonда bu
-   GPU'ni bo'g'ib, scroll'ni 15fps'gacha tushiradi (qotib-qotib).
-   Yechim: mobilda backdrop-filter'ni butunlay o'chiramiz. Barcha
-   overlay/menu/dropdownlar allaqachon ~0.96–0.97 qattiq (opaque) qora
-   fon ishlatadi, shuning uchun o'qilishi saqlanadi — faqat blur ketadi.
-   Og'ir/kataklashgan soyalar ham yumshatiladi (paint qiymatini kamaytirish).
+   Blur effekti endi mobilda ham desktop kabi yoqilgan holda qoladi.
+   Faqat og'ir/kataklashgan soyalar yengillashtiriladi (paint qiymatini
+   kamaytirish uchun) — bu barcha ekran o'lchamlarida qo'llaniladi.
    ════════════════════════════════════════════════════════════════ */
-@media (max-width: 768px) {
-  *,
-  *::before,
-  *::after {
-    -webkit-backdrop-filter: none !important;
-    backdrop-filter: none !important;
-  }
+.movie-card,
+.category-card,
+.cat-actor-imgwrap,
+.am-card,
+.profile-dd,
+.lang-dd {
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+}
 
-  /* Katta xira soyalar scroll paytida paint'ni og'irlashtiradi — yengillashtiramiz */
-  .movie-card,
-  .category-card,
-  .cat-actor-imgwrap,
-  .am-card,
-  .profile-dd,
-  .lang-dd {
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
-  }
-
-  /* GPU layer promotion + scroll uzilishlarini kamaytirish */
-  body {
-    -webkit-overflow-scrolling: touch;
-  }
+/* GPU layer promotion + scroll uzilishlarini kamaytirish */
+body {
+  -webkit-overflow-scrolling: touch;
 }
