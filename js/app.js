@@ -45,7 +45,14 @@ const App = {
 
     return `<nav class="navbar" id="navbar">
   <div class="navbar-inner">
-    <a href="${root}index.html" class="nav-logo">
+    <a href="${root}index.html" class="nav-logo" aria-label="CINEPLEX — Bosh sahifa">
+      <svg class="nav-logo-icon" viewBox="0 0 100 100" fill="none" aria-hidden="true">
+        <circle cx="50" cy="50" r="42" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-dasharray="223.57 40.32" transform="rotate(42.5 50 50)"/>
+        <circle cx="50" cy="50" r="33" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-dasharray="172.79 34.56" transform="rotate(35 50 50)"/>
+        <circle cx="50" cy="50" r="24" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-dasharray="123.58 27.22" transform="rotate(27.5 50 50)"/>
+        <circle cx="50" cy="50" r="15" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-dasharray="75.92 18.33" transform="rotate(20 50 50)"/>
+        <circle cx="50" cy="50" r="7" fill="currentColor" stroke="none"/>
+      </svg>
       <span class="logo-wordmark">CINE<span class="thin">PLEX</span></span>
     </a>
     <ul class="nav-links">

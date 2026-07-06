@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <circle cx="50" cy="50" r="42" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-dasharray="223.57 40.32" transform="rotate(42.5 50 50)"/>
+  <circle cx="50" cy="50" r="33" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-dasharray="172.79 34.56" transform="rotate(35 50 50)"/>
+  <circle cx="50" cy="50" r="24" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-dasharray="123.58 27.22" transform="rotate(27.5 50 50)"/>
+  <circle cx="50" cy="50" r="15" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-dasharray="75.92 18.33" transform="rotate(20 50 50)"/>
+  <circle cx="50" cy="50" r="7" fill="currentColor" stroke="none"/>
+</svg>

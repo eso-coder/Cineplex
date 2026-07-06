@@ -122,6 +122,35 @@ ul {
   pointer-events: none;
 }
 
+.intro-logo-icon {
+  width: 64px;
+  height: 64px;
+  color: #ffffff;
+  margin-bottom: 22px;
+  opacity: 0;
+  animation:
+    introIconIn 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards,
+    introIconPulse 1.8s ease-in-out 0.9s infinite;
+}
+
+@keyframes introIconIn {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+    filter: blur(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes introIconPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.6; transform: scale(0.94); }
+}
+
 .intro-logo-name {
   font-size: 87px;
   font-weight: 800;
@@ -283,9 +312,24 @@ ul {
 
 /* Logo — text only, minimalist */
 .nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 9px;
   text-decoration: none;
   margin-right: 30px;
   flex-shrink: 0;
+  color: #ffffff;
+  transition: opacity 0.18s ease;
+}
+.nav-logo:hover {
+  opacity: 0.82;
+}
+
+.nav-logo-icon {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  color: #ffffff;
 }
 
 .logo-wordmark {
@@ -2344,6 +2388,13 @@ main {
   margin-bottom: 14px;
 }
 
+.footer-logo-icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  color: rgba(255, 255, 255, 0.55);
+}
+
 .footer-tagline {
   font-size: 21px;
   color: rgba(255, 255, 255, 0.38);
@@ -4374,6 +4425,18 @@ video.hero-bg-iframe {
   }
   .nav-burger {
     display: flex;
+  }
+  /* Mobilda joy tejash uchun faqat ikon qoladi, matn logotip yashiriladi */
+  .nav-logo {
+    margin-right: 0;
+    gap: 0;
+  }
+  .nav-logo .logo-wordmark {
+    display: none;
+  }
+  .nav-logo-icon {
+    width: 26px;
+    height: 26px;
   }
   .catalog-grid {
     grid-template-columns: repeat(3, 1fr);
