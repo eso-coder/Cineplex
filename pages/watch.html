@@ -93,6 +93,18 @@
       height: 100vh;
     }
 
+    /* Fullscreen tugmasi bosilganda video kattalashib ekranni
+       qoplayotgandek his qildiradigan qisqa "o'sish" animatsiyasi.
+       Haqiqiy Fullscreen API/pseudo-fs qaysi birini ishlatishidan
+       qat'iy nazar, bosilgan zahoti ishga tushadi. */
+    @keyframes fsGrow {
+      0%   { transform: scale(0.92); filter: brightness(0.6); }
+      100% { transform: scale(1); filter: brightness(1); }
+    }
+    .player-wrapper.fs-grow {
+      animation: fsGrow 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
     /* ── iOS uchun "soxta" fullscreen ──
        iOS Safari'da <div> uchun haqiqiy fullscreen yo'q — native pleyer ochiladi
        va sifat/subtitr/til tugmalari yo'qoladi. Shuning uchun SAYT pleyerini
@@ -239,14 +251,6 @@
     }
     .player-ctrl-btn:hover { color: #ffffff; background: rgba(255,255,255,0.1); }
     .player-ctrl-btn.active-ctrl { color: #4e4e4e; }
-    @keyframes ctrlBtnPop {
-      0%   { transform: rotate(0deg) scale(1); }
-      50%  { transform: rotate(180deg) scale(1.35); }
-      100% { transform: rotate(360deg) scale(1); }
-    }
-    @media (max-width: 640px) {
-      .player-ctrl-btn.tapped { animation: ctrlBtnPop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1); }
-    }
     .player-time {
       font-size: 18px; font-weight: 600;
       color: rgba(255,255,255,0.65);
@@ -1691,6 +1695,9 @@
       if (reqFs) {
         if (!document.fullscreenElement && !document.webkitFullscreenElement) {
           try {
+            el.classList.remove('fs-grow');
+            void el.offsetWidth;
+            el.classList.add('fs-grow');
             await reqFs.call(el);
             if (typeof showControls === 'function') showControls();
           } catch(e) {}
@@ -1703,7 +1710,12 @@
       // Oxirgi chora (haqiqiy fullscreen ham, native ham yo'q): CSS pseudo-fullscreen
       const on = el.classList.toggle('pseudo-fs');
       document.body.classList.toggle('player-fs-lock', on);
-      if (on && typeof showControls === 'function') showControls();
+      if (on) {
+        el.classList.remove('fs-grow');
+        void el.offsetWidth;
+        el.classList.add('fs-grow');
+        if (typeof showControls === 'function') showControls();
+      }
     };
 
     // Fullscreendan tashqaridan chiqilganda ham orientatsiyani qaytarish
@@ -1848,17 +1860,6 @@
     };
 
     updateUI();
-
-    /* Mobilda tugma bosilganda rotate+kattalashish animatsiyasi (CSS'da
-       faqat ≤640px'da ko'rinadi, desktopda hech qanday vizual ta'sir yo'q) */
-    document.querySelectorAll('.player-ctrl-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        btn.classList.remove('tapped');
-        void btn.offsetWidth; // reflow — animatsiyani qayta boshlash uchun
-        btn.classList.add('tapped');
-      });
-      btn.addEventListener('animationend', () => btn.classList.remove('tapped'));
-    });
 
     /* ── Save watch progress to API periodically ── */
     if (movie && typeof Auth !== 'undefined' && Auth.isLoggedIn()) {
