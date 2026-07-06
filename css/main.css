@@ -468,9 +468,9 @@ ul {
   left: 0;
   right: 0;
   z-index: 499;
-  background: rgba(78, 78, 78, 0.45);
-  backdrop-filter:blur(25px);
-  -webkit-backdrop-filter: blur(25px);
+  background: rgba(20, 20, 22, 0.88);
+  backdrop-filter: blur(28px) saturate(1.3);
+  -webkit-backdrop-filter: blur(28px) saturate(1.3);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   padding: 16px 16px 22px;
   display: flex;
@@ -1344,6 +1344,35 @@ main {
   background: linear-gradient(to top, rgba(0, 0, 0, 0.82) 0%, transparent 50%);
 }
 
+/* Hero-section pastini content-section bilan qattiq chiziqsiz, blur orqali
+   birlashtiradi. hero-content (z-index yuqoriroq) shu qatlamlar ustida
+   sharp/o'qiladigan holda qoladi. */
+.hero-bottom-blur {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 220px;
+  z-index: 1;
+  pointer-events: none;
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, black 100%);
+}
+
+.hero-bottom-fade {
+  position: absolute;
+  left: 0; right: 0; bottom: -1px;
+  height: 240px;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(0, 0, 0, 0.55) 55%,
+    #000000 100%
+  );
+}
+
 .hero-dots {
   position: absolute;
   bottom: 38px;
@@ -2137,18 +2166,34 @@ main {
    STUDIO LOGOS MARQUEE
 ═══════════════════════════════════════════════════════ */
 .studios-section {
-  padding: 52px var(--px) 0;
+  padding: 60px var(--px) 12px;
   overflow: hidden;
 }
 
+/* Ikki tomonida chiziq bilan markazlashgan label */
 .studios-label {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  max-width: 640px;
+  margin: 0 auto 36px;
   text-align: center;
-  font-size: 18px;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.22);
+  font-size: 16px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.5);
   text-transform: uppercase;
   letter-spacing: 3px;
-  margin-bottom: 30px;
+  white-space: nowrap;
+}
+.studios-label::before,
+.studios-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.18));
+}
+.studios-label::after {
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.18), transparent);
 }
 
 .studios-track {
@@ -2157,15 +2202,15 @@ main {
   -webkit-mask: linear-gradient(
     90deg,
     transparent 0%,
-    #000000 12%,
-    #000000 88%,
+    #000000 10%,
+    #000000 90%,
     transparent 100%
   );
   mask: linear-gradient(
     90deg,
     transparent 0%,
-    #000000 12%,
-    #000000 88%,
+    #000000 10%,
+    #000000 90%,
     transparent 100%
   );
 }
@@ -2173,8 +2218,9 @@ main {
 .studios-inner {
   display: flex;
   align-items: center;
-  gap: 0;
+  gap: 18px;
   width: max-content;
+  padding: 4px 0 16px;
   animation: studioScroll 32s linear infinite;
 }
 
@@ -2182,68 +2228,59 @@ main {
   animation-play-state: paused;
 }
 
+/* Har bir studiya — rangli logotip, karta fonida, hover'da ko'tarilib porlaydi */
 .studio-item {
-  padding: 0 46px;
-  font-size: 22.5px;
-  font-weight: 800;
-  color: rgba(255, 255, 255, 0.18);
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  white-space: nowrap;
-  transition: color 0.3s;
-  border-right: 1px solid rgba(255, 255, 255, 0.08);
-  cursor: default;
-}
-
-.studio-item:hover {
-  color: rgba(255, 255, 255, 0.6);
-}
-
-/* Logo image items */
-.studio-logo-item {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0 40px;
-  height: 56px;
-  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 0 34px;
+  height: 84px;
+  border-radius: var(--r-lg);
+  background: var(--glass-1);
+  border: 1px solid var(--border);
   cursor: default;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.25s ease,
+              box-shadow 0.25s ease,
+              background 0.25s ease;
+}
+
+.studio-item:hover {
+  transform: translateY(-5px);
+  background: var(--glass-2);
+  border-color: var(--studio-color, rgba(255, 255, 255, 0.3));
+  box-shadow: 0 14px 34px -8px var(--studio-color, rgba(255, 255, 255, 0.25));
 }
 
 .studio-logo-img {
-  height: 26px;
+  height: 42px;
   width: auto;
-  max-width: 110px;
+  max-width: 150px;
   object-fit: contain;
-  opacity: 0.22;
-  filter: brightness(0) invert(1);
-  transition:
-    opacity 0.35s ease,
-    filter 0.35s ease;
+  opacity: 0.92;
+  transition: opacity 0.25s ease, transform 0.25s ease;
   display: block;
 }
 
-.studio-logo-item:hover .studio-logo-img {
-  opacity: 0.9;
-  filter: none;
+.studio-item:hover .studio-logo-img {
+  opacity: 1;
+  transform: scale(1.06);
 }
 
-/* Text-only studio item (no logo) */
+/* Text-only studio item (logotipsiz — masalan A24, Lionsgate) */
 .studio-text-item {
-  padding: 0 40px;
-  font-size: 21px;
+  font-size: 25.5px;
   font-weight: 800;
-  color: rgba(255, 255, 255, 0.18);
-  letter-spacing: 3px;
+  letter-spacing: 2px;
+  color: var(--studio-color, #ffffff);
   text-transform: uppercase;
   white-space: nowrap;
-  transition: color 0.3s;
-  border-right: 1px solid rgba(255, 255, 255, 0.08);
-  cursor: default;
+  opacity: 0.85;
+  transition: opacity 0.25s ease;
 }
 
 .studio-text-item:hover {
-  color: rgba(255, 255, 255, 0.65);
+  opacity: 1;
 }
 
 /* Brand-specific studio colors */
@@ -3518,7 +3555,7 @@ body.movie-page .navbar.scrolled {
   display: flex;
   align-items: center;
   gap: 14px;
-  font-size: 20.25px;
+  font-size: 10.25px;
   color: var(--text-dim);
   margin-bottom: 16px;
 }
@@ -4477,17 +4514,14 @@ video.hero-bg-iframe {
   .nav-burger {
     display: flex;
   }
-  /* Mobilda joy tejash uchun faqat ikon qoladi, matn logotip yashiriladi */
+  /* Mobilda ham to'liq logotip (ikon + matn) ko'rinadi */
   .nav-logo {
     margin-right: 0;
-    gap: 0;
-  }
-  .nav-logo .logo-wordmark {
-    display: none;
+    gap: 7px;
   }
   .nav-logo-icon {
-    width: 26px;
-    height: 26px;
+    width: 24px;
+    height: 24px;
   }
   .catalog-grid {
     grid-template-columns: repeat(3, 1fr);
@@ -4526,6 +4560,15 @@ video.hero-bg-iframe {
   }
   body.home-page .navbar.scrolled,
   body.profile-page .navbar.scrolled {
+    background: var(--glass-solid) !important;
+    backdrop-filter: var(--glass-blur) !important;
+    -webkit-backdrop-filter: var(--glass-blur) !important;
+    border-bottom-color: rgba(255, 255, 255, 0.06) !important;
+  }
+
+  /* Hamburger menyu (mobile-menu) ochilganda — scroll qilinmagan bo'lsa ham
+     navbar foni ko'rinadigan bo'lsin (transparent holatdan chiqadi). */
+  body.menu-open .navbar:not(.scrolled) {
     background: var(--glass-solid) !important;
     backdrop-filter: var(--glass-blur) !important;
     -webkit-backdrop-filter: var(--glass-blur) !important;
@@ -4630,22 +4673,32 @@ video.hero-bg-iframe {
      markazlashtirilgan — tugmalar bilan bir xil balandlikda tortishib
      qolmasligi uchun. */
   .hero-indicators {
+    top: 76px;
+    bottom: auto;
     left: 20px;
     right: 20px;
-    bottom: 108px;
     justify-content: center;
     max-width: none;
     flex-wrap: nowrap;
     overflow: hidden;
   }
 
-  /* 4 va undan ortiq indicator bo'lsa — har bir bar torroq */
+  /* Chiziqlar biroz kichikroq bo'lsin */
+  .hero-ind {
+    width: 26px;
+    height: 2.5px;
+  }
+  .hero-ind.active {
+    width: 38px;
+  }
+
+  /* 4 va undan ortiq indicator bo'lsa — har bir bar yana ham torroq */
   .hero-indicators .hero-ind:nth-child(n+4) ~ .hero-ind,
   .hero-indicators:has(.hero-ind:nth-child(4)) .hero-ind {
-    width: 22px;
+    width: 18px;
   }
   .hero-indicators:has(.hero-ind:nth-child(4)) .hero-ind.active {
-    width: 34px;
+    width: 28px;
   }
   .hero-nav-btn {
     width: 36px;
@@ -4699,6 +4752,20 @@ video.hero-bg-iframe {
   .dp-actions {
     flex-wrap: wrap;
     gap: 8px;
+  }
+  /* Yoqdimi/Saqlash/Ulashish — mobilda faqat dumaloq ikon (admin panelga tegmaydi).
+     font-size:0 orqali matn (span yoki oddiy text) yashiriladi, SVG ikonlar esa
+     o'zining px width/height'iga ega bo'lgani uchun ta'sirlanmaydi. */
+  body.movie-page .btn-secondary,
+  body.watch-page .btn-secondary {
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border-radius: 50%;
+    justify-content: center;
+    flex-shrink: 0;
+    gap: 0;
+    font-size: 0;
   }
   .dp-gallery-grid {
     grid-template-columns: repeat(2, 1fr);

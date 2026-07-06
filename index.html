@@ -62,6 +62,9 @@
           ></video>
           <div class="hero-grad"></div>
           <div class="hero-grad-b"></div>
+          <!-- Hero pastini content-section bilan blur orqali silliq birlashtiradi -->
+          <div class="hero-bottom-blur"></div>
+          <div class="hero-bottom-fade"></div>
 
           <!-- Next navigation only -->
           <button class="hero-nav-btn hero-btn-next" onclick="event.stopPropagation();stepHero(1)" title="Next">
@@ -548,6 +551,36 @@
 
       function stepHero(dir) { setHero(heroIdx + dir); }
 
+      /* ── Qo'lda surish (swipe) — karusel kabi oldinga/orqaga ── */
+      (function initHeroSwipe() {
+        var card = document.getElementById('hero-card');
+        if (!card) return;
+        var startX = 0, startY = 0, isSwipe = false, justSwiped = false;
+        card.addEventListener('touchstart', function (e) {
+          startX = e.touches[0].clientX;
+          startY = e.touches[0].clientY;
+          isSwipe = false;
+        }, { passive: true });
+        card.addEventListener('touchmove', function (e) {
+          var dx = e.touches[0].clientX - startX;
+          var dy = e.touches[0].clientY - startY;
+          if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 10) isSwipe = true;
+        }, { passive: true });
+        card.addEventListener('touchend', function (e) {
+          if (!isSwipe) return;
+          var dx = e.changedTouches[0].clientX - startX;
+          if (Math.abs(dx) > 40) {
+            justSwiped = true;
+            if (dx < 0) stepHero(1); else stepHero(-1);
+            setTimeout(function () { justSwiped = false; }, 300);
+          }
+        }, { passive: true });
+        /* Swipe tugagandan keyin tasodifiy "click" (film sahifasiga o'tish)ni bloklaymiz */
+        card.addEventListener('click', function (e) {
+          if (justSwiped) { e.stopPropagation(); e.preventDefault(); }
+        }, true);
+      })();
+
       /* Render hero using whatever is currently in heroFilms */
       function bootHero() {
         handleHeroEmpty();
@@ -640,18 +673,18 @@
       }
       /* ── STUDIOS SECTION ── */
       var _DEFAULT_STUDIOS = [
-        { id:1,  name:'Netflix',     logoUrl:'https://cdn.simpleicons.org/netflix',        active:true },
-        { id:2,  name:'HBO Max',     logoUrl:'https://cdn.simpleicons.org/hbo',           active:true },
-        { id:3,  name:'Disney+',     logoUrl:'https://cdn.simpleicons.org/disney',        active:true },
-        { id:4,  name:'Marvel',      logoUrl:'https://cdn.simpleicons.org/marvelcomics',  active:true },
-        { id:5,  name:'Apple TV+',   logoUrl:'https://cdn.simpleicons.org/apple',         active:true },
-        { id:6,  name:'Prime Video', logoUrl:'https://cdn.simpleicons.org/amazonprime',   active:true },
-        { id:7,  name:'Warner',      logoUrl:'https://cdn.simpleicons.org/warnerbros',    active:true },
-        { id:8,  name:'Paramount+',  logoUrl:'https://cdn.simpleicons.org/paramount',     active:true },
-        { id:9,  name:'Sony',        logoUrl:'https://cdn.simpleicons.org/sony',          active:true },
-        { id:10, name:'A24',         logoUrl:'',                                          active:true },
-        { id:11, name:'Universal',   logoUrl:'https://cdn.simpleicons.org/universalpictures', active:true },
-        { id:12, name:'Lionsgate',   logoUrl:'',                                          active:true },
+        { id:1,  name:'Netflix',     logoUrl:'https://cdn.simpleicons.org/netflix',        color:'E50914', active:true },
+        { id:2,  name:'HBO Max',     logoUrl:'https://cdn.simpleicons.org/hbo',           color:'B026FF', active:true },
+        { id:3,  name:'Disney+',     logoUrl:'https://cdn.simpleicons.org/disney',        color:'113CCF', active:true },
+        { id:4,  name:'Marvel',      logoUrl:'https://cdn.simpleicons.org/marvelcomics',  color:'ED1D24', active:true },
+        { id:5,  name:'Apple TV+',   logoUrl:'https://cdn.simpleicons.org/appletv',       color:'5AC8FA', active:true },
+        { id:6,  name:'Prime Video', logoUrl:'https://cdn.simpleicons.org/amazonprime',   color:'00A8E1', active:true },
+        { id:7,  name:'Warner',      logoUrl:'https://cdn.simpleicons.org/warnerbros',    color:'0078D4', active:true },
+        { id:8,  name:'Paramount+',  logoUrl:'https://cdn.simpleicons.org/paramount',     color:'0064FF', active:true },
+        { id:9,  name:'Sony',        logoUrl:'https://cdn.simpleicons.org/sony',          color:'E60012', active:true },
+        { id:10, name:'A24',         logoUrl:'',                                          color:'FFD100', active:true },
+        { id:11, name:'Universal',   logoUrl:'https://cdn.simpleicons.org/universalpictures', color:'0A2E6D', active:true },
+        { id:12, name:'Lionsgate',   logoUrl:'',                                          color:'E4002B', active:true },
       ];
 
       (function renderStudios() {
@@ -676,12 +709,14 @@
         }
 
         function buildItem(s) {
+          var color = s.color || 'ffffff';
           if (s.logoUrl) {
-            return '<span class="studio-item studio-logo-item" title="' + s.name + '">'
-              + '<img src="' + s.logoUrl + '" class="studio-logo-img" alt="' + s.name + '" loading="lazy">'
+            var coloredUrl = s.logoUrl + '/' + color;
+            return '<span class="studio-item studio-logo-item" style="--studio-color:#' + color + '" title="' + s.name + '">'
+              + '<img src="' + coloredUrl + '" class="studio-logo-img" alt="' + s.name + '" loading="lazy">'
               + '</span>';
           }
-          return '<span class="studio-item studio-text-item">' + s.name + '</span>';
+          return '<span class="studio-item studio-text-item" style="--studio-color:#' + color + '">' + s.name + '</span>';
         }
 
         var html = active.map(buildItem).join('');

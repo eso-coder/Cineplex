@@ -20,9 +20,18 @@
         <div class="catalog-title">Filmlar</div>
         <div class="catalog-count" id="count-label">Yuklanmoqda…</div>
       </div>
-      <div class="catalog-sort" id="sort-btn">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-        Saralash: Reyting ↓
+      <div style="position:relative">
+        <div class="catalog-sort" id="sort-btn" onclick="toggleSortDd()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          <span id="sort-lbl">Saralash: Reyting ↓</span>
+        </div>
+        <div class="lang-dd" id="sort-dd" style="min-width:200px">
+          <button class="lang-opt active" data-sort="rating-desc" onclick="setSort('rating-desc', 'Reyting ↓')">Reyting (yuqoridan)</button>
+          <button class="lang-opt" data-sort="rating-asc" onclick="setSort('rating-asc', 'Reyting ↑')">Reyting (pastdan)</button>
+          <button class="lang-opt" data-sort="year-desc" onclick="setSort('year-desc', 'Yil (yangi)')">Yil (yangidan)</button>
+          <button class="lang-opt" data-sort="year-asc" onclick="setSort('year-asc', 'Yil (eski)')">Yil (eskidan)</button>
+          <button class="lang-opt" data-sort="title-asc" onclick="setSort('title-asc', 'Nomi (A-Z)')">Nomi (A-Z)</button>
+        </div>
       </div>
     </div>
 
@@ -41,12 +50,48 @@
     App.initAnimations();
 
     let allMovies = [];
+    let currentGenre = 'all';
+    let currentSort = 'rating-desc';
+
+    const SORTERS = {
+      'rating-desc': (a, b) => (b.rating || 0) - (a.rating || 0),
+      'rating-asc':  (a, b) => (a.rating || 0) - (b.rating || 0),
+      'year-desc':   (a, b) => (b.year || 0) - (a.year || 0),
+      'year-asc':    (a, b) => (a.year || 0) - (b.year || 0),
+      'title-asc':   (a, b) => (a.title || '').localeCompare(b.title || ''),
+    };
 
     function render(list) {
       const grid = document.getElementById('catalog-grid');
       grid.innerHTML = list.map(m => App.buildCard(m, '../')).join('');
       document.getElementById('count-label').textContent = list.length + ' ta film';
     }
+
+    function applyFiltersAndSort() {
+      let list = currentGenre === 'all' ? allMovies : allMovies.filter(m => (m.genre || []).includes(currentGenre));
+      list = [...list].sort(SORTERS[currentSort] || SORTERS['rating-desc']);
+      render(list);
+    }
+
+    window.toggleSortDd = function () {
+      document.getElementById('sort-dd').classList.toggle('open');
+    };
+
+    window.setSort = function (key, label) {
+      currentSort = key;
+      document.getElementById('sort-lbl').textContent = 'Saralash: ' + label;
+      document.getElementById('sort-dd').querySelectorAll('.lang-opt').forEach(el => {
+        el.classList.toggle('active', el.dataset.sort === key);
+      });
+      document.getElementById('sort-dd').classList.remove('open');
+      applyFiltersAndSort();
+    };
+
+    document.addEventListener('click', e => {
+      if (!e.target.closest('#sort-btn') && !e.target.closest('#sort-dd')) {
+        document.getElementById('sort-dd').classList.remove('open');
+      }
+    });
 
     (async () => {
       try {
@@ -55,10 +100,10 @@
       } catch {
         allMovies = getMoviesOnly();
       }
-      render(allMovies);
+      applyFiltersAndSort();
       App.buildGenreBar('genre-bar', allMovies, 'film', genre => {
-        const filtered = genre === 'all' ? allMovies : allMovies.filter(m => (m.genre || []).includes(genre));
-        render(filtered);
+        currentGenre = genre;
+        applyFiltersAndSort();
         document.getElementById('catalog-grid').scrollIntoView({ behavior: 'smooth', block: 'start' });
       });
     })();
