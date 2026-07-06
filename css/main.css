@@ -355,7 +355,7 @@ ul {
 
 .nav-links li a {
   color: var(--text-dim);
-  font-size: 22.5px;
+  font-size: 20.5px;
   font-weight: 500;
   padding: 7px 14px;
   border-radius: 50px;
@@ -1395,7 +1395,7 @@ main {
 }
 
 .logo-main {
-  font-size: 120px;
+  font-size: 100px;
   font-weight: 800;
   letter-spacing: 5px;
   line-height: 0.88;
@@ -2117,7 +2117,7 @@ main {
 }
 
 .movie-title {
-  font-size: 30px;
+  font-size: 22px;
   font-weight: 600;
   line-height: 1.35;
   margin-bottom: 3px;
@@ -2702,7 +2702,7 @@ main {
 }
 
 .dp-poster {
-  width: 130px;
+  width: 200px;
   flex-shrink: 0;
   aspect-ratio: 9 / 16;
   border-radius: var(--r-md);
