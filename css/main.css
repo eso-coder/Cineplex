@@ -468,9 +468,9 @@ ul {
   left: 0;
   right: 0;
   z-index: 499;
-  background: var(--glass-solid);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
+  background: rgba(78, 78, 78, 0.45);
+  backdrop-filter:blur(25px);
+  -webkit-backdrop-filter: blur(25px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   padding: 16px 16px 22px;
   display: flex;
