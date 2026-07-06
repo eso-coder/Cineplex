@@ -17,6 +17,8 @@
   --ease-out:cubic-bezier(0.23,1,0.32,1);
   --ease-in-out:cubic-bezier(0.77,0,0.175,1);
   --r:9px;--r2:12px;
+  --press-scale:0.97;
+  --focus-ring:0 0 0 3px rgba(255,255,255,0.18);
 }
 body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;font-size:13.5px;min-height:100vh;display:flex;overflow-x:hidden}
 img{display:block}
@@ -26,6 +28,7 @@ a{text-decoration:none;color:inherit}
 ::-webkit-scrollbar{width:5px;height:5px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:10px}
+a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible,[tabindex]:focus-visible{outline:none;box-shadow:var(--focus-ring)}
 
 /* ── Login ── */
 .login-screen{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;align-items:center;justify-content:center}
@@ -46,6 +49,7 @@ a{text-decoration:none;color:inherit}
 .sb-section{padding:16px 18px 6px;font-size:9px;font-weight:700;color:var(--muted2);letter-spacing:1.2px;text-transform:uppercase}
 .nav-item{display:flex;align-items:center;gap:10px;padding:9px 18px;font-size:12.5px;font-weight:500;color:var(--muted);cursor:pointer;border-left:2px solid transparent;transition:all 160ms var(--ease-out)}
 .nav-item:hover{color:var(--text);background:rgba(255,255,255,0.03)}
+.nav-item:active{background:rgba(255,255,255,0.07)}
 .nav-item.active{color:#ffffff;border-left-color:#ffffff;background:rgba(255,255,255,0.06)}
 .nav-item svg{width:14px;height:14px;flex-shrink:0;opacity:.7}
 .nav-item.active svg{opacity:1}
@@ -185,6 +189,7 @@ tbody tr:hover td{background:rgba(255,255,255,0.02)}
 .drawer-tabs{display:flex;padding:0 22px;border-bottom:1px solid var(--border);flex-shrink:0}
 .dtab{padding:12px 14px;font-size:12.5px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all 160ms var(--ease-out);white-space:nowrap}
 .dtab:hover{color:var(--text)}
+.dtab:active{opacity:0.75}
 .dtab.active{color:#ffffff;border-bottom-color:#ffffff}
 .dtab-num{display:inline-flex;align-items:center;justify-content:center;width:17px;height:17px;border-radius:50%;background:var(--bg4);font-size:9px;font-weight:700;margin-right:6px;transition:background 160ms}
 .dtab.active .dtab-num{background:#ffffff;color:#000000}
@@ -312,6 +317,7 @@ textarea.form-ctrl{resize:vertical;min-height:88px;line-height:1.6}
 .actors-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:12px}
 .apage-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:18px 12px;display:flex;flex-direction:column;align-items:center;gap:7px;text-align:center;transition:all 180ms var(--ease-out);position:relative}
 .apage-card:hover{border-color:var(--border2);transform:translateY(-2px)}
+.apage-card:active{transform:translateY(-1px) scale(0.98)}
 .apage-avatar{width:60px;height:60px;border-radius:50%;object-fit:cover;margin-bottom:3px}
 .apage-avatar-ph{width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:#ffffff;margin-bottom:3px}
 .apage-name{font-size:12px;font-weight:700;line-height:1.3}

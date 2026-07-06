@@ -28,8 +28,20 @@
   --r-md: 14px;
   --r-lg: 20px;
   --r-xl: 26px;
+  --r-pill: 999px;
   --glass-blur: blur(16px);
   --card-w: 160px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 28px;
+  --space-7: 36px;
+  --space-8: 48px;
+  --focus-ring: 0 0 0 3px rgba(255, 255, 255, 0.16);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --press-scale: 0.97;
 }
 
 /* ── RESET ── */
@@ -41,6 +53,33 @@
   padding: 0;
   -webkit-tap-highlight-color: transparent;
   outline: none;
+}
+
+/* Klaviatura orqali navigatsiya qilinganda ko'rinadigan fokus halqasi.
+   :focus-visible sichqoncha/touch bilan bosilganda chiqmaydi — faqat Tab
+   bilan o'tilganda ko'rinadi, shuning uchun odatiy foydalanishga ta'sir qilmaydi. */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+[tabindex]:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+/* Harakatga sezgir foydalanuvchilar (OS "reduce motion" yoqilgan) uchun —
+   barcha animatsiya/transition deyarli oniy bo'ladi, cheksiz marquee/scroll
+   effektlari to'xtaydi, lekin funksionallik (masalan opacity fade) saqlanadi. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* SEO uchun ko'rinmas, lekin screen reader/qidiruv tizimlari uchun
@@ -197,7 +236,7 @@ ul {
   letter-spacing: 7px;
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.28);
-  margin-top: 16px;
+  margin-top: var(--space-4);
   opacity: 0;
   animation: introSubIn 0.7s ease 1.05s forwards;
 }
@@ -372,7 +411,7 @@ ul {
   font-size: 20.5px;
   font-weight: 500;
   padding: 7px 14px;
-  border-radius: 50px;
+  border-radius: var(--r-pill);
   white-space: nowrap;
   transition:
     color 0.18s,
@@ -405,12 +444,12 @@ ul {
 .nav-search {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   background: var(--glass-1);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
   border: 1px solid rgba(255, 255, 255, 0.09);
-  border-radius: 50px;
+  border-radius: var(--r-pill);
   padding: 7px 14px;
   width: 190px;
   transition:
@@ -451,7 +490,7 @@ ul {
   width: 40px;
   height: 40px;
   padding: 0 9px;
-  border-radius: 10px;
+  border-radius: var(--r-sm);
   background: rgba(255, 255, 255, 0.05);
       border: 1px solid var(--border-h);
   cursor: pointer;
@@ -506,10 +545,10 @@ ul {
 .mobile-search {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 50px;
+  border-radius: var(--r-pill);
   padding: 11px 16px;
 }
 .mobile-search svg {
@@ -542,7 +581,7 @@ ul {
   font-size: 24px;
   font-weight: 500;
   padding: 13px 14px;
-  border-radius: 12px;
+  border-radius: var(--r-md);
   transition:
     color 0.18s,
     background 0.18s;
@@ -557,13 +596,13 @@ ul {
 }
 .mobile-lang {
   display: flex;
-  gap: 8px;
-  margin-top: 4px;
+  gap: var(--space-2);
+  margin-top: var(--space-1);
 }
 .mobile-lang-opt {
   flex: 1;
   padding: 10px 0;
-  border-radius: 10px;
+  border-radius: var(--r-sm);
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.09);
   color: var(--text-dim);
@@ -604,14 +643,14 @@ body.menu-open {
 }
 .mobile-auth {
   display: flex;
-  gap: 8px;
-  margin-top: 4px;
+  gap: var(--space-2);
+  margin-top: var(--space-1);
 }
 .mobile-auth a {
   flex: 1;
   text-align: center;
   padding: 12px 0;
-  border-radius: 11px;
+  border-radius: var(--r-sm);
   font-size: 21px;
   font-weight: 600;
   transition:
@@ -653,7 +692,7 @@ body.menu-open {
   align-items: center;
   gap: 6px;
   padding: 7px 12px;
-  border-radius: 40px;
+  border-radius: var(--r-pill);
   border: 1px solid var(--border-h);
   background: transparent;
   color: rgba(255, 255, 255, 0.75);
@@ -676,7 +715,7 @@ body.menu-open {
   right: 0;
   min-width: 150px;
   padding: 6px;
-  border-radius: 14px;
+  border-radius: var(--r-md);
   border: 1px solid var(--border-h);
   background: var(--glass-solid);
   backdrop-filter: var(--glass-blur);
@@ -702,7 +741,7 @@ body.menu-open {
   text-align: left;
   padding: 9px 12px;
   border: none;
-  border-radius: 9px;
+  border-radius: var(--r-sm);
   background: transparent;
   color: rgba(255, 255, 255, 0.78);
   font-size: 19.5px;
@@ -724,7 +763,7 @@ body.menu-open {
 .nav-auth-btns {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   flex-shrink: 0;
 }
 
@@ -733,7 +772,7 @@ body.menu-open {
   display: inline-flex;
   align-items: center;
   padding: 8px 16px;
-  border-radius: 40px;
+  border-radius: var(--r-pill);
   border: 1px solid var(--border-h);
   background: transparent;
   color: rgba(255, 255, 255, 0.7);
@@ -757,7 +796,7 @@ body.menu-open {
   display: inline-flex;
   align-items: center;
   padding: 8px 18px;
-  border-radius: 40px;
+  border-radius: var(--r-pill);
   border: 1px solid rgba(255, 255, 255, 0.4);
   background: rgba(255, 255, 255, 0.08);
   color: var(--gold);
@@ -786,7 +825,7 @@ body.menu-open {
 .nav-btn {
   width: 38px;
   height: 38px;
-  border-radius: 50px;
+  border-radius: var(--r-pill);
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.08);
   display: flex;
@@ -826,7 +865,7 @@ body.menu-open {
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 18px;
+  border-radius: var(--r-lg);
   overflow: hidden;
   z-index: 1000;
   opacity: 0;
@@ -963,7 +1002,7 @@ body.menu-open {
   padding: 5px 12px 5px 6px;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.09);
-  border-radius: 50px;
+  border-radius: var(--r-pill);
   cursor: pointer;
   transition:
     background 0.18s,
@@ -978,7 +1017,7 @@ body.menu-open {
 .nav-avatar {
   width: 28px;
   height: 28px;
-  border-radius: 50px;
+  border-radius: var(--r-pill);
   background: var(--avatar-grad);
   display: flex;
   align-items: center;
@@ -1057,7 +1096,7 @@ body.menu-open {
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
   border: 1px solid rgba(255, 255, 255, 0.11);
-  border-radius: 20px;
+  border-radius: var(--r-lg);
   overflow: hidden;
   z-index: 1000;
   opacity: 0;
@@ -1138,7 +1177,7 @@ body.menu-open {
 .pdd-badge {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-1);
   margin-top: 5px;
   font-size: 13.5px;
   font-weight: 700;
@@ -1155,7 +1194,7 @@ body.menu-open {
 .pdd-quick-row {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
+  gap: var(--space-2);
   padding: 12px 14px;
 }
 
@@ -1165,7 +1204,7 @@ body.menu-open {
   align-items: center;
   gap: 6px;
   padding: 10px 6px;
-  border-radius: 12px;
+  border-radius: var(--r-md);
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.07);
   color: rgba(255, 255, 255, 0.62);
@@ -1189,7 +1228,7 @@ body.menu-open {
 .pdd-quick-icon {
   width: 30px;
   height: 30px;
-  border-radius: 9px;
+  border-radius: var(--r-sm);
   background: rgba(255, 255, 255, 0.07);
   display: flex;
   align-items: center;
@@ -1213,7 +1252,7 @@ body.menu-open {
 .pdd-item {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
   padding: 11px 18px;
   font-size: 19.5px;
   font-weight: 500;
@@ -1233,7 +1272,7 @@ body.menu-open {
 .pdd-item-icon {
   width: 30px;
   height: 30px;
-  border-radius: 9px;
+  border-radius: var(--r-sm);
   background: rgba(255, 255, 255, 0.06);
   display: flex;
   align-items: center;
@@ -1260,7 +1299,7 @@ body.menu-open {
 /* Danger (sign out) */
 .pdd-danger {
   color: rgba(117, 117, 117, 0.85);
-  margin-bottom: 4px;
+  margin-bottom: var(--space-1);
 }
 
 .pdd-danger:hover {
@@ -1433,7 +1472,7 @@ main {
 .hero-film-logo {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-2);
   margin-bottom: 22px;
   max-width: 420px;
 }
@@ -1479,7 +1518,7 @@ main {
   object-fit: contain;
   filter: drop-shadow(0 2px 12px rgba(0, 0, 0, 0.6));
   display: block;
-  margin-bottom: 12px;
+  margin-bottom: var(--space-3);
 }
 
 /* Movie detail page — mobile logo */
@@ -1524,10 +1563,10 @@ main {
 .hero-meta {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: var(--space-4);
   font-size: 21px;
   color: rgba(255, 255, 255, 0.5);
-  margin-bottom: 28px;
+  margin-bottom: var(--space-6);
 }
 
 .hero-meta-item {
@@ -1547,7 +1586,7 @@ main {
   align-items: center;
   gap: 10px;
   padding: 14px 34px;
-  border-radius: 50px;
+  border-radius: var(--r-pill);
   background: #ffffff;
   color: #050505;
   font-size: 24px;
@@ -1577,7 +1616,7 @@ main {
   align-items: center;
   gap: 9px;
   padding: 14px 26px;
-  border-radius: 50px;
+  border-radius: var(--r-pill);
   background: var(--glass-2);
   color: #ffffff;
   font-size: 22.5px;
@@ -1610,16 +1649,16 @@ main {
 .now-watching-header {
   font-size: 25.5px;
   font-weight: 700;
-  margin-bottom: 4px;
+  margin-bottom: var(--space-1);
 }
 
 .watch-card {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
   background: var(--glass-1);
   border: 1px solid var(--border);
-  border-radius: 16px;
+  border-radius: var(--r-md);
   padding: 10px;
   cursor: pointer;
   transition:
@@ -1641,7 +1680,7 @@ main {
   position: relative;
   width: 78px;
   height: 56px;
-  border-radius: 10px;
+  border-radius: var(--r-sm);
   overflow: hidden;
   flex-shrink: 0;
   background: #242424;
@@ -1695,7 +1734,7 @@ main {
 .watch-tags {
   display: flex;
   gap: 5px;
-  margin-top: 4px;
+  margin-top: var(--space-1);
 }
 
 .watch-tag {
@@ -1709,8 +1748,8 @@ main {
 .watch-rating {
   display: flex;
   align-items: center;
-  gap: 4px;
-  margin-top: 4px;
+  gap: var(--space-1);
+  margin-top: var(--space-1);
   font-size: 18px;
   color: rgba(255, 255, 255, 0.38);
 }
@@ -1758,7 +1797,7 @@ main {
   align-items: center;
   gap: 7px;
   padding: 8px 17px;
-  border-radius: 50px;
+  border-radius: var(--r-pill);
   background: var(--glass-1);
   border: 1px solid rgba(255, 255, 255, 0.09);
   color: rgba(255, 255, 255, 0.6);
@@ -1774,6 +1813,10 @@ main {
   background: var(--glass-2);
   color: #ffffff;
   border-color: rgba(255, 255, 255, 0.18);
+}
+
+.genre-pill:active {
+  transform: scale(var(--press-scale));
 }
 
 .genre-pill.active {
@@ -1820,7 +1863,7 @@ main {
 .section-nav-btn {
   width: 34px;
   height: 34px;
-  border-radius: 50px;
+  border-radius: var(--r-pill);
   background: var(--glass-1);
   border: 1px solid var(--border);
   display: flex;
@@ -1868,6 +1911,10 @@ main {
 .movie-card:hover {
   transform: scale(1.2);
   z-index: 20;
+}
+
+.movie-card:active {
+  transform: scale(1.16);
 }
 
 .movie-card:hover .movie-poster {
@@ -1924,6 +1971,10 @@ main {
   color: #ffffff;
 }
 
+.mco-like-btn:active {
+  transform: scale(var(--press-scale));
+}
+
 .mco-like-btn.active {
   background: var(--glass-3);
   border-color: rgba(255, 255, 255, 0.35);
@@ -1957,6 +2008,10 @@ main {
 .mco-wl-btn.active {
   background: var(--glass-3);
   color: #ffffff;
+}
+
+.mco-wl-btn:active {
+  transform: scale(var(--press-scale));
 }
 
 .mco-wl-btn.active svg {
@@ -1997,7 +2052,7 @@ main {
   font-weight: 700;
   color: #ffffff;
   line-height: 1.35;
-  margin-bottom: 4px;
+  margin-bottom: var(--space-1);
   display: -webkit-box;
   -webkit-line-clamp: 2;
   line-clamp: 2;
@@ -2009,7 +2064,7 @@ main {
 .mco-meta {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-1);
   font-size: 18px;
   color: rgba(255, 255, 255, 0.55);
   flex-wrap: wrap;
@@ -2047,7 +2102,7 @@ main {
   border-radius: var(--r-md);
   overflow: hidden;
   background: #181818;
-  margin-bottom: 8px;
+  margin-bottom: var(--space-2);
   border: 1px solid rgba(255, 255, 255, 0.06);
   box-shadow: none;
 }
@@ -2129,7 +2184,7 @@ main {
   margin-bottom: 2px;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-1);
   transition: opacity 0.2s;
 }
 
@@ -2336,7 +2391,7 @@ main {
   text-transform: uppercase;
   letter-spacing: 1.2px;
   color: rgba(255, 255, 255, 0.35);
-  margin-bottom: 16px;
+  margin-bottom: var(--space-4);
 }
 
 .footer-links {
@@ -2370,13 +2425,13 @@ main {
 
 .footer-socials {
   display: flex;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .footer-social {
   width: 38px;
   height: 38px;
-  border-radius: 9px;
+  border-radius: var(--r-sm);
   background: var(--glass-1);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
@@ -2440,7 +2495,7 @@ main {
 .catalog-sort {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   background: var(--glass-1);
   border: 1px solid var(--border);
   border-radius: var(--r-sm);
@@ -2717,6 +2772,10 @@ main {
   color: #ffffff;
 }
 
+.dp-more-btn:active {
+  transform: scale(var(--press-scale));
+}
+
 .dp-more-btn svg {
   transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -2736,7 +2795,7 @@ main {
   font-size: 19.5px;
   font-weight: 500;
   padding: 6px 20px;
-  border-radius: 50px;
+  border-radius: var(--r-pill);
   background: transparent;
   border: 1px solid rgba(255, 255, 255, 0.26);
   color: rgba(255, 255, 255, 0.78);
@@ -2745,7 +2804,7 @@ main {
 
 .dp-actions {
   display: flex;
-  gap: 12px;
+  gap: var(--space-3);
   flex-wrap: wrap;
 }
 
@@ -2770,6 +2829,14 @@ main {
 .btn-play:hover {
   background: rgba(255, 255, 255, 0.88);
   transform: translateY(-2px);
+}
+
+.btn-play:active {
+  transform: translateY(-1px) scale(0.98);
+}
+
+.btn-play:focus-visible {
+  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.14), var(--focus-ring);
 }
 
 .btn-secondary {
@@ -2799,6 +2866,14 @@ main {
   color: #ffffff;
 }
 
+.btn-secondary:active {
+  transform: scale(var(--press-scale));
+}
+
+.btn-secondary:focus-visible {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), var(--focus-ring);
+}
+
 .btn-secondary.active {
   color: var(--gold);
   border-color: rgba(255, 255, 255, 0.4);
@@ -2808,7 +2883,7 @@ main {
 .dp-section-label {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: var(--space-5);
   font-size: 16.5px;
   font-weight: 700;
   letter-spacing: 4px;
@@ -2879,7 +2954,7 @@ main {
 .dp-gallery-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 4px;
+  gap: var(--space-1);
   padding: 0 50px 52px;
 }
 
@@ -2917,7 +2992,7 @@ main {
 
 .dp-cast-scroll {
   display: flex;
-  gap: 20px;
+  gap: var(--space-5);
   overflow-x: auto;
   padding-bottom: 6px;
   margin-top: 0;
@@ -2979,7 +3054,7 @@ main {
   font-size: 18px;
   font-weight: 600;
   padding: 3px 12px;
-  border-radius: 50px;
+  border-radius: var(--r-pill);
   background: rgba(255, 255, 255, 0.07);
   border: 1px solid var(--border);
   color: rgba(255, 255, 255, 0.6);
@@ -3041,14 +3116,14 @@ body.movie-page .navbar.scrolled {
 .review-write-top {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
   margin-bottom: 15px;
 }
 
 .review-write-avatar {
   width: 38px;
   height: 38px;
-  border-radius: 10px;
+  border-radius: var(--r-sm);
   background: var(--avatar-grad);
   display: flex;
   align-items: center;
@@ -3132,6 +3207,10 @@ body.movie-page .navbar.scrolled {
   transform: translateY(-1px);
 }
 
+.review-submit-btn:active {
+  transform: translateY(0) scale(0.98);
+}
+
 .reviews-list {
   display: flex;
   flex-direction: column;
@@ -3163,13 +3242,13 @@ body.movie-page .navbar.scrolled {
 .review-user {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .review-avatar {
   width: 40px;
   height: 40px;
-  border-radius: 12px;
+  border-radius: var(--r-md);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3384,7 +3463,7 @@ body.movie-page .navbar.scrolled {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  padding: 4px;
+  padding: var(--space-1);
   transition:
     color 0.15s,
     transform 0.15s;
@@ -3393,6 +3472,10 @@ body.movie-page .navbar.scrolled {
 .player-ctrl-btn:hover {
   color: #ffffff;
   transform: scale(1.1);
+}
+
+.player-ctrl-btn:active {
+  transform: scale(1.02);
 }
 
 .player-time {
@@ -3409,7 +3492,7 @@ body.movie-page .navbar.scrolled {
 .player-vol-wrap {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .player-vol-slider {
@@ -3448,7 +3531,7 @@ body.movie-page .navbar.scrolled {
   gap: 14px;
   font-size: 15.25px;
   color: var(--text-dim);
-  margin-bottom: 16px;
+  margin-bottom: var(--space-4);
 }
 
 .watch-desc {
@@ -3471,7 +3554,7 @@ body.movie-page .navbar.scrolled {
   gap: 13px;
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 16px;
+  border-radius: var(--r-md);
   padding: 16px 22px;
   margin-bottom: 22px;
   backdrop-filter: var(--glass-blur);
@@ -3571,7 +3654,7 @@ body.movie-page .navbar.scrolled {
   top: 16px;
   right: var(--px);
   display: flex;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .profile-cover-btn {
@@ -3611,7 +3694,7 @@ body.movie-page .navbar.scrolled {
 .profile-avatar-big {
   width: 100px;
   height: 100px;
-  border-radius: 24px;
+  border-radius: var(--r-xl);
   background: var(--avatar-grad);
   display: flex;
   align-items: center;
@@ -3658,7 +3741,7 @@ body.movie-page .navbar.scrolled {
   font-size: 40.5px;
   font-weight: 800;
   letter-spacing: -0.5px;
-  margin-bottom: 4px;
+  margin-bottom: var(--space-1);
 }
 
 .profile-email {
@@ -3669,7 +3752,7 @@ body.movie-page .navbar.scrolled {
 
 .profile-badge-row {
   display: flex;
-  gap: 8px;
+  gap: var(--space-2);
   flex-wrap: wrap;
 }
 
@@ -3680,7 +3763,7 @@ body.movie-page .navbar.scrolled {
   font-size: 18px;
   font-weight: 700;
   padding: 4px 12px;
-  border-radius: 50px;
+  border-radius: var(--r-pill);
 }
 
 .profile-badge.gold {
@@ -3698,7 +3781,7 @@ body.movie-page .navbar.scrolled {
 .profile-stats {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
+  gap: var(--space-3);
   padding: 0 var(--px) 32px;
 }
 
@@ -3765,7 +3848,7 @@ body.movie-page .navbar.scrolled {
 .settings-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .setting-row {
@@ -3790,10 +3873,14 @@ body.movie-page .navbar.scrolled {
   border-color: var(--border-h);
 }
 
+.setting-row:active {
+  transform: scale(0.99);
+}
+
 .setting-icon {
   width: 38px;
   height: 38px;
-  border-radius: 11px;
+  border-radius: var(--r-sm);
   background: rgba(255, 255, 255, 0.07);
   display: flex;
   align-items: center;
@@ -3820,7 +3907,7 @@ body.movie-page .navbar.scrolled {
 .setting-toggle {
   width: 44px;
   height: 24px;
-  border-radius: 12px;
+  border-radius: var(--r-md);
   background: rgba(255, 255, 255, 0.15);
   position: relative;
   transition: background 0.25s;
@@ -3861,7 +3948,7 @@ body.movie-page .navbar.scrolled {
   font-size: 51px;
   font-weight: 800;
   letter-spacing: -0.8px;
-  margin-bottom: 8px;
+  margin-bottom: var(--space-2);
 }
 
 .category-hero-sub {
@@ -3873,7 +3960,7 @@ body.movie-page .navbar.scrolled {
   padding: 0 var(--px);
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
+  gap: var(--space-4);
 }
 
 /* ── Spotify-style genre card ── */
@@ -3881,7 +3968,7 @@ body.movie-page .navbar.scrolled {
   background-color: #333;
   border: none;
   border-radius: var(--r-xl);
-  padding: 20px;
+  padding: var(--space-5);
   cursor: pointer;
   text-decoration: none;
   color: #ffffff;
@@ -3906,6 +3993,10 @@ body.movie-page .navbar.scrolled {
 .category-card:hover {
   transform: scale(1.02);
   box-shadow: 0 18px 48px rgba(0, 0, 0, 0.45);
+}
+
+.category-card:active {
+  transform: scale(0.99);
 }
 
 .category-card.selected {
@@ -3968,7 +4059,7 @@ body.movie-page .navbar.scrolled {
   padding: 0 var(--px);
   display: grid;
   grid-template-columns: repeat(6, 1fr);
-  gap: 16px;
+  gap: var(--space-4);
 }
 
 .cat-actor-card {
@@ -4063,7 +4154,7 @@ body.movie-page .navbar.scrolled {
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
   border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 12px;
+  border-radius: var(--r-md);
   padding: 12px 24px;
   font-size: 22.5px;
   font-weight: 500;
@@ -4112,6 +4203,9 @@ body.movie-page .navbar.scrolled {
   background: var(--glass-3);
   border-color: rgba(255, 255, 255, 0.5);
   transform: translateY(-50%) scale(1.08);
+}
+.hero-nav-btn:active {
+  transform: translateY(-50%) scale(1.0);
 }
 .hero-nav-btn.hero-btn-next {
   right: 40px;
@@ -4170,7 +4264,7 @@ body.movie-page .navbar.scrolled {
   background: #151515;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-top: none;
-  border-radius: 0 0 10px 10px;
+  border-radius: 0 0 var(--r-sm) var(--r-sm);
   padding: 10px 11px 12px;
   opacity: 0;
   transform: translateY(-6px);
@@ -4190,7 +4284,7 @@ body.movie-page .navbar.scrolled {
   display: flex;
   align-items: center;
   gap: 7px;
-  margin-bottom: 8px;
+  margin-bottom: var(--space-2);
 }
 
 .cp2-play {
@@ -4212,6 +4306,9 @@ body.movie-page .navbar.scrolled {
 }
 .cp2-play:hover {
   background: rgba(255, 255, 255, 0.88);
+}
+.cp2-play:active {
+  transform: scale(var(--press-scale));
 }
 
 .cp2-wl {
@@ -4235,6 +4332,9 @@ body.movie-page .navbar.scrolled {
 .cp2-wl:hover {
   border-color: #ffffff;
   background: rgba(255, 255, 255, 0.08);
+}
+.cp2-wl:active {
+  transform: scale(var(--press-scale));
 }
 
 .cp2-info {
@@ -4357,7 +4457,7 @@ video.hero-bg-iframe {
 @media (max-width: 640px) {
   .dp-hero-controls {
     right: 16px;
-    gap: 8px;
+    gap: var(--space-2);
   }
   .dp-hero-ctrl-btn {
     width: 40px;
@@ -4468,7 +4568,7 @@ video.hero-bg-iframe {
 
   .navbar-inner {
     padding: 0 14px;
-    gap: 8px;
+    gap: var(--space-2);
   }
   .nav-logo {
     margin-right: 0;
@@ -4481,7 +4581,7 @@ video.hero-bg-iframe {
     display: none;
   }
   .lang-btn {
-    border-radius: 50px;
+    border-radius: var(--r-pill);
   }
 
   /* Auth: register is in the mobile menu — keep navbar compact (login only) */
@@ -4522,11 +4622,11 @@ video.hero-bg-iframe {
   .hero-year {
     font-size: 16.5px;
     letter-spacing: 1.5px;
-    margin-bottom: 8px;
+    margin-bottom: var(--space-2);
   }
   .hero-film-logo {
     gap: 5px;
-    margin-bottom: 16px;
+    margin-bottom: var(--space-4);
     max-width: 100%;
   }
   .hero-logo-img {
@@ -4636,7 +4736,7 @@ video.hero-bg-iframe {
   }
   .dp-info-section {
     flex-direction: column;
-    gap: 16px;
+    gap: var(--space-4);
   }
   .dp-poster {
     width: 120px;
@@ -4645,7 +4745,7 @@ video.hero-bg-iframe {
   }
   .dp-actions {
     flex-wrap: wrap;
-    gap: 8px;
+    gap: var(--space-2);
   }
   /* Yoqdimi/Saqlash/Ulashish — mobilda faqat dumaloq ikon (admin panelga tegmaydi).
      font-size:0 orqali matn (span yoki oddiy text) yashiriladi, SVG ikonlar esa
@@ -4696,14 +4796,14 @@ video.hero-bg-iframe {
     font-size: 27px;
   }
   .review-write-card {
-    padding: 16px;
+    padding: var(--space-4);
     margin-bottom: 18px;
   }
 
   /* Category */
   .category-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
+    gap: var(--space-3);
   }
   .category-card {
     min-height: 96px;
@@ -4750,7 +4850,7 @@ video.hero-bg-iframe {
   .footer-top {
     grid-template-columns: 1fr 1fr;
     gap: 26px 20px;
-    margin-bottom: 28px;
+    margin-bottom: var(--space-6);
   }
   .footer-brand {
     grid-column: 1 / -1;
@@ -4779,7 +4879,7 @@ video.hero-bg-iframe {
   }
   .hero-meta {
     font-size: 16.5px;
-    gap: 8px;
+    gap: var(--space-2);
   }
   .hero-play-btn {
     padding: 10px 18px;
@@ -4801,7 +4901,7 @@ video.hero-bg-iframe {
   }
 }
 
-/* ── Touch devices: no sticky hover on cards ── */
+/* ── Touch devices: no sticky hover on cards/buttons ── */
 @media (hover: none) {
   .movie-card:hover {
     transform: none;
@@ -4814,6 +4914,18 @@ video.hero-bg-iframe {
   .category-card:hover {
     transform: none;
     box-shadow: none;
+  }
+  .mco-play:hover {
+    transform: none;
+  }
+  .player-center-icon:hover {
+    transform: none;
+    background: var(--glass-2);
+  }
+  .hero-nav-btn:hover {
+    transform: translateY(-50%);
+    background: var(--glass-2);
+    border-color: rgba(255, 255, 255, 0.28);
   }
 }
 
