@@ -40,4 +40,14 @@ module.exports = {
     clientId: process.env.APPLE_CLIENT_ID || '',
   },
   tmdbApiKey: process.env.TMDB_API_KEY || '',
+
+  // ── CloudFront signed cookies (video segmentlarini himoyalash) ──
+  // Uch birdek to'ldirilmasa, video himoyasi o'chirilgan holda ishlaydi
+  // (frontend to'g'ridan-to'g'ri S3 URL'ga qaytadi) — SETUP_CLOUDFRONT.md'ga qarang.
+  cloudfront: {
+    domain: process.env.CF_DOMAIN || '',
+    keyPairId: process.env.CF_KEY_PAIR_ID || '',
+    privateKey: (process.env.CF_PRIVATE_KEY || '').replace(/\\n/g, '\n'),
+    cookieDomain: process.env.CF_COOKIE_DOMAIN || '',
+  },
 };

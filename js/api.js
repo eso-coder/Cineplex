@@ -451,6 +451,20 @@ const WatchlistAPI = {
   check()         { return Promise.resolve({ inWatchlist: false }); }
 };
 
+/* ─── Watch session API (CloudFront signed cookie orqali video himoyasi) ───
+   videoUrl — ixtiyoriy: aynan qaysi video (film yoki bitta serial qismi)
+   ijro etilishini bildiradi, backend shu videoUrl S3 papkasi uchun 6 soatlik
+   cookie beradi va CloudFront'ga qayta yo'naltirilgan videoUrl'ni qaytaradi.
+   CloudFront sozlanmagan bo'lsa backend originalUrl'ni o'zgarishsiz qaytaradi. */
+const WatchAPI = {
+  async start(movieId, videoUrl) {
+    return apiFetch(`/watch/${movieId}/start`, {
+      method: 'POST',
+      body: JSON.stringify(videoUrl ? { videoUrl } : {}),
+    });
+  },
+};
+
 /* ─── History API (stub — no backend equivalent yet) ─── */
 const HistoryAPI = {
   get()    { return Promise.resolve([]); },
