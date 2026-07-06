@@ -512,101 +512,73 @@
       to   { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
     }
 
-    /* ══ Volume HUD — "Reactive Equalizer Capsule" ══
-       ArrowUp/ArrowDown paytida chiqadigan ovoz balandligi ko'rsatkichi. */
+    /* ══ Volume HUD — gorizontal slider (progress bar uslubida) ══
+       ArrowUp/ArrowDown/M paytida chiqadigan ovoz balandligi ko'rsatkichi. */
     .volume-hud {
       position: absolute;
-      top: 24px;
-      right: 24px;
+      left: 50%;
+      bottom: 92px;
       z-index: 60;
+      width: 320px;
+      max-width: 55%;
       display: flex;
       align-items: center;
-      gap: 12px;
-      padding: 10px 18px 10px 14px;
-      border-radius: 999px;
-      background: var(--glass-solid, rgba(12, 12, 14, 0.8));
-      backdrop-filter: blur(18px) saturate(1.4);
-      -webkit-backdrop-filter: blur(18px) saturate(1.4);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      box-shadow: 0 8px 30px rgba(0,0,0,0.35), inset 0 0 0 1px rgba(255,255,255,0.03);
       opacity: 0;
-      transform: scale(0.85) translateY(-6px);
-      filter: blur(6px);
       pointer-events: none;
-      transition: opacity 0.18s ease, filter 0.28s ease;
+      transform: translateX(-50%) scale(0.94);
+      filter: blur(6px);
+      transition: opacity 0.18s ease, filter 0.28s ease, transform 0.25s ease;
     }
 
     .volume-hud.is-visible {
       opacity: 1;
       filter: blur(0px);
-      animation: hudPop 0.42s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+      transform: translateX(-50%) scale(1);
     }
 
     .volume-hud.is-hiding {
       opacity: 0;
-      filter: blur(8px);
-      transform: scale(0.9) translateY(-4px);
+      filter: blur(6px);
+      transform: translateX(-50%) scale(0.96);
       transition: opacity 0.35s ease, filter 0.4s ease, transform 0.4s ease;
     }
 
-    @keyframes hudPop {
-      0%   { transform: scale(0.8) translateY(-8px); }
-      60%  { transform: scale(1.06) translateY(1px); }
-      100% { transform: scale(1) translateY(0); }
-    }
-
-    .volume-hud__icon {
-      width: 20px; height: 20px;
-      color: var(--hud-accent, #7dd3fc);
-      transition: color 0.3s ease;
-      flex-shrink: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .volume-hud__icon svg { width: 100%; height: 100%; }
-
-    .volume-hud__bars {
-      display: flex;
-      align-items: flex-end;
-      gap: 3px;
-      height: 22px;
-    }
-
-    .volume-hud__bars span {
-      width: 3px;
-      border-radius: 2px;
-      background: var(--hud-accent, #7dd3fc);
+    .volume-hud__track {
+      position: relative;
+      width: 100%;
       height: 4px;
-      transform-origin: bottom;
-      transition: height 0.28s cubic-bezier(0.34, 1.56, 0.64, 1),
-                  background 0.3s ease;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.25);
     }
 
-    .volume-hud__bars span:nth-child(1) { transition-delay: 0ms; }
-    .volume-hud__bars span:nth-child(2) { transition-delay: 20ms; }
-    .volume-hud__bars span:nth-child(3) { transition-delay: 40ms; }
-    .volume-hud__bars span:nth-child(4) { transition-delay: 60ms; }
-    .volume-hud__bars span:nth-child(5) { transition-delay: 80ms; }
-    .volume-hud__bars span:nth-child(6) { transition-delay: 100ms; }
-    .volume-hud__bars span:nth-child(7) { transition-delay: 120ms; }
-
-    .volume-hud__value {
-      min-width: 30px;
-      font: 600 19.5px/1 'Outfit', sans-serif;
-      color: #f4f4f5;
-      font-variant-numeric: tabular-nums;
+    .volume-hud__fill {
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 0%;
+      border-radius: 999px;
+      background: #ffffff;
+      transition: width 0.12s ease;
     }
 
-    .volume-hud.is-muted .volume-hud__bars span {
-      height: 4px !important;
-      background: #6b7280;
+    .volume-hud__thumb {
+      position: absolute;
+      top: 50%;
+      left: 0%;
+      width: 13px; height: 13px;
+      border-radius: 50%;
+      background: #ffffff;
+      box-shadow: 0 1px 5px rgba(0,0,0,0.5);
+      transform: translate(-50%, -50%);
+      transition: left 0.12s ease;
     }
-    .volume-hud.is-muted { --hud-accent: #6b7280; }
+
+    .volume-hud.is-muted .volume-hud__fill,
+    .volume-hud.is-muted .volume-hud__thumb {
+      background: #9ca3af;
+    }
 
     @media (max-width: 640px) {
-      .volume-hud { top: 14px; right: 14px; padding: 8px 14px 8px 11px; gap: 9px; }
-      .volume-hud__bars { height: 18px; }
+      .volume-hud { bottom: 74px; max-width: 70%; }
     }
 
     /* ══ Seek HUD — YouTube uslubida "ripple + chevron sweep" ══ */
@@ -810,11 +782,10 @@
 
       <!-- Volume HUD (ArrowUp/ArrowDown paytida chiqadi) -->
       <div id="volumeHud" class="volume-hud" aria-hidden="true">
-        <div class="volume-hud__icon" id="volumeIcon"></div>
-        <div class="volume-hud__bars" id="volumeBars">
-          <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+        <div class="volume-hud__track">
+          <div class="volume-hud__fill" id="volumeFill"></div>
+          <div class="volume-hud__thumb" id="volumeThumb"></div>
         </div>
-        <div class="volume-hud__value" id="volumeValue">80</div>
       </div>
 
       <!-- Seek HUD (ArrowLeft/ArrowRight yoki +10/-10 tugmasi paytida chiqadi) -->
@@ -1618,51 +1589,20 @@
     };
 
     /* ══════════════════════════════════════════
-       VOLUME HUD — "Reactive Equalizer Capsule"
-       ArrowUp/ArrowDown/M paytida chiqadigan animatsion ovoz ko'rsatkichi.
+       VOLUME HUD — gorizontal slider
+       ArrowUp/ArrowDown/M paytida chiqadigan ovoz balandligi ko'rsatkichi.
     ══════════════════════════════════════════ */
-    const volumeHud   = document.getElementById('volumeHud');
-    const volumeBars  = Array.from(document.querySelectorAll('#volumeBars span'));
-    const volumeValue = document.getElementById('volumeValue');
-    const volumeIcon  = document.getElementById('volumeIcon');
-
-    const HUD_ICON_ON = `<svg viewBox="0 0 24 24" fill="none"><path d="M4 9v6h4l5 5V4L8 9H4z" fill="currentColor"/><path d="M16 8a5 5 0 010 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`;
-    const HUD_ICON_MUTE = `<svg viewBox="0 0 24 24" fill="none"><path d="M4 9v6h4l5 5V4L8 9H4z" fill="currentColor"/><path d="M15.5 8.5l5 7M20.5 8.5l-5 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`;
+    const volumeHud    = document.getElementById('volumeHud');
+    const volumeFill   = document.getElementById('volumeFill');
+    const volumeThumb  = document.getElementById('volumeThumb');
 
     let hudHideTimer = null;
 
-    function hudAccentColor(vol) {
-      const hue = 200 - (vol / 100) * 160; // 200 (cool blue) -> 40 (warm amber)
-      return `hsl(${hue}deg 90% 65%)`;
-    }
-
-    function hudRenderBars(vol) {
-      const activeCount = Math.round((vol / 100) * volumeBars.length);
-      volumeBars.forEach((bar, i) => {
-        const targetHeight = i < activeCount
-          ? 6 + Math.round((i + 1) / volumeBars.length * 16)
-          : 4;
-        bar.style.height = `${targetHeight}px`;
-      });
-    }
-
-    function hudRollNumber(el, from, to) {
-      const start = performance.now();
-      function step(now) {
-        const t = Math.min(1, (now - start) / 120);
-        el.textContent = Math.round(from + (to - from) * t);
-        if (t < 1) requestAnimationFrame(step);
-      }
-      requestAnimationFrame(step);
-    }
-
     function showVolumeHud(vol, isMuted) {
       if (!volumeHud) return;
-      const displayed = parseInt(volumeValue.textContent || '0', 10);
-      hudRollNumber(volumeValue, displayed, Math.round(vol));
-      hudRenderBars(isMuted ? 0 : vol);
-      volumeHud.style.setProperty('--hud-accent', isMuted ? '#6b7280' : hudAccentColor(vol));
-      volumeIcon.innerHTML = isMuted || vol === 0 ? HUD_ICON_MUTE : HUD_ICON_ON;
+      const pct = isMuted ? 0 : Math.max(0, Math.min(100, vol));
+      volumeFill.style.width = pct + '%';
+      volumeThumb.style.left = pct + '%';
       volumeHud.classList.toggle('is-muted', isMuted || vol === 0);
 
       volumeHud.classList.remove('is-hiding');
