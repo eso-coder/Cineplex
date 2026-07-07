@@ -1,0 +1,270 @@
+/* ═══════════════════════════════════════════════════════
+   CINEPLEX — Watch page "Aurora Glass" pass
+   Scoped entirely under body.watch-page. No markup rewrites
+   beyond the two decorative aurora layers (same convention as
+   the site's existing .ambient-bg). No JS/player logic touched.
+═══════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════
+   AURORA — green fallback, crossfades to a
+   desaturated color pulled from the poster
+   (see js/aurora-color.js). Opacity-only motion.
+═══════════════════════════════════════ */
+:root {
+  --aurora-rgb: 45, 90, 60; /* fallback until the poster color resolves */
+}
+
+body.watch-page {
+  background: var(--bg-base);
+}
+
+body.watch-page .watch-aurora-base,
+body.watch-page .watch-aurora-dynamic {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+body.watch-page .watch-aurora-base {
+  background: var(--aurora), var(--bg-base);
+}
+
+body.watch-page .watch-aurora-dynamic {
+  background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(var(--aurora-rgb), 0.35), transparent 70%);
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
+body.watch-page .watch-aurora-dynamic.ready {
+  opacity: 1;
+}
+
+/* ═══════════════════════════════════════
+   NAVBAR — same floating frosted pill as home
+═══════════════════════════════════════ */
+body.watch-page .navbar {
+  background: transparent;
+  border-bottom: none;
+  box-shadow: none;
+  transition: none;
+}
+body.watch-page .navbar::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-color: transparent;
+  border-radius: 0 0 var(--radius-card) var(--radius-card);
+  transition: background-color 0.1s linear;
+}
+body.watch-page .navbar.scrolled::before {
+  background-color: var(--glass-bg-hover);
+  backdrop-filter: blur(var(--glass-blur)) saturate(1.2);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.2);
+  border-bottom: 1px solid var(--glass-border);
+}
+@media (max-width: 768px) {
+  body.watch-page .navbar.scrolled::before {
+    backdrop-filter: blur(var(--glass-blur-mobile)) saturate(1.2);
+    -webkit-backdrop-filter: blur(var(--glass-blur-mobile)) saturate(1.2);
+  }
+}
+
+/* ═══════════════════════════════════════
+   TOP BAR — back + favorite (glass; gold only
+   when the favorite state is active)
+═══════════════════════════════════════ */
+body.watch-page .watch-top-bar {
+  background: linear-gradient(to bottom, rgba(11, 15, 13, 0.55) 0%, transparent 100%);
+}
+body.watch-page .watch-back {
+  background: var(--glass-bg);
+  border-color: var(--glass-border);
+  color: var(--text-secondary);
+}
+body.watch-page .watch-back:hover {
+  background: var(--glass-bg-hover);
+  color: var(--text-primary);
+  transform: scale(1.03);
+}
+body.watch-page .watch-back:active { transform: scale(0.97); }
+
+body.watch-page #top-fav-btn {
+  background: var(--glass-bg);
+  border-color: var(--glass-border);
+  color: var(--text-secondary);
+  border-radius: var(--radius-pill);
+}
+body.watch-page #top-fav-btn:hover { background: var(--glass-bg-hover); }
+body.watch-page #top-fav-btn.active {
+  color: var(--accent);
+  border-color: rgba(232, 182, 76, 0.4);
+  background: rgba(232, 182, 76, 0.1);
+}
+body.watch-page .watch-top-title { color: var(--text-primary); }
+body.watch-page .watch-top-year { color: var(--text-muted); }
+
+/* ═══════════════════════════════════════
+   PLAYER CONTROLS — monochrome glass, opacity+scale only
+═══════════════════════════════════════ */
+body.watch-page .player-center-icon {
+  background: var(--glass-bg);
+  border-color: var(--glass-border);
+  backdrop-filter: blur(var(--glass-blur)) saturate(1.2);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.2);
+}
+body.watch-page .player-center-btn:hover .player-center-icon {
+  background: var(--glass-bg-hover);
+}
+
+body.watch-page .player-progress-wrap {
+  background: var(--glass-border);
+}
+body.watch-page .player-progress-buffered {
+  background: var(--glass-bg-hover);
+}
+body.watch-page .player-progress-fill {
+  background: var(--text-primary);
+}
+body.watch-page .player-progress-fill::after {
+  background: var(--text-primary);
+}
+
+body.watch-page .player-ctrl-btn {
+  color: var(--text-secondary);
+}
+body.watch-page .player-ctrl-btn:hover {
+  color: var(--text-primary);
+  background: var(--glass-bg);
+}
+body.watch-page .player-ctrl-btn.active-ctrl {
+  color: var(--text-primary);
+  background: var(--glass-bg-hover);
+}
+body.watch-page .player-time { color: var(--text-secondary); }
+
+body.watch-page .player-vol-slider { background: var(--glass-border); }
+body.watch-page .player-vol-slider::-webkit-slider-thumb { background: var(--text-primary); }
+
+/* Settings dropdowns (subtitle / quality / audio) — glass panel */
+body.watch-page .player-settings-dd {
+  background: var(--bg-elevated);
+  border-color: var(--glass-border);
+  border-radius: var(--radius-input);
+  backdrop-filter: blur(var(--glass-blur)) saturate(1.2);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.2);
+}
+body.watch-page .psd-head { color: var(--text-muted); }
+body.watch-page .psd-item { color: var(--text-secondary); }
+body.watch-page .psd-item:hover {
+  background: var(--glass-bg-hover);
+  color: var(--text-primary);
+}
+body.watch-page .psd-item.active { color: var(--text-primary); }
+body.watch-page .psd-item.active::after { background: var(--accent); }
+
+/* Subtitle overlay + volume/seek HUDs stay monochrome glass */
+body.watch-page .sub-line {
+  background: var(--glass-bg);
+  border-color: var(--glass-border);
+}
+body.watch-page .volume-hud__arc-fill { stroke: var(--text-primary); }
+body.watch-page .seek-hud {
+  background: var(--bg-elevated);
+  border-color: var(--glass-border);
+}
+body.watch-page .seek-hud__chevrons { color: var(--text-primary); }
+
+/* ═══════════════════════════════════════
+   MOVIE INFO — thin, light title per type scale
+═══════════════════════════════════════ */
+body.watch-page .watch-title {
+  color: var(--text-primary);
+  font-weight: 400;
+  letter-spacing: 0.01em;
+}
+body.watch-page .watch-meta { color: var(--text-muted); }
+body.watch-page .watch-desc { color: var(--text-secondary); }
+
+/* ═══════════════════════════════════════
+   EPISODES — glass cards, gold only on the
+   selected episode's accent edge
+═══════════════════════════════════════ */
+body.watch-page .episode-list-title { color: var(--text-primary); font-weight: 500; }
+
+body.watch-page .season-tab {
+  background: var(--glass-bg);
+  border-color: var(--glass-border);
+  color: var(--text-secondary);
+  border-radius: var(--radius-pill);
+}
+body.watch-page .season-tab:hover { background: var(--glass-bg-hover); color: var(--text-primary); }
+body.watch-page .season-tab.active {
+  background: var(--glass-bg-hover);
+  color: var(--text-primary);
+  border-color: var(--glass-border);
+}
+
+body.watch-page .episode-item {
+  background: var(--glass-bg);
+  border-color: var(--glass-border);
+  border-radius: var(--radius-input);
+}
+body.watch-page .episode-item:hover {
+  background: var(--glass-bg-hover);
+  border-color: var(--glass-border);
+}
+body.watch-page .episode-item.active {
+  border-color: rgba(232, 182, 76, 0.35);
+  background: rgba(232, 182, 76, 0.06);
+}
+body.watch-page .ep-title { color: var(--text-primary); }
+body.watch-page .ep-duration { color: var(--text-muted); }
+body.watch-page .ep-num { color: var(--text-muted); }
+
+/* ═══════════════════════════════════════
+   RELATED — same restrained card treatment as home
+═══════════════════════════════════════ */
+body.watch-page .movie-poster {
+  border-radius: var(--radius-card);
+  border: none;
+  background: var(--bg-elevated);
+}
+body.watch-page .movie-card {
+  transition: transform var(--ds-dur) var(--ds-ease);
+}
+body.watch-page .movie-card:hover {
+  transform: scale(1.02);
+  z-index: 20;
+}
+body.watch-page .movie-card:active { transform: scale(0.99); }
+body.watch-page .movie-card:hover .movie-poster {
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+body.watch-page .movie-card-overlay {
+  backdrop-filter: blur(var(--glass-blur)) saturate(1.2);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.2);
+}
+body.watch-page .movie-title { color: var(--text-primary); font-weight: 500; }
+body.watch-page .movie-meta-row,
+body.watch-page .movie-series-row { color: var(--text-muted); }
+
+@media (max-width: 768px) {
+  body.watch-page .player-settings-dd,
+  body.watch-page .player-center-icon,
+  body.watch-page .movie-card-overlay {
+    backdrop-filter: blur(var(--glass-blur-mobile)) saturate(1.2);
+    -webkit-backdrop-filter: blur(var(--glass-blur-mobile)) saturate(1.2);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.watch-page .watch-aurora-dynamic { transition: opacity 0.01ms; }
+  body.watch-page .movie-card,
+  body.watch-page .movie-card:hover,
+  body.watch-page .movie-card:active,
+  body.watch-page .watch-back:hover {
+    transform: none;
+  }
+}

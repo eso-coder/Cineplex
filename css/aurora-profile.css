@@ -1,0 +1,184 @@
+/* ═══════════════════════════════════════════════════════
+   CINEPLEX — Profile page "Aurora Glass" pass
+   Scoped entirely under body.profile-page. profile.html already
+   drives its components off local --pf-* custom properties, so
+   remapping those onto the Aurora tokens cascades the whole page;
+   a handful of panels also need explicit glass (blur/radius) since
+   custom properties alone can't add a backdrop-filter declaration.
+   No markup/JS changes — two hardcoded off-palette colors (a pink
+   like-icon, a red danger row) are fixed to stay inside the
+   system's single-accent rule.
+═══════════════════════════════════════════════════════ */
+
+body.profile-page {
+  --pf-bg: var(--bg-base);
+  --pf-panel: var(--glass-bg);
+  --pf-line: var(--glass-border);
+  --pf-dim: var(--text-secondary);
+  --pf-muted: var(--text-muted);
+  --pf-green: var(--accent);
+  --pf-blue: var(--accent);
+  --pf-star: var(--accent);
+
+  background: var(--aurora), var(--bg-base);
+}
+
+/* ═══════════════════════════════════════
+   NAVBAR — same floating frosted pill as the rest of the site
+═══════════════════════════════════════ */
+body.profile-page .navbar {
+  background: transparent;
+  border-bottom: none;
+  box-shadow: none;
+  transition: none;
+}
+body.profile-page .navbar::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-color: transparent;
+  border-radius: 0 0 var(--radius-card) var(--radius-card);
+  transition: background-color 0.1s linear;
+}
+body.profile-page .navbar.scrolled::before {
+  background-color: var(--glass-bg-hover);
+  backdrop-filter: blur(var(--glass-blur)) saturate(1.2);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.2);
+  border-bottom: 1px solid var(--glass-border);
+}
+
+/* ═══════════════════════════════════════
+   COVER + IDENTITY
+═══════════════════════════════════════ */
+body.profile-page .pf2-cover {
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(var(--aurora-rgb, 45, 90, 60), 0.4), transparent 70%),
+    var(--bg-base);
+}
+body.profile-page .pf2-cover-edit {
+  background: var(--glass-bg);
+  border-color: var(--glass-border);
+  backdrop-filter: blur(var(--glass-blur)) saturate(1.2);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.2);
+}
+body.profile-page .pf2-cover-edit:hover { background: var(--glass-bg-hover); }
+
+body.profile-page .pf2-username {
+  color: var(--text-primary);
+  font-weight: 400;
+  letter-spacing: 0.01em;
+}
+body.profile-page .pf2-patron {
+  background: rgba(232, 182, 76, 0.14);
+  border-color: rgba(232, 182, 76, 0.3);
+  color: var(--accent);
+}
+body.profile-page .pf2-demo-badge {
+  background: var(--glass-bg);
+  border-color: var(--glass-border);
+  color: var(--text-secondary);
+}
+body.profile-page .pf2-stat-num { color: var(--text-primary); }
+
+body.profile-page .pf2-name-edit-btn {
+  background: var(--glass-bg);
+  border-color: var(--glass-border);
+  color: var(--text-secondary);
+}
+body.profile-page .pf2-name-edit-btn:hover {
+  background: var(--glass-bg-hover);
+  color: var(--text-primary);
+}
+
+/* ═══════════════════════════════════════
+   TABS
+═══════════════════════════════════════ */
+body.profile-page .pf2-tab.active,
+body.profile-page .pf2-tab:hover {
+  color: var(--text-primary);
+}
+
+/* ═══════════════════════════════════════
+   PANELS — settings rows, poster cards, edit modal
+   get the explicit glass treatment (blur + token radius)
+═══════════════════════════════════════ */
+body.profile-page .pf2-set-row {
+  border-radius: var(--radius-input);
+  backdrop-filter: blur(var(--glass-blur)) saturate(1.2);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.2);
+}
+body.profile-page .pf2-set-row:hover {
+  background: var(--glass-bg-hover);
+}
+body.profile-page .pf2-set-ic {
+  background: var(--glass-bg);
+  color: var(--text-secondary);
+}
+
+/* Sign-out row: distinguished by icon/weight, not an off-palette red
+   (the system's one accent is gold — see hard rule 1). */
+body.profile-page .pf2-set-danger { color: var(--text-secondary); }
+body.profile-page .pf2-set-danger .pf2-set-ic {
+  background: var(--glass-bg-hover);
+  color: var(--text-secondary);
+}
+body.profile-page .pf2-set-danger:hover {
+  background: var(--glass-bg-hover);
+  border-color: var(--glass-border);
+}
+body.profile-page .pf2-set-danger .pf2-set-txt b { color: var(--text-primary); }
+
+body.profile-page .pf2-poster {
+  border-radius: var(--radius-card);
+  background: linear-gradient(150deg, var(--bg-elevated), var(--bg-base));
+}
+body.profile-page .pf2-poster:hover {
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+/* Off-palette pink like-icon → the system's single gold accent */
+body.profile-page .pf2-like { color: var(--accent); }
+body.profile-page .pf2-like.off { color: var(--text-muted); }
+
+body.profile-page .pf2-edit-overlay {
+  background: rgba(11, 15, 13, 0.7);
+}
+body.profile-page .pf2-edit-modal {
+  background: var(--bg-elevated);
+  border-color: var(--glass-border);
+  border-radius: var(--radius-card);
+  backdrop-filter: blur(var(--glass-blur)) saturate(1.2);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.2);
+}
+body.profile-page .pf2-edit-input {
+  border-radius: var(--radius-input);
+}
+body.profile-page .pf2-edit-input:focus {
+  border-color: rgba(232, 182, 76, 0.5);
+}
+body.profile-page .pf2-edit-save {
+  background: var(--accent);
+  color: var(--accent-text);
+  border-radius: var(--radius-pill);
+}
+body.profile-page .pf2-edit-save:hover { background: var(--accent-hover); }
+body.profile-page .pf2-edit-cancel {
+  background: var(--glass-bg);
+  border-color: var(--glass-border);
+  border-radius: var(--radius-pill);
+  color: var(--text-secondary);
+}
+body.profile-page .pf2-edit-cancel:hover { background: var(--glass-bg-hover); }
+body.profile-page .pf2-edit-av,
+body.profile-page .pf2-av {
+  background: linear-gradient(135deg, var(--bg-elevated), var(--bg-base));
+}
+
+@media (max-width: 768px) {
+  body.profile-page .pf2-set-row,
+  body.profile-page .pf2-edit-modal {
+    backdrop-filter: blur(var(--glass-blur-mobile)) saturate(1.2);
+    -webkit-backdrop-filter: blur(var(--glass-blur-mobile)) saturate(1.2);
+  }
+}

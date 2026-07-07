@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/design-system.css">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -423,8 +424,9 @@ textarea.form-ctrl{resize:vertical;min-height:88px;line-height:1.6}
   .drawer{width:100%}
 }
 </style>
+<link rel="stylesheet" href="../css/aurora-admin.css">
 </head>
-<body>
+<body class="admin-page">
 
 <!-- Login -->
 <div class="login-screen" id="login-screen">
@@ -2170,8 +2172,8 @@ async function loadUsers(page=0) {
             ? `<img src="${esc(av)}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit" onerror="this.remove()">`
             : esc(nm[0].toUpperCase());
           const status = u.isActive === false
-            ? '<span class="badge" style="color:#e57373;border-color:rgba(229,115,115,0.3)">Bloklangan</span>'
-            : '<span class="badge" style="color:#81c784;border-color:rgba(129,199,132,0.3)">Faol</span>';
+            ? '<span class="badge" style="color:rgba(235,235,245,0.44);border-color:rgba(255,255,255,0.1)">Bloklangan</span>'
+            : '<span class="badge" style="color:#e8b64c;border-color:rgba(232,182,76,0.3)">Faol</span>';
           return `
           <tr>
             <td><div class="user-cell">

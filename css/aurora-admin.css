@@ -1,0 +1,129 @@
+/* ═══════════════════════════════════════════════════════
+   CINEPLEX — Admin panel "Aurora Glass" pass
+   Scoped under body.admin-page. admin.html drives its whole
+   look off local --bg/--bg2/--border/--text/--muted/--r* custom
+   properties, so remapping those onto the Aurora tokens cascades
+   almost the entire dashboard; a short list of panels also gets
+   explicit glass (blur) since custom properties alone can't add
+   a backdrop-filter declaration. No markup/JS logic touched —
+   only CSS, plus two hardcoded off-palette colors fixed at their
+   source (see admin.html edits) since inline styles can't be
+   discriminated from an external stylesheet.
+═══════════════════════════════════════════════════════ */
+
+body.admin-page {
+  --bg: var(--bg-base);
+  --bg2: var(--glass-bg);
+  --bg3: var(--glass-bg-hover);
+  --bg4: rgba(255, 255, 255, 0.14);
+  --border: var(--glass-border);
+  --border2: rgba(255, 255, 255, 0.16);
+  --text: var(--text-primary);
+  --muted: var(--text-secondary);
+  --muted2: var(--text-muted);
+  --r: var(--radius-input);
+  --r2: var(--radius-card);
+  --focus-ring: 0 0 0 3px rgba(232, 182, 76, 0.35);
+
+  background: var(--aurora), var(--bg-base);
+}
+
+/* ═══════════════════════════════════════
+   GLASS CHROME — persistent structural panels get blur;
+   dense data (table rows, form grids) stays solid for
+   readability/performance, per the skill's mobile guidance
+   generalized to this data-dense dashboard.
+═══════════════════════════════════════ */
+body.admin-page .sidebar,
+body.admin-page .topbar,
+body.admin-page .stat-card,
+body.admin-page .panel,
+body.admin-page .tbl-wrap,
+body.admin-page .login-card,
+body.admin-page .drawer,
+body.admin-page .confirm-box,
+body.admin-page .actor-modal {
+  backdrop-filter: blur(var(--glass-blur)) saturate(1.2);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.2);
+}
+
+body.admin-page .sidebar { border-right-color: var(--glass-border); }
+body.admin-page .topbar,
+body.admin-page .sb-header,
+body.admin-page .sb-footer { border-color: var(--glass-border); }
+
+/* ═══════════════════════════════════════
+   SIDEBAR NAV — one accent: the active section indicator
+═══════════════════════════════════════ */
+body.admin-page .nav-item.active {
+  color: var(--text-primary);
+  border-left-color: var(--accent);
+  background: rgba(232, 182, 76, 0.08);
+}
+body.admin-page .nav-item.active .nav-badge {
+  background: rgba(232, 182, 76, 0.18);
+  color: var(--accent);
+}
+
+/* ═══════════════════════════════════════
+   PRIMARY ACTION — gold pill (the one accent per panel/drawer)
+═══════════════════════════════════════ */
+body.admin-page .btn-primary {
+  background: var(--accent);
+  color: var(--accent-text);
+  border-radius: var(--radius-pill);
+  transition: background var(--ds-dur) var(--ds-ease), transform var(--ds-dur) var(--ds-ease);
+}
+body.admin-page .btn-primary:hover {
+  background: var(--accent-hover);
+  transform: scale(1.02);
+}
+body.admin-page .btn-primary:active { transform: scale(0.97); }
+
+body.admin-page .login-btn {
+  background: var(--accent);
+  color: var(--accent-text);
+  border-radius: var(--radius-pill);
+}
+body.admin-page .login-btn:hover { background: var(--accent-hover); }
+
+/* Focus rings default to gold, not the old white ring */
+body.admin-page .tb-search:focus-within,
+body.admin-page .form-ctrl:focus,
+body.admin-page .filter-select:focus,
+body.admin-page .filter-search:focus-within,
+body.admin-page .episode-row input:focus,
+body.admin-page .media-input-wrap:focus-within {
+  border-color: rgba(232, 182, 76, 0.5);
+}
+
+/* ═══════════════════════════════════════
+   Off-palette destructive-icon reds → neutral
+   (single-accent rule; distinguished by icon + hover, not hue)
+═══════════════════════════════════════ */
+body.admin-page .season-head .season-del,
+body.admin-page .episode-row .ep-del {
+  color: var(--text-secondary);
+}
+body.admin-page .season-head .season-del:hover,
+body.admin-page .episode-row .ep-del:hover {
+  color: var(--text-primary);
+}
+
+/* Radii on drop zones / preview tiles follow the token scale */
+body.admin-page .poster-zone,
+body.admin-page .banner-zone,
+body.admin-page .logo-zone {
+  border-radius: var(--radius-card);
+}
+
+@media (max-width: 768px) {
+  body.admin-page .sidebar,
+  body.admin-page .topbar,
+  body.admin-page .drawer,
+  body.admin-page .confirm-box,
+  body.admin-page .actor-modal {
+    backdrop-filter: blur(var(--glass-blur-mobile)) saturate(1.2);
+    -webkit-backdrop-filter: blur(var(--glass-blur-mobile)) saturate(1.2);
+  }
+}

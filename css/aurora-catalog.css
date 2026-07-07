@@ -1,0 +1,187 @@
+/* ═══════════════════════════════════════════════════════
+   CINEPLEX — Catalog pages "Aurora Glass" pass
+   Covers movies.html / series.html / new.html — all three
+   share the same catalog-header / category-grid / catalog-grid
+   markup, so one file scoped to body.catalog-page covers them.
+   No markup rewrites, no JS/data logic touched.
+═══════════════════════════════════════════════════════ */
+
+body.catalog-page {
+  background: var(--aurora), var(--bg-base);
+}
+body.catalog-page .ambient-bg {
+  display: none;
+}
+
+/* ═══════════════════════════════════════
+   NAVBAR — same floating frosted pill as home/watch
+═══════════════════════════════════════ */
+body.catalog-page .navbar {
+  background: transparent;
+  border-bottom: none;
+  box-shadow: none;
+  transition: none;
+}
+body.catalog-page .navbar::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-color: transparent;
+  border-radius: 0 0 var(--radius-card) var(--radius-card);
+  transition: background-color 0.1s linear;
+}
+body.catalog-page .navbar.scrolled::before {
+  background-color: var(--glass-bg-hover);
+  backdrop-filter: blur(var(--glass-blur)) saturate(1.2);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.2);
+  border-bottom: 1px solid var(--glass-border);
+}
+@media (max-width: 768px) {
+  body.catalog-page .navbar.scrolled::before {
+    backdrop-filter: blur(var(--glass-blur-mobile)) saturate(1.2);
+    -webkit-backdrop-filter: blur(var(--glass-blur-mobile)) saturate(1.2);
+  }
+}
+
+/* ═══════════════════════════════════════
+   HEADER — thin, light page title
+═══════════════════════════════════════ */
+body.catalog-page .catalog-title {
+  color: var(--text-primary);
+  font-weight: 400;
+  letter-spacing: 0.01em;
+}
+body.catalog-page .catalog-count {
+  color: var(--text-muted);
+}
+
+body.catalog-page .catalog-sort {
+  background: var(--glass-bg);
+  border-color: var(--glass-border);
+  color: var(--text-secondary);
+  border-radius: var(--radius-input);
+}
+body.catalog-page .catalog-sort:hover {
+  background: var(--glass-bg-hover);
+}
+
+/* Sort menu reuses the shared .lang-dd/.lang-opt dropdown */
+body.catalog-page .lang-dd {
+  background: var(--bg-elevated);
+  border-color: var(--glass-border);
+  border-radius: var(--radius-input);
+  backdrop-filter: blur(var(--glass-blur)) saturate(1.2);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.2);
+}
+body.catalog-page .lang-opt {
+  color: var(--text-secondary);
+}
+body.catalog-page .lang-opt:hover {
+  background: var(--glass-bg-hover);
+  color: var(--text-primary);
+}
+body.catalog-page .lang-opt.active {
+  color: var(--text-primary);
+  background: var(--glass-bg-hover);
+}
+
+/* ═══════════════════════════════════════
+   GENRE PILLS (Spotify-style category cards)
+═══════════════════════════════════════ */
+/* app.js inline-styles a per-genre rainbow (style="background:...") on each
+   card — overridden with !important to keep the system's single accent rule;
+   the genre logic itself (data-genre, click handling) is untouched. */
+body.catalog-page .category-card {
+  background: var(--bg-elevated) !important;
+  border-radius: var(--radius-card);
+  box-shadow: none;
+}
+body.catalog-page .category-card:hover {
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  transform: scale(1.02);
+}
+body.catalog-page .category-card:active {
+  transform: scale(0.99);
+}
+body.catalog-page .category-card.selected {
+  outline-color: rgba(232, 182, 76, 0.55);
+}
+body.catalog-page .cat-name { color: var(--text-primary); }
+body.catalog-page .cat-count { color: var(--text-secondary); }
+body.catalog-page .cat-tag {
+  background: var(--glass-bg);
+  color: var(--text-primary);
+  border: 1px solid var(--glass-border);
+}
+
+/* ═══════════════════════════════════════
+   MOVIE CARDS — same restrained treatment as home/watch
+═══════════════════════════════════════ */
+body.catalog-page .movie-poster {
+  border-radius: var(--radius-card);
+  border: none;
+  background: var(--bg-elevated);
+}
+body.catalog-page .movie-card {
+  transition: transform var(--ds-dur) var(--ds-ease);
+}
+body.catalog-page .movie-card:hover {
+  transform: scale(1.02);
+  z-index: 20;
+}
+body.catalog-page .movie-card:active { transform: scale(0.99); }
+body.catalog-page .movie-card:hover .movie-poster {
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+body.catalog-page .movie-card-overlay {
+  backdrop-filter: blur(var(--glass-blur)) saturate(1.2);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.2);
+}
+body.catalog-page .movie-title { color: var(--text-primary); font-weight: 500; }
+body.catalog-page .movie-meta-row,
+body.catalog-page .movie-series-row { color: var(--text-muted); }
+
+/* ═══════════════════════════════════════
+   new.html — featured band tiles
+═══════════════════════════════════════ */
+body.catalog-page .new-featured {
+  border-radius: var(--radius-card);
+  background: var(--bg-elevated);
+}
+body.catalog-page .new-feat-badge {
+  background: var(--glass-bg-hover);
+  border-color: var(--glass-border);
+  color: var(--text-primary);
+}
+body.catalog-page .new-feat-title { color: var(--text-primary); font-weight: 500; }
+body.catalog-page .new-feat-meta { color: var(--text-muted); }
+body.catalog-page .new-play-mini {
+  background: var(--glass-bg);
+  border-color: var(--glass-border);
+  backdrop-filter: blur(var(--glass-blur)) saturate(1.2);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.2);
+}
+body.catalog-page .new-play-mini:hover {
+  background: var(--glass-bg-hover);
+  transform: scale(1.03);
+}
+
+@media (max-width: 768px) {
+  body.catalog-page .lang-dd,
+  body.catalog-page .movie-card-overlay,
+  body.catalog-page .new-play-mini {
+    backdrop-filter: blur(var(--glass-blur-mobile)) saturate(1.2);
+    -webkit-backdrop-filter: blur(var(--glass-blur-mobile)) saturate(1.2);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.catalog-page .movie-card,
+  body.catalog-page .movie-card:hover,
+  body.catalog-page .movie-card:active,
+  body.catalog-page .category-card:hover,
+  body.catalog-page .new-play-mini:hover {
+    transform: none;
+  }
+}
