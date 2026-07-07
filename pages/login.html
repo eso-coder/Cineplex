@@ -19,16 +19,15 @@
       position: relative;
     }
 
-    /* Rangli kinematik fon bloblari — glass effektini ko'rintiradigan rang qatlami */
+    /* Monoxrom kinematik fon — glass effektini ko'rsatadigan neytral yorug'lik qatlami */
     .auth-page::before {
       content: '';
       position: fixed;
       inset: 0;
       background:
-        radial-gradient(ellipse 55% 50% at 15% 25%, rgba(99, 56, 220, 0.55) 0%, transparent 60%),
-        radial-gradient(ellipse 45% 45% at 85% 75%, rgba(220, 38, 127, 0.40) 0%, transparent 60%),
-        radial-gradient(ellipse 40% 40% at 60% 10%, rgba(14, 165, 233, 0.30) 0%, transparent 60%),
-        radial-gradient(ellipse 50% 55% at 30% 85%, rgba(16, 185, 129, 0.20) 0%, transparent 55%);
+        radial-gradient(ellipse 55% 50% at 15% 25%, rgba(255, 255, 255, 0.10) 0%, transparent 60%),
+        radial-gradient(ellipse 45% 45% at 85% 75%, rgba(255, 255, 255, 0.07) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 40% at 60% 10%, rgba(255, 255, 255, 0.05) 0%, transparent 60%);
       pointer-events: none;
       z-index: 0;
     }
@@ -56,15 +55,15 @@
       margin-bottom: 32px;
     }
     .auth-brand-name {
-      font-size: 33px;
+      font-size: 22px;
       font-weight: 800;
       letter-spacing: 5px;
       text-transform: uppercase;
       color: #ffffff;
     }
-    .auth-brand-name span { color: var(--gold); }
+    .auth-brand-name span { color: rgba(255,255,255,0.55); }
     .auth-brand-tagline {
-      font-size: 16.5px;
+      font-size: 11px;
       color: rgba(255,255,255,0.55);
       letter-spacing: 2px;
       text-transform: uppercase;
@@ -74,18 +73,18 @@
     /* Header */
     .auth-header { margin-bottom: 28px; }
     .auth-title {
-      font-size: 39px;
+      font-size: 26px;
       font-weight: 700;
       color: #ffffff;
       margin-bottom: 6px;
     }
     .auth-sub {
-      font-size: 19.5px;
+      font-size: 13px;
       color: rgba(255,255,255,0.60);
       line-height: 1.6;
     }
     .auth-sub a {
-      color: var(--gold);
+      color: #ffffff;
       text-decoration: none;
       font-weight: 600;
       transition: opacity 0.18s;
@@ -102,7 +101,7 @@
     .field { margin-bottom: 18px; }
     .field-label {
       display: block;
-      font-size: 16.5px;
+      font-size: 11px;
       font-weight: 600;
       letter-spacing: 1.2px;
       text-transform: uppercase;
@@ -128,7 +127,7 @@
       padding: 13px 44px 13px 42px;
       color: #ffffff;
       font-family: 'Outfit', sans-serif;
-      font-size: 21px;
+      font-size: 14px;
       font-weight: 500;
       outline: none;
       backdrop-filter: blur(8px);
@@ -160,7 +159,7 @@
     .field-toggle-pw:hover { color: rgba(193,193,193,0.7); }
 
     .field-err {
-      font-size: 16.5px;
+      font-size: 11px;
       color: rgba(104,104,104,0.85);
       margin-top: 5px;
       padding-left: 2px;
@@ -195,8 +194,8 @@
       flex-shrink: 0;
     }
     .remember-cb:checked {
-      background: var(--gold);
-      border-color: var(--gold);
+      background: #ffffff;
+      border-color: #ffffff;
     }
     .remember-cb:checked::after {
       content: '';
@@ -208,17 +207,17 @@
       transform: rotate(45deg);
     }
     .remember-label {
-      font-size: 18px;
+      font-size: 12px;
       color: rgba(255,255,255,0.38);
       user-select: none;
     }
     .forgot-link {
-      font-size: 18px;
+      font-size: 12px;
       color: rgba(255,255,255,0.38);
       text-decoration: none;
       transition: color 0.18s;
     }
-    .forgot-link:hover { color: var(--gold); }
+    .forgot-link:hover { color: #ffffff; }
 
     /* Alerts */
     .auth-alert {
@@ -226,7 +225,7 @@
       border: 1px solid rgba(104,104,104,0.22);
       border-radius: var(--r-md);
       padding: 12px 14px;
-      font-size: 19.5px;
+      font-size: 13px;
       color: rgba(141,141,141,0.95);
       margin-bottom: 18px;
       display: none;
@@ -237,7 +236,7 @@
       border: 1px solid rgba(155,155,155,0.2);
       border-radius: var(--r-md);
       padding: 12px 14px;
-      font-size: 19.5px;
+      font-size: 13px;
       color: rgba(183,183,183,0.95);
       margin-bottom: 18px;
       display: none;
@@ -249,10 +248,10 @@
       width: 100%;
       padding: 15px;
       border-radius: var(--r-md);
-      background: var(--gold);
+      background: #ffffff;
       color: #000000;
       font-family: 'Outfit', sans-serif;
-      font-size: 22.5px;
+      font-size: 15px;
       font-weight: 700;
       border: none;
       cursor: pointer;
@@ -290,7 +289,7 @@
       justify-content: center;
       gap: 6px;
       margin-top: 20px;
-      font-size: 18px;
+      font-size: 12px;
       color: rgba(255,255,255,0.3);
       text-decoration: none;
       transition: color 0.18s;
@@ -299,7 +298,7 @@
 
     @media (max-width: 480px) {
       .auth-card { padding: 32px 22px 28px; }
-      .auth-title { font-size: 33px; }
+      .auth-title { font-size: 22px; }
     }
   </style>
 </head>

@@ -5,13 +5,13 @@
 
 :root {
   --am-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
-  --am-bg: #161618;
-  --am-field: #211f22;
-  --am-field-focus: #2a282c;
+  --am-bg: #161619;
+  --am-field: #202024;
+  --am-field-focus: #29292e;
   --am-border: rgba(255, 255, 255, 0.10);
   --am-border-h: rgba(255, 255, 255, 0.24);
   --am-text: #f4f4f5;
-  --am-muted: #8b8b92;
+  --am-muted: rgba(235, 235, 245, 0.44);
 }
 
 /* ── Overlay ── */
@@ -70,8 +70,8 @@
   opacity: 0.5;
   pointer-events: none;
 }
-.am-card::before { left: -40px; background: radial-gradient(circle, #313131, transparent 70%); }
-.am-card::after  { right: -40px; background: radial-gradient(circle, #474747, transparent 70%); }
+.am-card::before { left: -40px; background: radial-gradient(circle, #32323a, transparent 70%); }
+.am-card::after  { right: -40px; background: radial-gradient(circle, #45454f, transparent 70%); }
 
 .am-card > * { position: relative; z-index: 1; }
 
@@ -133,7 +133,7 @@
   margin-bottom: 20px;
 }
 .am-title.sm { font-size: 22px; margin-bottom: 8px; }
-.am-sub { font-size: 13.5px; color: var(--am-muted); margin-bottom: 22px; line-height: 1.5; }
+.am-sub { font-size: 13px; color: var(--am-muted); margin-bottom: 22px; line-height: 1.5; }
 .am-sub b { color: var(--am-text); font-weight: 600; }
 
 /* ── Panels ── */
@@ -227,7 +227,7 @@
   width: 230px;
   max-height: 240px;
   overflow-y: auto;
-  background: #1c1a1d;
+  background: #1c1c20;
   border: 1px solid var(--am-border);
   border-radius: 14px;
   padding: 6px;
@@ -253,7 +253,7 @@
   background: transparent;
   color: var(--am-text);
   font-family: inherit;
-  font-size: 13.5px;
+  font-size: 13px;
   text-align: left;
   border-radius: 9px;
   cursor: pointer;
