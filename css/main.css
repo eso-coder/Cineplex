@@ -2262,7 +2262,7 @@ main {
   font-size: 10px;
   font-weight: 700;
   color: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 2px solid rgba(255, 255, 255, 0.12);
 }
 
 .serial-badge {
@@ -5035,14 +5035,6 @@ video.hero-bg-iframe {
    Faqat og'ir/kataklashgan soyalar yengillashtiriladi (paint qiymatini
    kamaytirish uchun) — bu barcha ekran o'lchamlarida qo'llaniladi.
    ════════════════════════════════════════════════════════════════ */
-.movie-card,
-.category-card,
-.cat-actor-imgwrap,
-.am-card,
-.profile-dd,
-.lang-dd {
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
-}
 
 /* GPU layer promotion + scroll uzilishlarini kamaytirish */
 body {
