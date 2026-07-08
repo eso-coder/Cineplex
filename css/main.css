@@ -1917,6 +1917,50 @@ main {
   border-radius: var(--r-md);
 }
 
+/* ─── Hover ambient bloom — posterning O'Z ranglari yoyilib chiqadi ───
+   Karta ortida shu posterning kuchli blur qilingan nusxasi turadi;
+   hover'da yoyilib (scale) va lipillab (opacity) chiqadi. Faqat opacity
+   + scale — dizayn tizimidagi harakat qoidasiga mos. */
+.movie-glow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  aspect-ratio: 2 / 3;          /* .movie-poster qutisiga aynan mos */
+  z-index: -1;                  /* poster ortida turadi */
+  border-radius: var(--r-md);
+  object-fit: cover;
+  object-position: center top;
+  opacity: 0;
+  transform: scale(0.96);
+  filter: blur(30px) saturate(1.5);
+  transition:
+    opacity 0.4s var(--ease-out),
+    transform 0.45s var(--ease-out);
+  pointer-events: none;
+  will-change: opacity, transform;
+}
+
+@media (hover: hover) {
+  .movie-card:hover .movie-glow {
+    opacity: 0.85;
+    transform: scale(1.22);     /* poster chekkalaridan tashqariga yoyiladi */
+  }
+}
+
+/* Mobil / touch qurilmalarda umuman chizilmaydi (GPU tejaladi) */
+@media (max-width: 768px) {
+  .movie-glow { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .movie-glow,
+  .movie-card:hover .movie-glow {
+    transform: none;
+    transition: opacity 0.3s ease;
+  }
+}
+
 /* ─── Hover overlay on the card ─── */
 .movie-card-overlay {
   position: absolute;

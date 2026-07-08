@@ -458,6 +458,7 @@ const App = {
     const titleAttr = E(m.title);
     return `<div class="movie-card" data-id="${E(m.id)}" data-genre="${E((m.genre||[]).join(' '))}"
 onclick="App.go('${href}')">
+  ${m.img ? `<img class="movie-glow" src="${E(m.img)}" alt="" aria-hidden="true" loading="lazy">` : ''}
   <div class="movie-poster">
     <img src="${E(m.img || '')}" alt="${titleAttr}" loading="lazy" ${!m.img ? 'style="display:none"' : ''}>
     ${badge}
