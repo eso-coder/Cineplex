@@ -567,9 +567,6 @@ ul {
   left: 0;
   right: 0;
   z-index: 499;
-  background: var(--glass-solid);
-  backdrop-filter: var(--glass-blur) saturate(1.3);
-  -webkit-backdrop-filter: var(--glass-blur) saturate(1.3);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   padding: 16px 16px 22px;
   display: flex;
@@ -581,6 +578,21 @@ ul {
   transition:
     transform 0.26s cubic-bezier(0.16, 1, 0.3, 1),
     opacity 0.22s ease;
+}
+/* Orqa fon xiralashtirish (blur) alohida ::before qatlamida — navbar kabi
+   shisha effekti hosil qiladi va matn ustida aniq o'qiladi. Bu qatlamni
+   .mobile-menu'ning o'zidan ajratish backdrop-filter'ni opacity/transform
+   transitioni bilan bir xil qatlamda animatsiya qilinganda ba'zi
+   brauzerlarda (ayniqsa iOS Safari) noto'g'ri/umuman render bo'lmay
+   qolish muammosini oldini oladi. */
+.mobile-menu::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--glass-solid);
+  backdrop-filter: var(--glass-blur) saturate(1.3);
+  -webkit-backdrop-filter: var(--glass-blur) saturate(1.3);
 }
 .mobile-menu.open {
   transform: translateY(0);
