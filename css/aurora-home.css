@@ -39,15 +39,15 @@ body.home-page .navbar::before {
 
 body.home-page .navbar.scrolled::before {
   background-color: var(--glass-bg-hover);
-  backdrop-filter: blur(var(--glass-blur)) saturate(1.2);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.2);
+  backdrop-filter: blur(var(--ds-blur)) saturate(1.2);
+  -webkit-backdrop-filter: blur(var(--ds-blur)) saturate(1.2);
   border-bottom: 1px solid var(--glass-border);
 }
 
 @media (max-width: 768px) {
   body.home-page .navbar.scrolled::before {
-    backdrop-filter: blur(var(--glass-blur-mobile)) saturate(1.2);
-    -webkit-backdrop-filter: blur(var(--glass-blur-mobile)) saturate(1.2);
+    backdrop-filter: blur(var(--ds-blur-mobile)) saturate(1.2);
+    -webkit-backdrop-filter: blur(var(--ds-blur-mobile)) saturate(1.2);
   }
 }
 
@@ -108,8 +108,8 @@ body.home-page .hero-trailer-btn {
   border-color: var(--glass-border);
   color: var(--text-primary);
   border-radius: var(--radius-pill);
-  backdrop-filter: blur(var(--glass-blur)) saturate(1.2);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.2);
+  backdrop-filter: blur(var(--ds-blur)) saturate(1.2);
+  -webkit-backdrop-filter: blur(var(--ds-blur)) saturate(1.2);
   transition: background var(--ds-dur) var(--ds-ease), transform var(--ds-dur) var(--ds-ease);
 }
 body.home-page .hero-trailer-btn:hover {
@@ -125,8 +125,8 @@ body.home-page .hero-meta {
 
 @media (max-width: 768px) {
   body.home-page .hero-trailer-btn {
-    backdrop-filter: blur(var(--glass-blur-mobile)) saturate(1.2);
-    -webkit-backdrop-filter: blur(var(--glass-blur-mobile)) saturate(1.2);
+    backdrop-filter: blur(var(--ds-blur-mobile)) saturate(1.2);
+    -webkit-backdrop-filter: blur(var(--ds-blur-mobile)) saturate(1.2);
   }
 }
 
@@ -155,7 +155,9 @@ body.home-page .movie-card:hover .movie-poster {
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
 }
 
-/* Hover overlay becomes a frosted glass panel */
+/* Poster o'zi hover'da ham aniq qoladi (blur qilinmaydi) — faqat pastki
+   matn paneli (.mco-bottom) frosted glass bo'ladi, poster/Play tugmasi
+   ustidan blur o'tmaydi. */
 body.home-page .movie-card-overlay {
   background: linear-gradient(
     to top,
@@ -163,8 +165,12 @@ body.home-page .movie-card-overlay {
     rgba(11, 15, 13, 0.35) 55%,
     transparent 100%
   );
-  backdrop-filter: blur(var(--glass-blur)) saturate(1.2);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.2);
+}
+body.home-page .mco-bottom {
+  background: rgba(11, 15, 13, 0.55);
+  backdrop-filter: blur(var(--ds-blur)) saturate(1.2);
+  -webkit-backdrop-filter: blur(var(--ds-blur)) saturate(1.2);
+  padding-top: 10px;
 }
 
 body.home-page .movie-title {
@@ -196,8 +202,8 @@ body.home-page .mco-wl-btn.active {
 body.home-page .movie-play-glass {
   background: var(--glass-bg);
   border-color: var(--glass-border);
-  backdrop-filter: blur(var(--glass-blur)) saturate(1.2);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.2);
+  backdrop-filter: blur(var(--ds-blur)) saturate(1.2);
+  -webkit-backdrop-filter: blur(var(--ds-blur)) saturate(1.2);
 }
 body.home-page .movie-card:hover .movie-play-glass {
   background: var(--glass-bg-hover);
@@ -205,10 +211,10 @@ body.home-page .movie-card:hover .movie-play-glass {
 }
 
 @media (max-width: 768px) {
-  body.home-page .movie-card-overlay,
+  body.home-page .mco-bottom,
   body.home-page .movie-play-glass {
-    backdrop-filter: blur(var(--glass-blur-mobile)) saturate(1.2);
-    -webkit-backdrop-filter: blur(var(--glass-blur-mobile)) saturate(1.2);
+    backdrop-filter: blur(var(--ds-blur-mobile)) saturate(1.2);
+    -webkit-backdrop-filter: blur(var(--ds-blur-mobile)) saturate(1.2);
   }
 }
 

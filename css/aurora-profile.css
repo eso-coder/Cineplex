@@ -43,8 +43,8 @@ body.profile-page .navbar::before {
 }
 body.profile-page .navbar.scrolled::before {
   background-color: var(--glass-bg-hover);
-  backdrop-filter: blur(var(--glass-blur)) saturate(1.2);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.2);
+  backdrop-filter: blur(var(--ds-blur)) saturate(1.2);
+  -webkit-backdrop-filter: blur(var(--ds-blur)) saturate(1.2);
   border-bottom: 1px solid var(--glass-border);
 }
 
@@ -59,8 +59,8 @@ body.profile-page .pf2-cover {
 body.profile-page .pf2-cover-edit {
   background: var(--glass-bg);
   border-color: var(--glass-border);
-  backdrop-filter: blur(var(--glass-blur)) saturate(1.2);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.2);
+  backdrop-filter: blur(var(--ds-blur)) saturate(1.2);
+  -webkit-backdrop-filter: blur(var(--ds-blur)) saturate(1.2);
 }
 body.profile-page .pf2-cover-edit:hover { background: var(--glass-bg-hover); }
 
@@ -105,8 +105,8 @@ body.profile-page .pf2-tab:hover {
 ═══════════════════════════════════════ */
 body.profile-page .pf2-set-row {
   border-radius: var(--radius-input);
-  backdrop-filter: blur(var(--glass-blur)) saturate(1.2);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.2);
+  backdrop-filter: blur(var(--ds-blur)) saturate(1.2);
+  -webkit-backdrop-filter: blur(var(--ds-blur)) saturate(1.2);
 }
 body.profile-page .pf2-set-row:hover {
   background: var(--glass-bg-hover);
@@ -148,8 +148,8 @@ body.profile-page .pf2-edit-modal {
   background: var(--bg-elevated);
   border-color: var(--glass-border);
   border-radius: var(--radius-card);
-  backdrop-filter: blur(var(--glass-blur)) saturate(1.2);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.2);
+  backdrop-filter: blur(var(--ds-blur)) saturate(1.2);
+  -webkit-backdrop-filter: blur(var(--ds-blur)) saturate(1.2);
 }
 body.profile-page .pf2-edit-input {
   border-radius: var(--radius-input);
@@ -178,7 +178,7 @@ body.profile-page .pf2-av {
 @media (max-width: 768px) {
   body.profile-page .pf2-set-row,
   body.profile-page .pf2-edit-modal {
-    backdrop-filter: blur(var(--glass-blur-mobile)) saturate(1.2);
-    -webkit-backdrop-filter: blur(var(--glass-blur-mobile)) saturate(1.2);
+    backdrop-filter: blur(var(--ds-blur-mobile)) saturate(1.2);
+    -webkit-backdrop-filter: blur(var(--ds-blur-mobile)) saturate(1.2);
   }
 }

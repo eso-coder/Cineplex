@@ -1,0 +1,199 @@
+/* ═══════════════════════════════════════════════════════
+   CINEPLEX — Aurora Motion Layer
+   Barcha animatsiya qatlamlari shu faylda: har biri alohida class
+   bilan ajratilgan — o'chirish/sozlash oson.
+
+   Motion qoidasi (qat'iy):
+     • faqat opacity + scale + blur
+     • ease-out (var(--ds-ease))
+     • barcha vaqtlar --dur-* tokenlar orqali
+     • hech qanday slide / bounce / rotation
+
+   Qatlamlar:
+     1. Sayt introsi (birinchi yuklanish, sessiyada 1 marta)   ← shu turda
+     2. Route transition ....... (keyin)
+     3. Modal ochilishi ........ (keyin)
+     4. Karta / grid ........... (keyin)
+     5. Player ochilishi ....... (keyin)
+═══════════════════════════════════════════════════════ */
+
+/* ───────────────────────────────────────────────────────
+   1 · SAYT INTROSI
+─────────────────────────────────────────────────────── */
+
+:root {
+  /* Intro faza vaqtlari (desktop) — hammasi token */
+  --dur-intro-aurora:     var(--dur-slow);   /* 0.6s — aurora markazdan ochiladi */
+  --dur-intro-logo-delay: 0.15s;             /* aurora ochilib turganda logo boshlanadi */
+  --dur-intro-logo-in:    0.4s;              /* logo scale + opacity + blur bilan kiradi */
+  --dur-intro-dwell:      var(--dur-hold);   /* 0.4s — logo joyida turadi */
+  --dur-intro-out:        0.4s;              /* logo + overlay yumshoq chiqadi */
+}
+
+/* Mobilda intro qisqaradi (umumiy ≤ 0.8s) */
+@media (max-width: 768px) {
+  :root {
+    --dur-intro-aurora:     0.35s;
+    --dur-intro-logo-delay: 0.06s;
+    --dur-intro-logo-in:    0.26s;
+    --dur-intro-dwell:      0.16s;
+    --dur-intro-out:        0.24s;
+  }
+}
+
+/* Intro shu sessiyada allaqachon ko'rsatilgan bo'lsa — umuman chizilmaydi.
+   (<head>dagi inline skript qora ekran chaqnashini oldini olish uchun bu
+    class'ni birinchi paint'dan oldin qo'yadi.) */
+html.intro-shown #intro-overlay { display: none !important; }
+
+/* Intro o'ynayotganda sahifa aylanmasin */
+html.intro-playing,
+html.intro-playing body { overflow: hidden; }
+
+/* ── Overlay konteyner ── */
+#intro-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+  opacity: 1;
+  transition: opacity var(--dur-intro-out) var(--ds-ease);
+}
+#intro-overlay.is-hiding {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ── Aurora: qora ekrandan markazdan yumshoq ochiladi (opacity + scale) ── */
+.intro-aurora {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 70% 55% at 50% 50%,
+              rgba(45, 90, 60, 0.55), transparent 70%);
+  opacity: 0;
+  transform: scale(1.12);
+  animation: introAuroraIn var(--dur-intro-aurora) var(--ds-ease) forwards;
+  will-change: opacity, transform;
+}
+@keyframes introAuroraIn {
+  from { opacity: 0; transform: scale(1.12); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* ── Logo guruhi: bitta birlik bo'lib scale + opacity + blur bilan
+      kiradi, so'ng joyida turib (siljimasdan) kichrayib fade bo'ladi ── */
+.intro-logo {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  opacity: 0;
+  transform: scale(0.9);
+  filter: blur(8px);
+  transition:
+    opacity   var(--dur-intro-logo-in) var(--ds-ease),
+    transform var(--dur-intro-logo-in) var(--ds-ease),
+    filter    var(--dur-intro-logo-in) var(--ds-ease);
+  will-change: opacity, transform, filter;
+}
+.intro-logo.is-in {
+  opacity: 1;
+  transform: scale(1);
+  filter: blur(0);
+}
+.intro-logo.is-out {
+  opacity: 0;
+  transform: scale(0.965);   /* joyida kichrayadi — translate yo'q */
+  filter: blur(6px);
+  transition:
+    opacity   var(--dur-intro-out) var(--ds-ease),
+    transform var(--dur-intro-out) var(--ds-ease),
+    filter    var(--dur-intro-out) var(--ds-ease);
+}
+
+.intro-logo-icon {
+  width: 96px;
+  height: 96px;
+  color: #fff;
+  margin-bottom: 20px;
+}
+.intro-logo-name {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.5em;
+  text-indent: 0.5em;   /* letter-spacing trailing bo'shlig'ini markazlaydi */
+  text-transform: uppercase;
+  color: #fff;
+}
+.intro-logo-sub {
+  margin-top: 12px;
+  font-size: 11px;
+  font-weight: 300;
+  letter-spacing: 0.3em;
+  text-indent: 0.3em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+/* ── Skip tugmasi (opacity bilan sekin paydo bo'ladi) ── */
+.intro-skip {
+  position: absolute;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);   /* statik markazlash — animatsiya emas */
+  padding: 8px 18px;
+  font-family: inherit;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  opacity: 0;
+  animation: introSkipIn var(--dur-base) var(--ds-ease) var(--dur-slow) forwards;
+  transition: background var(--dur-base) var(--ds-ease),
+              color      var(--dur-base) var(--ds-ease);
+}
+.intro-skip:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+@keyframes introSkipIn {
+  from { opacity: 0; }
+  to   { opacity: 0.9; }
+}
+
+/* ── Bosh sahifa panellari intro tugagach stagger bilan ochiladi ──
+   (.animate-in → .visible tizimidan foydalanadi; kechikishlar HTML'da
+    inline 0 / 50 / 100 / 150ms qilib berilgan) */
+
+/* ───────────────────────────────────────────────────────
+   REDUCED MOTION — scale/blur/sekvensiya o'chadi, faqat opacity fade
+─────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .intro-aurora {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+  .intro-logo,
+  .intro-logo.is-in,
+  .intro-logo.is-out {
+    transform: none !important;
+    filter: none !important;
+    transition: opacity var(--dur-base) ease !important;
+  }
+  .intro-skip { animation: none; opacity: 0.9; }
+  #intro-overlay { transition: opacity var(--dur-base) ease !important; }
+
+  /* Panellar: scale o'chadi — faqat oddiy opacity fade qoladi */
+  .animate-in {
+    transform: none !important;
+    transition: opacity var(--dur-base) ease !important;
+  }
+}

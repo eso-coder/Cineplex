@@ -33,14 +33,14 @@ body.catalog-page .navbar::before {
 }
 body.catalog-page .navbar.scrolled::before {
   background-color: var(--glass-bg-hover);
-  backdrop-filter: blur(var(--glass-blur)) saturate(1.2);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.2);
+  backdrop-filter: blur(var(--ds-blur)) saturate(1.2);
+  -webkit-backdrop-filter: blur(var(--ds-blur)) saturate(1.2);
   border-bottom: 1px solid var(--glass-border);
 }
 @media (max-width: 768px) {
   body.catalog-page .navbar.scrolled::before {
-    backdrop-filter: blur(var(--glass-blur-mobile)) saturate(1.2);
-    -webkit-backdrop-filter: blur(var(--glass-blur-mobile)) saturate(1.2);
+    backdrop-filter: blur(var(--ds-blur-mobile)) saturate(1.2);
+    -webkit-backdrop-filter: blur(var(--ds-blur-mobile)) saturate(1.2);
   }
 }
 
@@ -71,8 +71,8 @@ body.catalog-page .lang-dd {
   background: var(--bg-elevated);
   border-color: var(--glass-border);
   border-radius: var(--radius-input);
-  backdrop-filter: blur(var(--glass-blur)) saturate(1.2);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.2);
+  backdrop-filter: blur(var(--ds-blur)) saturate(1.2);
+  -webkit-backdrop-filter: blur(var(--ds-blur)) saturate(1.2);
 }
 body.catalog-page .lang-opt {
   color: var(--text-secondary);
@@ -134,9 +134,11 @@ body.catalog-page .movie-card:active { transform: scale(0.99); }
 body.catalog-page .movie-card:hover .movie-poster {
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
 }
-body.catalog-page .movie-card-overlay {
-  backdrop-filter: blur(var(--glass-blur)) saturate(1.2);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.2);
+body.catalog-page .mco-bottom {
+  background: rgba(11, 15, 13, 0.55);
+  backdrop-filter: blur(var(--ds-blur)) saturate(1.2);
+  -webkit-backdrop-filter: blur(var(--ds-blur)) saturate(1.2);
+  padding-top: 10px;
 }
 body.catalog-page .movie-title { color: var(--text-primary); font-weight: 500; }
 body.catalog-page .movie-meta-row,
@@ -159,8 +161,8 @@ body.catalog-page .new-feat-meta { color: var(--text-muted); }
 body.catalog-page .new-play-mini {
   background: var(--glass-bg);
   border-color: var(--glass-border);
-  backdrop-filter: blur(var(--glass-blur)) saturate(1.2);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.2);
+  backdrop-filter: blur(var(--ds-blur)) saturate(1.2);
+  -webkit-backdrop-filter: blur(var(--ds-blur)) saturate(1.2);
 }
 body.catalog-page .new-play-mini:hover {
   background: var(--glass-bg-hover);
@@ -169,10 +171,10 @@ body.catalog-page .new-play-mini:hover {
 
 @media (max-width: 768px) {
   body.catalog-page .lang-dd,
-  body.catalog-page .movie-card-overlay,
+  body.catalog-page .mco-bottom,
   body.catalog-page .new-play-mini {
-    backdrop-filter: blur(var(--glass-blur-mobile)) saturate(1.2);
-    -webkit-backdrop-filter: blur(var(--glass-blur-mobile)) saturate(1.2);
+    backdrop-filter: blur(var(--ds-blur-mobile)) saturate(1.2);
+    -webkit-backdrop-filter: blur(var(--ds-blur-mobile)) saturate(1.2);
   }
 }
 

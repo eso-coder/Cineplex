@@ -17,6 +17,8 @@ node_modules/
 
 # Claude internal files
 .claude/
+.agents/
+skills-lock.json
 
 # Logs
 *.log
