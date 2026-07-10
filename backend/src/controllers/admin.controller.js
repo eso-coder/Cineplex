@@ -265,8 +265,10 @@ const backfillTranslations = asyncHandler(async (req, res) => {
     try {
       const auto = await autoTranslateMovieFields(movie.toObject());
       if (Object.keys(auto).length) {
-        Object.assign(movie, auto);
-        await movie.save();
+        // updateOne + $set — to'liq hujjatni qayta validatsiya qilmasdan
+        // (partial select bilan yuklangan hujjatda .save() required
+        // maydonlar yetishmasligi sababli xato berishi mumkin edi).
+        await Movie.updateOne({ _id: movie._id }, { $set: auto });
         updated += 1;
       }
     } catch (err) {

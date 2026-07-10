@@ -1,15 +1,20 @@
-const { translate } = require('@vitalets/google-translate-api');
 const logger = require('./logger');
 
-// Bepul (kalitsiz) Google Translate orqali matnni tarjima qiladi.
-// Xato bo'lsa (tarmoq/rate-limit) bo'sh qator qaytaradi — chaqiruvchi
-// tomon buni "tarjima hali yo'q" deb talqin qiladi va asl (uz) matnga
-// zaxira qiladi (frontend allaqachon shunday fallback qiladi).
+// Bepul (kalitsiz) Google Translate endpoint'i orqali matnni tarjima qiladi.
+// npm paketlari (masalan @vitalets/google-translate-api) ESM/CJS dual-package
+// muammosi tufayli Vercel serverless bundle'da ishlamay qoldi — shu sababli
+// to'g'ridan-to'g'ri Google'ning oddiy HTTP endpoint'iga fetch qilamiz (bir xil
+// mexanizm, lekin bundling muammosisiz).
 async function translateText(text, targetLang) {
   if (!text || !text.trim()) return '';
   try {
-    const res = await translate(text, { to: targetLang });
-    return res.text;
+    const url = 'https://translate.googleapis.com/translate_a/single'
+      + '?client=gtx&sl=auto&tl=' + encodeURIComponent(targetLang)
+      + '&dt=t&q=' + encodeURIComponent(text);
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    return (data[0] || []).map((chunk) => chunk[0] || '').join('');
   } catch (err) {
     logger.warn(`[translate] ${targetLang} tarjimasi muvaffaqiyatsiz: ${err.message}`);
     return '';
