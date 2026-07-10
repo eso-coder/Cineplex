@@ -1,6 +1,7 @@
 const Movie = require('../models/Movie');
 const Genre = require('../models/Genre');
 const User = require('../models/User');
+const Fuse = require('fuse.js');
 const asyncHandler = require('../utils/asyncHandler');
 const ApiError = require('../utils/ApiError');
 const { sendSuccess, sendPaginated } = require('../utils/response');
@@ -27,11 +28,6 @@ const getMovies = asyncHandler(async (req, res) => {
     filter.type = type;
   }
 
-  if (search) {
-    const re = new RegExp(search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
-    filter.$or = [{ title: re }, { description: re }];
-  }
-
   if (genre) {
     const genreDoc = await Genre.findOne({ slug: genre });
     if (genreDoc) filter.genres = genreDoc._id;
@@ -42,24 +38,57 @@ const getMovies = asyncHandler(async (req, res) => {
   }
 
   const sortObj = SORT_MAP[sort] || SORT_MAP.newest;
-  const skip = (page - 1) * limit;
+  const pageNum = Number(page) || 1;
+  const limitNum = Number(limit) || 20;
 
+  // Qidiruv (search) bo'lsa — 3 tilda (uz/ru/en) nom/tavsif/aktyor bo'yicha
+  // fuzzy (taxminiy, to'liq yozilmagan so'z bo'yicha ham) qidiruv qilamiz.
+  // Katalog kichik bo'lgani uchun barcha nomzodlarni xotirada tekshirish tez ishlaydi.
+  if (search && search.trim()) {
+    const candidates = await Movie.find(filter).populate('genres', 'name slug').lean();
+    const fuse = new Fuse(candidates, {
+      keys: [
+        { name: 'title', weight: 2 },
+        { name: 'title_ru', weight: 2 },
+        { name: 'title_en', weight: 2 },
+        { name: 'description', weight: 0.5 },
+        { name: 'description_ru', weight: 0.5 },
+        { name: 'description_en', weight: 0.5 },
+        { name: 'cast', weight: 1 },
+        { name: 'genres.name', weight: 1 },
+      ],
+      threshold: 0.4, // 0 = aniq mos kelish, 1 = deyarli har narsa; 0.4 — yumshoq/taxminiy
+      ignoreLocation: true,
+      minMatchCharLength: 2,
+    });
+    const matched = fuse.search(search.trim()).map((r) => r.item);
+    const total = matched.length;
+    const skip = (pageNum - 1) * limitNum;
+    const movies = matched.slice(skip, skip + limitNum);
+
+    res.set('Cache-Control', PUBLIC_CACHE);
+    return sendPaginated(res, movies, {
+      page: pageNum, limit: limitNum, total, totalPages: Math.ceil(total / limitNum),
+    });
+  }
+
+  const skip = (pageNum - 1) * limitNum;
   const [movies, total] = await Promise.all([
     Movie.find(filter)
       .populate('genres', 'name slug')
       .sort(sortObj)
       .skip(skip)
-      .limit(limit)
+      .limit(limitNum)
       .lean(),
     Movie.countDocuments(filter),
   ]);
 
   res.set('Cache-Control', PUBLIC_CACHE);
   sendPaginated(res, movies, {
-    page: Number(page),
-    limit: Number(limit),
+    page: pageNum,
+    limit: limitNum,
     total,
-    totalPages: Math.ceil(total / limit),
+    totalPages: Math.ceil(total / limitNum),
   });
 });
 
