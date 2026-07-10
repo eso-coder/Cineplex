@@ -395,7 +395,7 @@ ul {
   border: 1px solid rgba(255, 255, 255, 0.09);
   border-radius: var(--r-pill);
   padding: 7px 14px;
-  width: 190px;
+  width: 230px;
   transition:
     border-color 0.2s,
     background 0.2s;
@@ -417,7 +417,7 @@ ul {
   outline: none;
   color: #ffffff;
   font-family: "Outfit", sans-serif;
-  font-size: 21px;
+  font-size: 15px;
   width: 100%;
 }
 
@@ -756,6 +756,7 @@ body.menu-open {
   display: inline-flex;
   align-items: center;
   padding: 8px 18px;
+  border-radius: var(--r-pill);
   border: 1px solid transparent;
   background: #ffffff;
   color: #0a0a0c;
@@ -3628,7 +3629,7 @@ body.movie-page .navbar.scrolled {
   outline: none;
   color: #ffffff;
   font-family: "Outfit", sans-serif;
-  font-size: 28.5px;
+  font-size: 21px;
   font-weight: 500;
 }
 
