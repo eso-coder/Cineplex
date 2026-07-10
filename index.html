@@ -401,15 +401,21 @@
         if (!history.length) return;
         const section = document.getElementById('history-section');
         const row = document.getElementById('history-row');
-        // Progress bar'ni buildCard formatini buzmasdan overlay sifatida qo'shamiz
-        row.innerHTML = history.map(m => {
-          const pct = m.watchDuration ? Math.min(100, Math.round(m.watchProgress / m.watchDuration * 100)) : 0;
-          return `<div style="position:relative">${App.buildCard(m, "")}
-            <div style="position:absolute;left:8px;right:8px;bottom:8px;height:3px;background:rgba(255,255,255,0.25);border-radius:2px;overflow:hidden;pointer-events:none">
-              <div style="height:100%;width:${pct}%;background:#fff"></div>
-            </div>
-          </div>`;
-        }).join("");
+        // Avval oddiy kartalarni chizamiz, keyin progress bar'ni HAR BIR
+        // kartaning POSTER (rasm) qismi ICHIGA joylaymiz — shunda u meta
+        // qatorini (nom/reyting) bosib qolmaydi.
+        row.innerHTML = history.map(m => App.buildCard(m, "")).join("");
+        Array.from(row.children).forEach((card, i) => {
+          const m = history[i];
+          const pct = m && m.watchDuration ? Math.min(100, Math.round(m.watchProgress / m.watchDuration * 100)) : 0;
+          if (pct <= 0) return;
+          const poster = card.querySelector('.movie-poster');
+          if (!poster) return;
+          const bar = document.createElement('div');
+          bar.className = 'cp-history-progress';
+          bar.innerHTML = `<div style="width:${pct}%"></div>`;
+          poster.appendChild(bar);
+        });
         section.style.display = '';
       })();
 

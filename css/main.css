@@ -112,7 +112,7 @@ select:focus-visible,
 }
 
 html {
-  font-size: 24px;
+  font-size: 18px;
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
   height: 100%;
@@ -329,7 +329,7 @@ ul {
 }
 
 .logo-wordmark {
-  font-size: 30px;
+  font-size: 22.5px;
   font-weight: 800;
   letter-spacing: 4px;
   text-transform: uppercase;
@@ -351,7 +351,7 @@ ul {
 
 .nav-links li a {
   color: var(--text-dim);
-  font-size: 21px;
+  font-size: 16px;
   font-weight: 500;
   letter-spacing: 0.1px;
   padding: 7px 14px;
@@ -417,7 +417,7 @@ ul {
   outline: none;
   color: #ffffff;
   font-family: "Outfit", sans-serif;
-  font-size: 15px;
+  font-size: 11.5px;
   width: 100%;
 }
 
@@ -517,7 +517,7 @@ ul {
   outline: none;
   color: #ffffff;
   font-family: "Outfit", sans-serif;
-  font-size: 22.5px;
+  font-size: 17px;
   width: 100%;
 }
 .mobile-search input::placeholder {
@@ -534,7 +534,7 @@ ul {
 .mobile-links li a {
   display: block;
   color: var(--text-dim);
-  font-size: 24px;
+  font-size: 18px;
   font-weight: 500;
   padding: 13px 14px;
   border-radius: var(--r-md);
@@ -563,7 +563,7 @@ ul {
   border: 1px solid rgba(255, 255, 255, 0.09);
   color: var(--text-dim);
   font-family: "Outfit", sans-serif;
-  font-size: 19.5px;
+  font-size: 14.5px;
   font-weight: 600;
   cursor: pointer;
   transition:
@@ -611,7 +611,7 @@ body.menu-open {
   text-align: center;
   padding: 12px 0;
   border-radius: var(--r-sm);
-  font-size: 21px;
+  font-size: 16px;
   font-weight: 600;
   transition:
     background 0.18s,
@@ -656,7 +656,7 @@ body.menu-open {
   border: 1px solid var(--border-h);
   background: transparent;
   color: rgba(255, 255, 255, 0.75);
-  font-size: 19.5px;
+  font-size: 14.5px;
   font-weight: 700;
   letter-spacing: 0.4px;
   cursor: pointer;
@@ -704,7 +704,7 @@ body.menu-open {
   border-radius: var(--r-sm);
   background: transparent;
   color: rgba(255, 255, 255, 0.78);
-  font-size: 19.5px;
+  font-size: 14.5px;
   font-weight: 600;
   cursor: pointer;
   transition:
@@ -736,7 +736,7 @@ body.menu-open {
   border: 1px solid var(--border-h);
   background: transparent;
   color: rgba(255, 255, 255, 0.7);
-  font-size: 19.5px;
+  font-size: 14.5px;
   font-weight: 600;
   letter-spacing: 0.3px;
   text-decoration: none;
@@ -760,7 +760,7 @@ body.menu-open {
   border: 1px solid transparent;
   background: #ffffff;
   color: #0a0a0c;
-  font-size: 19.5px;
+  font-size: 14.5px;
   font-weight: 600;
   letter-spacing: 0.3px;
   text-decoration: none;
@@ -855,12 +855,12 @@ body.menu-open {
 }
 
 .notif-dd-title {
-  font-size: 24px;
+  font-size: 18px;
   font-weight: 700;
 }
 
 .notif-dd-clear {
-  font-size: 18px;
+  font-size: 13.5px;
   color: rgba(255, 255, 255, 0.38);
   cursor: pointer;
   transition: color 0.18s;
@@ -901,7 +901,7 @@ body.menu-open {
 }
 
 .notif-emoji {
-  font-size: 33px;
+  font-size: 25px;
   flex-shrink: 0;
   margin-top: 1px;
 }
@@ -912,19 +912,19 @@ body.menu-open {
 }
 
 .notif-item-title {
-  font-size: 21px;
+  font-size: 16px;
   font-weight: 600;
   margin-bottom: 3px;
 }
 
 .notif-item-text {
-  font-size: 19.5px;
+  font-size: 14.5px;
   color: rgba(255, 255, 255, 0.5);
   line-height: 1.4;
 }
 
 .notif-item-time {
-  font-size: 18px;
+  font-size: 13.5px;
   color: rgba(255, 255, 255, 0.28);
   margin-top: 5px;
 }
@@ -945,7 +945,7 @@ body.menu-open {
 }
 
 .notif-dd-footer a {
-  font-size: 19.5px;
+  font-size: 14.5px;
   color: rgba(255, 255, 255, 0.42);
   transition: color 0.18s;
 }
@@ -983,7 +983,7 @@ body.menu-open {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 16.5px;
+  font-size: 12.5px;
   font-weight: 800;
   color: #ffffff;
   flex-shrink: 0;
@@ -997,7 +997,7 @@ body.menu-open {
 }
 
 .nav-user-name {
-  font-size: 21px;
+  font-size: 16px;
   font-weight: 600;
 }
 
@@ -1110,7 +1110,7 @@ body.menu-open {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 22.5px;
+  font-size: 17px;
   font-weight: 800;
   color: #ffffff;
 }
@@ -1121,14 +1121,14 @@ body.menu-open {
 }
 
 .pdd-name {
-  font-size: 21px;
+  font-size: 16px;
   font-weight: 700;
   color: #ffffff;
   margin-bottom: 2px;
 }
 
 .pdd-email {
-  font-size: 16.5px;
+  font-size: 12.5px;
   color: rgba(255, 255, 255, 0.38);
   white-space: nowrap;
   overflow: hidden;
@@ -1140,7 +1140,7 @@ body.menu-open {
   align-items: center;
   gap: var(--space-1);
   margin-top: 5px;
-  font-size: 15px;
+  font-size: 11.5px;
   font-weight: 700;
   letter-spacing: 0.8px;
   text-transform: uppercase;
@@ -1169,7 +1169,7 @@ body.menu-open {
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.07);
   color: rgba(255, 255, 255, 0.62);
-  font-size: 15px;
+  font-size: 11.5px;
   font-weight: 600;
   cursor: pointer;
   text-decoration: none;
@@ -1215,7 +1215,7 @@ body.menu-open {
   align-items: center;
   gap: var(--space-3);
   padding: 11px 18px;
-  font-size: 19.5px;
+  font-size: 14.5px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.7);
   cursor: pointer;
@@ -1421,7 +1421,7 @@ main {
 }
 
 .hero-year {
-  font-size: 19.5px;
+  font-size: 14.5px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.45);
   letter-spacing: 2px;
@@ -1439,7 +1439,7 @@ main {
 }
 
 .logo-main {
-  font-size: 108px;
+  font-size: 81px;
   font-weight: 800;
   letter-spacing: 1.5px;
   line-height: 0.92;
@@ -1451,7 +1451,7 @@ main {
 }
 
 .logo-sub {
-  font-size: 22.5px;
+  font-size: 17px;
   font-weight: 300;
   letter-spacing: 9px;
   color: rgba(255, 255, 255, 0.6);
@@ -1525,7 +1525,7 @@ main {
   display: flex;
   align-items: center;
   gap: var(--space-4);
-  font-size: 21px;
+  font-size: 16px;
   color: rgba(255, 255, 255, 0.5);
   margin-bottom: var(--space-6);
 }
@@ -1550,7 +1550,7 @@ main {
   border-radius: var(--r-pill);
   background: #ffffff;
   color: #0a0a0c;
-  font-size: 24px;
+  font-size: 18px;
   font-weight: 700;
   font-family: "Outfit", sans-serif;
   border: none;
@@ -1584,7 +1584,7 @@ main {
   border-radius: var(--r-pill);
   background: var(--glass-2);
   color: #ffffff;
-  font-size: 22.5px;
+  font-size: 17px;
   font-weight: 600;
   font-family: "Outfit", sans-serif;
   border: 1.5px solid rgba(255, 255, 255, 0.28);
@@ -1616,7 +1616,7 @@ main {
 }
 
 .now-watching-header {
-  font-size: 25.5px;
+  font-size: 19px;
   font-weight: 700;
   margin-bottom: var(--space-1);
 }
@@ -1682,7 +1682,7 @@ main {
   background: rgba(0, 0, 0, 0.65);
   border-radius: 5px;
   padding: 1px 5px;
-  font-size: 15px;
+  font-size: 11.5px;
   font-weight: 700;
   color: #ffffff;
 }
@@ -1693,7 +1693,7 @@ main {
 }
 
 .watch-name {
-  font-size: 21px;
+  font-size: 16px;
   font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
@@ -1707,7 +1707,7 @@ main {
 }
 
 .watch-tag {
-  font-size: 16.5px;
+  font-size: 12.5px;
   color: rgba(255, 255, 255, 0.38);
   background: rgba(255, 255, 255, 0.06);
   padding: 2px 7px;
@@ -1719,7 +1719,7 @@ main {
   align-items: center;
   gap: var(--space-1);
   margin-top: var(--space-1);
-  font-size: 18px;
+  font-size: 13.5px;
   color: rgba(255, 255, 255, 0.38);
 }
 
@@ -1742,7 +1742,7 @@ main {
 }
 
 .genre-label-line {
-  font-size: 16.5px;
+  font-size: 12.5px;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.28);
   text-transform: uppercase;
@@ -1770,7 +1770,7 @@ main {
   background: var(--glass-1);
   border: 1px solid rgba(255, 255, 255, 0.09);
   color: rgba(255, 255, 255, 0.6);
-  font-size: 21px;
+  font-size: 16px;
   font-weight: 500;
   white-space: nowrap;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
@@ -1810,13 +1810,13 @@ main {
 }
 
 .section-title {
-  font-size: 31.5px;
+  font-size: 23.5px;
   font-weight: 700;
   letter-spacing: -0.3px;
 }
 
 .section-link {
-  font-size: 21px;
+  font-size: 16px;
   color: var(--text-dim);
   transition: color 0.18s;
 }
@@ -2098,7 +2098,7 @@ main {
 }
 
 .mco-title {
-  font-size: 24px;
+  font-size: 18px;
   font-weight: 700;
   color: #ffffff;
   line-height: 1.35;
@@ -2115,7 +2115,7 @@ main {
   display: flex;
   align-items: center;
   gap: var(--space-1);
-  font-size: 18px;
+  font-size: 13.5px;
   color: rgba(255, 255, 255, 0.55);
   flex-wrap: wrap;
 }
@@ -2134,7 +2134,7 @@ main {
 }
 
 .mco-desc {
-  font-size: 16.5px;
+  font-size: 12.5px;
   line-height: 1.5;
   color: rgba(255, 255, 255, 0.52);
   margin-top: 6px;
@@ -2158,6 +2158,23 @@ main {
   transition:
     border-color 0.3s ease,
     box-shadow 0.3s ease;
+}
+
+/* "Ko'rilganlar tarixi" — poster pastida ko'rish davomiyligi chizig'i */
+.cp-history-progress {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 4px;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 3;
+  pointer-events: none;
+}
+.cp-history-progress > div {
+  height: 100%;
+  background: #ffffff;
+  border-radius: 0 2px 2px 0;
 }
 
 .movie-poster img {
@@ -2218,7 +2235,7 @@ main {
   backdrop-filter: blur(8px);
   border-radius: 6px;
   padding: 2px 8px;
-  font-size: 15px;
+  font-size: 11.5px;
   font-weight: 700;
   color: rgba(255, 255, 255, 0.9);
   border: 2px solid rgba(255, 255, 255, 0.12);
@@ -2231,7 +2248,7 @@ main {
 }
 
 .movie-series-row {
-  font-size: 15px;
+  font-size: 11.5px;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.42);
   margin-bottom: 2px;
@@ -2249,7 +2266,7 @@ main {
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: 18px;
+  font-size: 13.5px;
   color: rgba(255, 255, 255, 0.4);
   transition: opacity 0.2s;
 }
@@ -2269,7 +2286,7 @@ main {
 }
 
 .movie-title {
-  font-size: 22.5px;
+  font-size: 17px;
   font-weight: 600;
   line-height: 1.35;
   margin-bottom: 3px;
@@ -2301,7 +2318,7 @@ main {
   max-width: 640px;
   margin: 0 auto 36px;
   text-align: center;
-  font-size: 18px;
+  font-size: 13.5px;
   font-weight: 600;
   color: rgba(235, 235, 245, 0.48);
   text-transform: uppercase;
@@ -2373,7 +2390,7 @@ main {
 
 /* Text-only studio item (logotipsiz — masalan A24, Lionsgate) */
 .studio-text-item {
-  font-size: 25.5px;
+  font-size: 19px;
   font-weight: 800;
   letter-spacing: 2px;
   color: var(--studio-color, #ffffff);
@@ -2432,14 +2449,14 @@ main {
 }
 
 .footer-tagline {
-  font-size: 21px;
+  font-size: 16px;
   color: rgba(255, 255, 255, 0.38);
   line-height: 1.7;
   max-width: 220px;
 }
 
 .footer-col-title {
-  font-size: 16.5px;
+  font-size: 12.5px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 1.2px;
@@ -2454,7 +2471,7 @@ main {
 }
 
 .footer-links a {
-  font-size: 21px;
+  font-size: 16px;
   color: rgba(255, 255, 255, 0.48);
   transition: color 0.18s;
 }
@@ -2472,7 +2489,7 @@ main {
 }
 
 .footer-copy {
-  font-size: 19.5px;
+  font-size: 14.5px;
   color: rgba(255, 255, 255, 0.28);
 }
 
@@ -2533,13 +2550,13 @@ main {
 }
 
 .catalog-title {
-  font-size: 39px;
+  font-size: 29.5px;
   font-weight: 800;
   letter-spacing: -0.5px;
 }
 
 .catalog-count {
-  font-size: 22.5px;
+  font-size: 17px;
   color: var(--text-dim);
   font-weight: 400;
   margin-top: 3px;
@@ -2553,7 +2570,7 @@ main {
   border: 1px solid var(--border);
   border-radius: var(--r-sm);
   padding: 8px 14px;
-  font-size: 21px;
+  font-size: 16px;
   color: var(--text-dim);
   cursor: pointer;
   backdrop-filter: var(--glass-blur);
@@ -2690,7 +2707,7 @@ main {
 }
 
 .dp-hero-title {
-  font-size: 90px;
+  font-size: 67.5px;
   font-weight: 800;
   letter-spacing: -1.5px;
   line-height: 1;
@@ -2703,13 +2720,13 @@ main {
   align-items: baseline;
   gap: 6px;
   margin-bottom: 10px;
-  font-size: 33px;
+  font-size: 25px;
   font-weight: 700;
   color: var(--gold);
 }
 
 .dp-hero-rating .rating-denom {
-  font-size: 22.5px;
+  font-size: 17px;
   font-weight: 400;
   color: rgba(255, 255, 255, 0.38);
 }
@@ -2718,7 +2735,7 @@ main {
   display: flex;
   align-items: center;
   gap: 0;
-  font-size: 21px;
+  font-size: 16px;
   color: rgba(255, 255, 255, 0.5);
   flex-wrap: wrap;
 }
@@ -2761,7 +2778,7 @@ main {
 }
 
 .dp-detail-line {
-  font-size: 22.5px;
+  font-size: 17px;
   line-height: 1.65;
   margin-bottom: 6px;
   color: rgba(255, 255, 255, 0.62);
@@ -2773,7 +2790,7 @@ main {
 }
 
 .dp-synopsis {
-  font-size: 22.5px;
+  font-size: 17px;
   line-height: 1.78;
   color: rgba(255, 255, 255, 0.58);
   margin-bottom: 22px;
@@ -2814,7 +2831,7 @@ main {
   border: none;
   color: rgba(255, 255, 255, 0.7);
   font-family: 'Outfit', sans-serif;
-  font-size: 18px;
+  font-size: 13.5px;
   font-weight: 600;
   cursor: pointer;
   transition: color 0.18s;
@@ -2844,7 +2861,7 @@ main {
 }
 
 .dp-genre-pill {
-  font-size: 19.5px;
+  font-size: 14.5px;
   font-weight: 500;
   padding: 6px 20px;
   border-radius: var(--r-pill);
@@ -2868,7 +2885,7 @@ main {
   border-radius: var(--r-pill);
   background: #ffffff;
   color: #0a0a0c;
-  font-size: 22.5px;
+  font-size: 17px;
   font-weight: 700;
   border: none;
   cursor: pointer;
@@ -2899,7 +2916,7 @@ main {
   border-radius: var(--r-pill);
   background: var(--glass-1);
   color: rgba(255, 255, 255, 0.78);
-  font-size: 22.5px;
+  font-size: 17px;
   font-weight: 600;
   border: 1px solid var(--border);
   cursor: pointer;
@@ -2936,7 +2953,7 @@ main {
   display: flex;
   align-items: center;
   gap: var(--space-5);
-  font-size: 16.5px;
+  font-size: 12.5px;
   font-weight: 700;
   letter-spacing: 4px;
   text-transform: uppercase;
@@ -2982,7 +2999,7 @@ main {
   background: none;
   border: none;
   padding: 0;
-  font-size: 16.5px;
+  font-size: 12.5px;
   font-weight: 700;
   letter-spacing: 2px;
   text-transform: uppercase;
@@ -3068,7 +3085,7 @@ main {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 48px;
+  font-size: 36px;
   font-weight: 800;
   color: #ffffff;
   margin: 0 auto 10px;
@@ -3084,7 +3101,7 @@ main {
 }
 
 .dp-cast-name {
-  font-size: 18px;
+  font-size: 13.5px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.58);
   line-height: 1.35;
@@ -3098,12 +3115,12 @@ main {
 }
 
 .dp-related-section .section-title {
-  font-size: 28.5px;
+  font-size: 21.5px;
 }
 
 /* ── Detail tag (legacy compat) ── */
 .detail-tag {
-  font-size: 18px;
+  font-size: 13.5px;
   font-weight: 600;
   padding: 3px 12px;
   border-radius: var(--r-pill);
@@ -3143,12 +3160,12 @@ body.movie-page .navbar.scrolled {
 }
 
 .reviews-title {
-  font-size: 31.5px;
+  font-size: 23.5px;
   font-weight: 700;
 }
 
 .reviews-count {
-  font-size: 21px;
+  font-size: 16px;
   color: var(--text-dim);
 }
 
@@ -3178,14 +3195,14 @@ body.movie-page .navbar.scrolled {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 19.5px;
+  font-size: 14.5px;
   font-weight: 800;
   color: #ffffff;
   flex-shrink: 0;
 }
 
 .review-write-label {
-  font-size: 22.5px;
+  font-size: 17px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.55);
 }
@@ -3201,7 +3218,7 @@ body.movie-page .navbar.scrolled {
   border: none;
   cursor: pointer;
   color: rgba(255, 255, 255, 0.22);
-  font-size: 36px;
+  font-size: 27px;
   transition:
     color 0.15s,
     transform 0.15s;
@@ -3222,7 +3239,7 @@ body.movie-page .navbar.scrolled {
   padding: 13px 16px;
   color: #ffffff;
   font-family: "Outfit", sans-serif;
-  font-size: 22.5px;
+  font-size: 17px;
   resize: vertical;
   min-height: 92px;
   transition: border-color 0.2s;
@@ -3243,7 +3260,7 @@ body.movie-page .navbar.scrolled {
   border-radius: var(--r-pill);
   background: #ffffff;
   color: #0a0a0c;
-  font-size: 22.5px;
+  font-size: 17px;
   font-weight: 700;
   cursor: pointer;
   border: none;
@@ -3302,19 +3319,19 @@ body.movie-page .navbar.scrolled {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 21px;
+  font-size: 16px;
   font-weight: 800;
   color: #ffffff;
   flex-shrink: 0;
 }
 
 .review-name {
-  font-size: 22.5px;
+  font-size: 17px;
   font-weight: 600;
 }
 
 .review-date {
-  font-size: 19.5px;
+  font-size: 14.5px;
   color: var(--text-muted);
   margin-top: 1px;
 }
@@ -3325,7 +3342,7 @@ body.movie-page .navbar.scrolled {
 }
 
 .review-text {
-  font-size: 22.5px;
+  font-size: 17px;
   line-height: 1.72;
   color: rgba(255, 255, 255, 0.72);
   margin-bottom: 14px;
@@ -3341,7 +3358,7 @@ body.movie-page .navbar.scrolled {
   display: flex;
   align-items: center;
   gap: 7px;
-  font-size: 19.5px;
+  font-size: 14.5px;
   color: var(--text-muted);
   cursor: pointer;
   transition: color 0.18s;
@@ -3359,7 +3376,7 @@ body.movie-page .navbar.scrolled {
 }
 
 .review-badge {
-  font-size: 16.5px;
+  font-size: 12.5px;
   font-weight: 700;
   padding: 2px 9px;
   border-radius: 4px;
@@ -3529,7 +3546,7 @@ body.movie-page .navbar.scrolled {
 }
 
 .player-time {
-  font-size: 19.5px;
+  font-size: 14.5px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.7);
   white-space: nowrap;
@@ -3569,7 +3586,7 @@ body.movie-page .navbar.scrolled {
 }
 
 .watch-title {
-  font-size: 52.5px;
+  font-size: 39.5px;
   font-weight: 800;
   letter-spacing: -0.5px;
   margin-bottom: 10px;
@@ -3579,13 +3596,13 @@ body.movie-page .navbar.scrolled {
   display: flex;
   align-items: center;
   gap: 14px;
-  font-size: 19.5px;
+  font-size: 14.5px;
   color: var(--text-dim);
   margin-bottom: var(--space-4);
 }
 
 .watch-desc {
-  font-size: 22.5px;
+  font-size: 17px;
   line-height: 1.7;
   color: rgba(255, 255, 255, 0.55);
   max-width: 720px;
@@ -3629,7 +3646,7 @@ body.movie-page .navbar.scrolled {
   outline: none;
   color: #ffffff;
   font-family: "Outfit", sans-serif;
-  font-size: 21px;
+  font-size: 16px;
   font-weight: 500;
 }
 
@@ -3638,7 +3655,7 @@ body.movie-page .navbar.scrolled {
 }
 
 .search-results-label {
-  font-size: 22.5px;
+  font-size: 17px;
   color: var(--text-dim);
   margin-bottom: 18px;
 }
@@ -3659,14 +3676,14 @@ body.movie-page .navbar.scrolled {
 }
 
 .search-empty h3 {
-  font-size: 30px;
+  font-size: 22.5px;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.48);
   margin-bottom: 7px;
 }
 
 .search-empty p {
-  font-size: 22.5px;
+  font-size: 17px;
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -3718,7 +3735,7 @@ body.movie-page .navbar.scrolled {
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
   color: rgba(255, 255, 255, 0.8);
-  font-size: 21px;
+  font-size: 16px;
   font-weight: 500;
   cursor: pointer;
   transition:
@@ -3749,7 +3766,7 @@ body.movie-page .navbar.scrolled {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 54px;
+  font-size: 40.5px;
   font-weight: 900;
   color: #ffffff;
   flex-shrink: 0;
@@ -3790,14 +3807,14 @@ body.movie-page .navbar.scrolled {
 }
 
 .profile-name {
-  font-size: 40.5px;
+  font-size: 30.5px;
   font-weight: 800;
   letter-spacing: -0.5px;
   margin-bottom: var(--space-1);
 }
 
 .profile-email {
-  font-size: 22.5px;
+  font-size: 17px;
   color: var(--text-dim);
   margin-bottom: 10px;
 }
@@ -3812,7 +3829,7 @@ body.movie-page .navbar.scrolled {
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: 18px;
+  font-size: 13.5px;
   font-weight: 700;
   padding: 4px 12px;
   border-radius: var(--r-pill);
@@ -3857,13 +3874,13 @@ body.movie-page .navbar.scrolled {
 }
 
 .stat-num {
-  font-size: 43.5px;
+  font-size: 32.5px;
   font-weight: 800;
   line-height: 1;
 }
 
 .stat-label {
-  font-size: 19.5px;
+  font-size: 14.5px;
   color: var(--text-muted);
   margin-top: 5px;
 }
@@ -3880,12 +3897,12 @@ body.movie-page .navbar.scrolled {
 }
 
 .profile-section-title {
-  font-size: 27px;
+  font-size: 20.5px;
   font-weight: 700;
 }
 
 .profile-section-action {
-  font-size: 21px;
+  font-size: 16px;
   color: var(--text-dim);
   cursor: pointer;
   transition: color 0.18s;
@@ -3943,12 +3960,12 @@ body.movie-page .navbar.scrolled {
 
 .setting-label {
   flex: 1;
-  font-size: 22.5px;
+  font-size: 17px;
   font-weight: 500;
 }
 
 .setting-value {
-  font-size: 21px;
+  font-size: 16px;
   color: var(--text-dim);
 }
 
@@ -4000,14 +4017,14 @@ body.movie-page .navbar.scrolled {
 }
 
 .category-hero-title {
-  font-size: 51px;
+  font-size: 38.5px;
   font-weight: 800;
   letter-spacing: -0.8px;
   margin-bottom: var(--space-2);
 }
 
 .category-hero-sub {
-  font-size: 24px;
+  font-size: 18px;
   color: var(--text-dim);
 }
 
@@ -4059,7 +4076,7 @@ body.movie-page .navbar.scrolled {
 }
 
 .cat-name {
-  font-size: 33px;
+  font-size: 25px;
   font-weight: 800;
   letter-spacing: -0.3px;
   margin-bottom: 5px;
@@ -4067,7 +4084,7 @@ body.movie-page .navbar.scrolled {
 }
 
 .cat-count {
-  font-size: 21px;
+  font-size: 16px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.78);
 }
@@ -4076,7 +4093,7 @@ body.movie-page .navbar.scrolled {
   position: absolute;
   top: 16px;
   right: 16px;
-  font-size: 15px;
+  font-size: 11.5px;
   font-weight: 800;
   letter-spacing: 0.8px;
   text-transform: uppercase;
@@ -4154,13 +4171,13 @@ body.movie-page .navbar.scrolled {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 45px;
+  font-size: 34px;
   font-weight: 900;
   color: #fff;
 }
 
 .cat-actor-name {
-  font-size: 21px;
+  font-size: 16px;
   font-weight: 700;
   color: #fff;
   margin-bottom: 3px;
@@ -4170,7 +4187,7 @@ body.movie-page .navbar.scrolled {
 }
 
 .cat-actor-known {
-  font-size: 18px;
+  font-size: 13.5px;
   color: var(--text-muted);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -4214,7 +4231,7 @@ body.movie-page .navbar.scrolled {
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: var(--r-pill);
   padding: 12px 24px;
-  font-size: 21px;
+  font-size: 16px;
   font-weight: 500;
   color: #ffffff;
   z-index: 9000;
@@ -4352,7 +4369,7 @@ body.movie-page .navbar.scrolled {
   background: #ffffff;
   border: none;
   color: #0a0a0c;
-  font-size: 16.5px;
+  font-size: 12.5px;
   font-weight: 700;
   font-family: "Outfit", sans-serif;
   cursor: pointer;
@@ -4376,7 +4393,7 @@ body.movie-page .navbar.scrolled {
   background: transparent;
   border: 1.5px solid rgba(255, 255, 255, 0.3);
   color: rgba(255, 255, 255, 0.8);
-  font-size: 27px;
+  font-size: 20.5px;
   line-height: 1;
   display: flex;
   align-items: center;
@@ -4400,7 +4417,7 @@ body.movie-page .navbar.scrolled {
   align-items: center;
   gap: 5px;
   flex-wrap: wrap;
-  font-size: 15px;
+  font-size: 11.5px;
   color: rgba(255, 255, 255, 0.5);
   font-weight: 500;
 }
@@ -4536,10 +4553,10 @@ video.hero-bg-iframe {
     grid-template-columns: repeat(4, 1fr);
   }
   .dp-hero-title {
-    font-size: 66px;
+    font-size: 49.5px;
   }
   .logo-main {
-    font-size: 99px;
+    font-size: 74.5px;
   }
   .hero-content {
     right: 38%;
@@ -4632,7 +4649,7 @@ video.hero-bg-iframe {
     margin-right: 0;
   }
   .logo-wordmark {
-    font-size: 25.5px;
+    font-size: 19px;
     letter-spacing: 3px;
   }
   .lang-wrap .lang-btn span {
@@ -4651,7 +4668,7 @@ video.hero-bg-iframe {
   }
   .nav-login-btn {
     padding: 7px 12px;
-    font-size: 18px;
+    font-size: 13.5px;
   }
 
   /* Hero */
@@ -4678,7 +4695,7 @@ video.hero-bg-iframe {
     bottom: 30px;
   }
   .hero-year {
-    font-size: 16.5px;
+    font-size: 12.5px;
     letter-spacing: 1.5px;
     margin-bottom: var(--space-2);
   }
@@ -4692,27 +4709,27 @@ video.hero-bg-iframe {
     max-width: 220px;
   }
   .logo-main {
-    font-size: 51px;
+    font-size: 38.5px;
     letter-spacing: 0;
     line-height: 0.96;
   }
   .logo-sub {
-    font-size: 18px;
+    font-size: 13.5px;
     letter-spacing: 6px;
   }
   .hero-meta {
-    font-size: 18px;
+    font-size: 13.5px;
     gap: 10px;
     margin-bottom: 18px;
     flex-wrap: wrap;
   }
   .hero-play-btn {
     padding: 11px 22px;
-    font-size: 21px;
+    font-size: 16px;
   }
   .hero-trailer-btn {
     padding: 11px 18px;
-    font-size: 19.5px;
+    font-size: 14.5px;
   }
   .hero-volume-btn {
     width: 40px;
@@ -4774,7 +4791,7 @@ video.hero-bg-iframe {
     gap: 10px;
   }
   .section-title {
-    font-size: 25.5px;
+    font-size: 19px;
   }
 
   /* Detail page — banner trailer stays visible (main media) */
@@ -4783,14 +4800,14 @@ video.hero-bg-iframe {
     min-height: 200px;
   }
   .dp-hero-title {
-    font-size: 39px;
+    font-size: 29.5px;
     letter-spacing: -0.5px;
   }
   .dp-hero-rating {
-    font-size: 30px;
+    font-size: 22.5px;
   }
   .dp-hero-meta {
-    font-size: 18px;
+    font-size: 13.5px;
     flex-wrap: wrap;
     gap: 4px 0;
   }
@@ -4853,7 +4870,7 @@ video.hero-bg-iframe {
     padding: 32px 16px 44px;
   }
   .reviews-title {
-    font-size: 27px;
+    font-size: 20.5px;
   }
   .review-write-card {
     padding: var(--space-4);
@@ -4870,18 +4887,18 @@ video.hero-bg-iframe {
     padding: 14px;
   }
   .cat-name {
-    font-size: 24px;
+    font-size: 18px;
     margin-bottom: 3px;
   }
   .cat-count {
-    font-size: 18px;
+    font-size: 13.5px;
   }
   .cat-tag {
     top: auto;
     right: auto;
     bottom: 11px;
     left: 14px;
-    font-size: 15px;
+    font-size: 11.5px;
     padding: 2px 6px;
     letter-spacing: 0.5px;
   }
@@ -4897,10 +4914,10 @@ video.hero-bg-iframe {
     gap: 14px;
   }
   .cat-actor-name {
-    font-size: 18px;
+    font-size: 13.5px;
   }
   .cat-actor-known {
-    font-size: 16.5px;
+    font-size: 12.5px;
   }
 
   /* Footer — 4-col grid → 2-col on phones */
@@ -4931,33 +4948,33 @@ video.hero-bg-iframe {
     gap: 12px 7px;
   }
   .logo-main {
-    font-size: 42px;
+    font-size: 31.5px;
   }
   .logo-sub {
-    font-size: 16.5px;
+    font-size: 12.5px;
     letter-spacing: 4px;
   }
   .hero-meta {
-    font-size: 16.5px;
+    font-size: 12.5px;
     gap: var(--space-2);
   }
   .hero-play-btn {
     padding: 10px 18px;
-    font-size: 19.5px;
+    font-size: 14.5px;
   }
   .hero-trailer-btn {
     padding: 10px 14px;
-    font-size: 18px;
+    font-size: 13.5px;
   }
   .dp-hero-title {
-    font-size: 33px;
+    font-size: 25px;
   }
   .logo-wordmark {
-    font-size: 24px;
+    font-size: 18px;
     letter-spacing: 2.5px;
   }
   .section-title {
-    font-size: 24px;
+    font-size: 18px;
   }
 }
 

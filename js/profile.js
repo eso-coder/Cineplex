@@ -151,8 +151,7 @@
     // stats
     var s = stats || {};
     var statDefs = [
-      ['films', 'Films'], ['thisYear', 'This Year'], ['watchTime', 'Vaqt (soat)'],
-      ['following', 'Following'], ['followers', 'Followers'],
+      ['films', 'Films'], ['minutes', 'Minutes'], ['hours', 'Hours'],
     ];
     document.getElementById('pf2-stats').innerHTML = statDefs.map(function (d) {
       return '<div class="pf2-stat"><div class="pf2-stat-num">' + fmtStat(s[d[0]] != null ? s[d[0]] : 0) + '</div><div class="pf2-stat-label">' + d[1] + '</div></div>';
@@ -567,7 +566,8 @@
       reviews = results[3] || [];
       var history = results[4] || [];
       var totalSeconds = history.reduce(function (sum, m) { return sum + (m.watchProgress || 0); }, 0);
-      stats.watchTime = Math.round(totalSeconds / 3600) + 'h';
+      stats.minutes = Math.round(totalSeconds / 60);
+      stats.hours = Math.round(totalSeconds / 3600);
     } catch (e) { /* keep defaults */ }
 
     current = { user: user, stats: stats, activity: activity, films: activity, reviews: reviews, watchlist: [] };

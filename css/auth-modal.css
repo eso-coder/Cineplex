@@ -112,7 +112,7 @@
   background: transparent;
   color: var(--am-muted);
   font-family: inherit;
-  font-size: 21px;
+  font-size: 16px;
   font-weight: 600;
   padding: 8px 20px;
   border-radius: 999px;
@@ -126,14 +126,14 @@
 
 /* ── Headings ── */
 .am-title {
-  font-size: 39px;
+  font-size: 29.5px;
   font-weight: 800;
   letter-spacing: -0.01em;
   color: var(--am-text);
   margin-bottom: 20px;
 }
-.am-title.sm { font-size: 33px; margin-bottom: 8px; }
-.am-sub { font-size: 19.5px; color: var(--am-muted); margin-bottom: 22px; line-height: 1.5; }
+.am-title.sm { font-size: 25px; margin-bottom: 8px; }
+.am-sub { font-size: 14.5px; color: var(--am-muted); margin-bottom: 22px; line-height: 1.5; }
 .am-sub b { color: var(--am-text); font-weight: 600; }
 
 /* ── Panels ── */
@@ -161,7 +161,7 @@
   padding: 15px 16px;
   color: var(--am-text);
   font-family: inherit;
-  font-size: 22.5px;
+  font-size: 17px;
   transition: background 160ms var(--am-ease-out), border-color 160ms var(--am-ease-out);
 }
 .am-input::placeholder { color: var(--am-muted); }
@@ -201,11 +201,11 @@
   background: transparent;
   color: var(--am-text);
   font-family: inherit;
-  font-size: 21px;
+  font-size: 16px;
   cursor: pointer;
   border-right: 1px solid var(--am-border);
 }
-.am-cc .am-flag { font-size: 27px; line-height: 1; }
+.am-cc .am-flag { font-size: 20.5px; line-height: 1; }
 .am-cc svg { color: var(--am-muted); }
 .am-phone input {
   flex: 1;
@@ -214,7 +214,7 @@
   outline: none;
   color: var(--am-text);
   font-family: inherit;
-  font-size: 22.5px;
+  font-size: 17px;
   padding: 15px 16px 15px 12px;
 }
 .am-phone input::placeholder { color: var(--am-muted); }
@@ -253,7 +253,7 @@
   background: transparent;
   color: var(--am-text);
   font-family: inherit;
-  font-size: 19.5px;
+  font-size: 14.5px;
   text-align: left;
   border-radius: 9px;
   cursor: pointer;
@@ -270,7 +270,7 @@
   background: #fff;
   color: #111;
   font-family: inherit;
-  font-size: 22.5px;
+  font-size: 17px;
   font-weight: 700;
   cursor: pointer;
   margin-top: 6px;
@@ -287,7 +287,7 @@
   gap: 14px;
   margin: 20px 0 16px;
   color: var(--am-muted);
-  font-size: 16.5px;
+  font-size: 12.5px;
   font-weight: 600;
   letter-spacing: 1.2px;
 }
@@ -313,7 +313,7 @@
   background: var(--am-field);
   border: 1px solid var(--am-border);
   color: var(--am-text, #fff);
-  font-size: 21px;
+  font-size: 16px;
   font-weight: 600;
   cursor: pointer;
   transition: background 160ms var(--am-ease-out), transform 140ms var(--am-ease-out), border-color 160ms;
@@ -326,7 +326,7 @@
 .am-footer {
   margin-top: 18px;
   text-align: center;
-  font-size: 18px;
+  font-size: 13.5px;
   color: var(--am-muted);
   line-height: 1.5;
 }
@@ -336,7 +336,7 @@
   background: rgba(255, 90, 90, 0.10);
   border: 1px solid rgba(255, 90, 90, 0.30);
   color: #ff9a9a;
-  font-size: 19.5px;
+  font-size: 14.5px;
   padding: 10px 14px;
   border-radius: 12px;
   margin-bottom: 14px;
@@ -345,7 +345,7 @@
 .am-error.show { display: block; animation: amPanelIn 200ms var(--am-ease-out) both; }
 
 .am-hint {
-  font-size: 18px;
+  font-size: 13.5px;
   color: var(--am-muted);
   margin-top: 12px;
   text-align: center;
@@ -367,7 +367,7 @@
   width: 100%;
   aspect-ratio: 1 / 1;
   text-align: center;
-  font-size: 33px;
+  font-size: 25px;
   font-weight: 700;
   background: var(--am-field);
   border: 1px solid transparent;
@@ -382,7 +382,7 @@
   border: none;
   color: #cfcfd4;
   font-family: inherit;
-  font-size: 19.5px;
+  font-size: 14.5px;
   cursor: pointer;
   text-decoration: underline;
   text-underline-offset: 2px;
@@ -398,7 +398,7 @@
   border: none;
   color: var(--am-muted);
   font-family: inherit;
-  font-size: 19.5px;
+  font-size: 14.5px;
   cursor: pointer;
   margin-bottom: 16px;
   padding: 0;
@@ -413,5 +413,5 @@
 
 @media (max-width: 480px) {
   .am-card { border-radius: 22px; padding: 22px 18px 18px; }
-  .am-title { font-size: 34.5px; }
+  .am-title { font-size: 26px; }
 }
