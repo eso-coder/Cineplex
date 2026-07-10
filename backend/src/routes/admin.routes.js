@@ -31,6 +31,7 @@ router.delete('/users/:id', ctrl.deleteUser);
 router.post('/movies', ...ctrl.createMovie);
 router.patch('/movies/:id', ...ctrl.updateMovie);
 router.delete('/movies/:id', ctrl.deleteMovie);
+router.post('/movies/backfill-translations', ctrl.backfillTranslations);
 
 // Comments (moderation)
 router.get('/comments', ctrl.getComments);

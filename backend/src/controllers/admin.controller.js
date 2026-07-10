@@ -8,6 +8,7 @@ const ApiError = require('../utils/ApiError');
 const { sendSuccess, sendCreated, sendPaginated } = require('../utils/response');
 const { imageUpload, uploadToS3, deleteFromS3 } = require('../config/s3');
 const { handleUpload } = require('../middleware/upload.middleware');
+const { autoTranslateMovieFields } = require('../utils/translate');
 
 // GET /api/admin/dashboard
 const getDashboard = asyncHandler(async (req, res) => {
@@ -159,6 +160,10 @@ const createMovie = [
     if (movieData.seasons)    movieData.seasons    = parseInt(movieData.seasons,    10) || 0;
     if (movieData.episodes)   movieData.episodes   = parseInt(movieData.episodes,   10) || 0;
 
+    // Admin ru/en tarjimasini qo'lda kiritmagan bo'lsa — asl (uz) matndan
+    // avtomatik tarjima qilib to'ldiramiz (qo'lda kiritilgan bo'lsa unga tegmaymiz).
+    Object.assign(movieData, await autoTranslateMovieFields(movieData));
+
     const movie = await Movie.create(movieData);
     await movie.populate('genres', 'name slug');
     sendCreated(res, movie, 'Movie created');
@@ -222,6 +227,18 @@ const updateMovie = [
     if (updates.seasons)    updates.seasons    = parseInt(updates.seasons,    10) || 0;
     if (updates.episodes)   updates.episodes   = parseInt(updates.episodes,   10) || 0;
 
+    // Yangi kiritilgan (yoki eski, hali tarjima qilinmagan) title/description
+    // uchun yetishmayotgan ru/en tarjimalarini avtomatik to'ldiramiz.
+    const merged = {
+      title: updates.title || movie.title,
+      description: updates.description || movie.description,
+      title_ru: updates.title_ru !== undefined ? updates.title_ru : movie.title_ru,
+      title_en: updates.title_en !== undefined ? updates.title_en : movie.title_en,
+      description_ru: updates.description_ru !== undefined ? updates.description_ru : movie.description_ru,
+      description_en: updates.description_en !== undefined ? updates.description_en : movie.description_en,
+    };
+    Object.assign(updates, await autoTranslateMovieFields(merged));
+
     const updated = await Movie.findByIdAndUpdate(req.params.id, updates, {
       new: true, runValidators: true,
     }).populate('genres', 'name slug');
@@ -229,6 +246,36 @@ const updateMovie = [
     sendSuccess(res, updated, 'Movie updated');
   }),
 ];
+
+// POST /api/admin/movies/backfill-translations — mavjud (eski) filmlarda
+// yetishmayotgan title_ru/title_en/description_ru/description_en'ni
+// asl (uz) matndan avtomatik tarjima qilib to'ldiradi. Bir martalik migratsiya
+// uchun — allaqachon tarjimasi bor filmlarga tegmaydi.
+const backfillTranslations = asyncHandler(async (req, res) => {
+  const movies = await Movie.find({
+    $or: [
+      { title_ru: '' }, { title_en: '' },
+      { description_ru: '' }, { description_en: '' },
+    ],
+  }).select('title description title_ru title_en description_ru description_en');
+
+  let updated = 0;
+  const failed = [];
+  for (const movie of movies) {
+    try {
+      const auto = await autoTranslateMovieFields(movie.toObject());
+      if (Object.keys(auto).length) {
+        Object.assign(movie, auto);
+        await movie.save();
+        updated += 1;
+      }
+    } catch (err) {
+      failed.push({ id: movie._id, title: movie.title, error: err.message });
+    }
+  }
+
+  sendSuccess(res, { scanned: movies.length, updated, failed }, 'Backfill complete');
+});
 
 const deleteMovie = asyncHandler(async (req, res) => {
   const movie = await Movie.findByIdAndDelete(req.params.id);
@@ -299,7 +346,7 @@ const deleteGenre = asyncHandler(async (req, res) => {
 module.exports = {
   getDashboard,
   getUsers, getUserDetail, updateUser, deleteUser,
-  createMovie, updateMovie, deleteMovie,
+  createMovie, updateMovie, deleteMovie, backfillTranslations,
   getComments, deleteComment,
   getGenres, createGenre, updateGenre, deleteGenre,
 };
