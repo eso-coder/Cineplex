@@ -76,8 +76,7 @@
       '    <button class="am-btn" id="am-signup-btn" type="button">Create an account</button>',
       '    <div class="am-divider">OR SIGN IN WITH</div>',
       '    <div class="am-social-row">',
-      '      <button class="am-social" data-provider="google" type="button" aria-label="Continue with Google">' + ICONS.google + '</button>',
-      '      <button class="am-social" data-provider="apple" type="button" aria-label="Continue with Apple">' + ICONS.apple + '</button>',
+      '      <button class="am-social" data-provider="google" type="button" aria-label="Continue with Google">' + ICONS.google + '<span>Continue with Google</span></button>',
       '    </div>',
       '    <div class="am-footer">By creating an account, you agree to our <a href="#">Terms &amp; Service</a></div>',
       '  </div>',
@@ -92,8 +91,7 @@
       '    <button class="am-btn" id="am-signin-btn" type="button">Sign in</button>',
       '    <div class="am-divider">OR SIGN IN WITH</div>',
       '    <div class="am-social-row">',
-      '      <button class="am-social" data-provider="google" type="button" aria-label="Continue with Google">' + ICONS.google + '</button>',
-      '      <button class="am-social" data-provider="apple" type="button" aria-label="Continue with Apple">' + ICONS.apple + '</button>',
+      '      <button class="am-social" data-provider="google" type="button" aria-label="Continue with Google">' + ICONS.google + '<span>Continue with Google</span></button>',
       '    </div>',
       '  </div>',
 
@@ -449,10 +447,14 @@
       holder.style.background = 'transparent';
       holder.style.border = 'none';
       holder.style.overflow = 'hidden';
+      holder.style.width = '100%';
+      holder.style.display = 'flex';
+      holder.style.justifyContent = 'center';
       btn.parentNode.replaceChild(holder, btn);
       try {
         window.google.accounts.id.renderButton(holder, {
-          type: 'icon', shape: 'square', theme: 'filled_black', size: 'large',
+          type: 'standard', shape: 'pill', theme: 'filled_black', size: 'large',
+          text: 'continue_with', logo_alignment: 'left', width: 320,
         });
       } catch (e) { /* ignore */ }
     });

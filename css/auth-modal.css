@@ -300,21 +300,27 @@
 }
 
 /* ── Social buttons ── */
-.am-social-row { display: flex; gap: 12px; }
+.am-social-row { display: flex; justify-content: center; }
 .am-social {
-  flex: 1;
+  width: 100%;
+  max-width: 320px;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 14px;
-  border-radius: 14px;
+  gap: 10px;
+  padding: 14px 20px;
+  border-radius: 999px;
   background: var(--am-field);
   border: 1px solid var(--am-border);
+  color: var(--am-text, #fff);
+  font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
   transition: background 160ms var(--am-ease-out), transform 140ms var(--am-ease-out), border-color 160ms;
 }
 .am-social:hover { background: var(--am-field-focus); border-color: var(--am-border-h); }
 .am-social:active { transform: scale(0.97); }
+.am-social.am-gsi { padding: 0; background: transparent; border: none; }
 
 /* ── Footer ── */
 .am-footer {
