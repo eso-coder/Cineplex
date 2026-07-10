@@ -416,6 +416,12 @@
                 if (e.data === YT.PlayerState.PLAYING && ytHeroPlayer) {
                   ytHeroPlayer.setPlaybackQuality('hd1080');
                 }
+              },
+              /* YouTube o'zining adaptiv bitrate algoritmi bilan sifatni pasaytirsa —
+                 qayta 1080p so'raymiz (YouTube baribir tarmoq holatiga qarab pastroq
+                 sifatga tushirishi mumkin — bu YouTube tomonidan kafolatlanmaydi). */
+              onPlaybackQualityChange: function (e) {
+                if (e.data !== 'hd1080' && ytHeroPlayer) ytHeroPlayer.setPlaybackQuality('hd1080');
               }
             }
           });
