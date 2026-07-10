@@ -402,7 +402,7 @@
     if (gisInited && (appleInited || !oauthCfg || !oauthCfg.apple || !oauthCfg.apple.enabled)) {
       return Promise.resolve();
     }
-    if (!(window.AuthAPI && AuthAPI.oauthConfig)) return Promise.resolve();
+    if (typeof AuthAPI === 'undefined' || !AuthAPI.oauthConfig) return Promise.resolve();
     oauthPrep = AuthAPI.oauthConfig().then(function (cfg) {
       oauthCfg = cfg || {};
       var tasks = [];
