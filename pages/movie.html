@@ -1381,7 +1381,7 @@
       if (_mobTrailerInfo.type === 'youtube') {
         const fr = document.createElement('iframe');
         fr.className = 'mob-trailer-frame';
-        fr.src = `https://www.youtube-nocookie.com/embed/${_mobTrailerInfo.id}?autoplay=1&controls=1&rel=0`;
+        fr.src = `https://www.youtube-nocookie.com/embed/${_mobTrailerInfo.id}?autoplay=1&controls=1&rel=0&enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}`;
         fr.allow = 'autoplay; fullscreen; encrypted-media';
         fr.allowFullscreen = true;
         ov.appendChild(fr);
@@ -2269,9 +2269,24 @@
       if (m) m.style.display = ''; if (s) s.style.display = 'none';
     });
 
+    /* Barcha YouTube trailer iframe'lari (hero + mobil modal) avtomatik
+       striming paytida kamida 1080p sifatda ishga tushishi uchun (agar
+       1080p mavjud bo'lmasa, YouTube eng baland mavjud sifatga tushadi). */
+    function forceTrailerHdQuality(e) {
+      document.querySelectorAll('iframe.dp-hero-trailer, iframe.mob-trailer-frame').forEach(function (fr) {
+        if (fr.contentWindow === e.source) {
+          fr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setPlaybackQuality', args: ['hd1080'] }), '*');
+        }
+      });
+    }
+
     window.addEventListener('message', function (e) {
       try {
         const data = JSON.parse(typeof e.data === 'string' ? e.data : '{}');
+        if (data.event === 'onReady' || data.event === 'onStateChange') {
+          forceTrailerHdQuality(e);
+          return;
+        }
         if (data.event !== 'onError') return;
         const t = document.getElementById('dp-trailer');
         if (t && t.tagName === 'IFRAME' && t.contentWindow === e.source) {

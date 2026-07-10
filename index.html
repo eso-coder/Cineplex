@@ -404,11 +404,17 @@
               onReady: function (e) {
                 if (heroMuted) e.target.mute();
                 else { e.target.unMute(); e.target.setVolume(80); }
+                /* Kamida 1080p'da striming — mavjud bo'lmasa YouTube eng
+                   baland mavjud sifatga (masalan 720p) tushadi. */
+                e.target.setPlaybackQuality('hd1080');
               },
               onStateChange: function (e) {
                 /* Tugaganda qaytadan (loop) — loadVideoById URL loop'ini almashtiradi */
                 if (e.data === YT.PlayerState.ENDED && ytHeroPlayer) {
                   ytHeroPlayer.seekTo(0); ytHeroPlayer.playVideo();
+                }
+                if (e.data === YT.PlayerState.PLAYING && ytHeroPlayer) {
+                  ytHeroPlayer.setPlaybackQuality('hd1080');
                 }
               }
             }
@@ -424,6 +430,7 @@
           ytHeroPlayer.loadVideoById({ videoId: videoId });
           if (heroMuted) ytHeroPlayer.mute();
           else { ytHeroPlayer.unMute(); ytHeroPlayer.setVolume(80); }
+          ytHeroPlayer.setPlaybackQuality('hd1080');
         } else {
           var muteParam = heroMuted ? '1' : '0';
           ifr.src = 'https://www.youtube-nocookie.com/embed/' + videoId

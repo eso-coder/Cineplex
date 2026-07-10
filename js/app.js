@@ -547,7 +547,7 @@ onclick="App.go('${href}')">
     iframe.className = 'cp-iframe';
     iframe.setAttribute('allow', 'autoplay; encrypted-media');
     iframe.setAttribute('allowfullscreen', '');
-    iframe.src = `https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&controls=0&rel=0&modestbranding=1&loop=1&playlist=${ytId}&playsinline=1`;
+    iframe.src = `https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&controls=0&rel=0&modestbranding=1&loop=1&playlist=${ytId}&playsinline=1&enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}`;
     vid.appendChild(iframe);
   },
 
@@ -584,3 +584,18 @@ onclick="App.go('${href}')">
 };
 
 window.scrollRow = (id, dir) => App.scrollRow(id, dir);
+
+/* ── YouTube trailer'lar avtomatik striming paytida kamida 1080p sifatda
+   ishga tushishi uchun (agar 1080p mavjud bo'lmasa, eng baland mavjud
+   sifat ishlatiladi — YouTube shunday fallback qiladi). ── */
+window.addEventListener('message', function (e) {
+  try {
+    const data = JSON.parse(typeof e.data === 'string' ? e.data : '{}');
+    if (data.event !== 'onReady' && data.event !== 'onStateChange') return;
+    document.querySelectorAll('.cp-iframe').forEach(function (fr) {
+      if (fr.contentWindow === e.source) {
+        fr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setPlaybackQuality', args: ['hd1080'] }), '*');
+      }
+    });
+  } catch (err) { /* ignore */ }
+});
