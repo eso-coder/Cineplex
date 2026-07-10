@@ -127,6 +127,14 @@
         </div>
       </section>
 
+      <!-- ── KO'RILGANLAR TARIXI (faqat login qilingan bo'lsa) ── -->
+      <section class="content-section animate-in" id="history-section" style="display:none">
+        <div class="section-header">
+          <div class="section-title">Ko'rilganlar tarixi</div>
+        </div>
+        <div class="movies-row" id="history-row" style="padding: 0"></div>
+      </section>
+
       <!-- ── TRENDING ── -->
       <section
         class="content-section animate-in"
@@ -146,10 +154,26 @@
       >
         <div class="section-header">
           <div class="section-title" data-i18n="sec.new">Yangi chiqmalar</div>
-          <a href="pages/new.html" class="section-link" data-i18n="btn.seeall">Barchasini ko'rish</a>
+          <a href="#" class="section-link" id="new-row-toggle" data-i18n="btn.seeall">Barchasini ko'rish</a>
         </div>
-        <div class="catalog-grid" id="new-row" style="padding: 0"></div>
+        <div class="movies-row" id="new-row" style="padding: 0"></div>
       </section>
+      <script>
+        (function () {
+          var toggle = document.getElementById('new-row-toggle');
+          var row = document.getElementById('new-row');
+          if (!toggle || !row) return;
+          var expanded = false;
+          toggle.addEventListener('click', function (e) {
+            e.preventDefault();
+            expanded = !expanded;
+            row.classList.toggle('catalog-grid', expanded);
+            row.classList.toggle('movies-row', !expanded);
+            toggle.textContent = expanded ? "Yopish" : "Barchasini ko'rish";
+            toggle.removeAttribute('data-i18n');
+          });
+        })();
+      </script>
 
       <!-- ── STUDIO LOGOS ── -->
       <section
@@ -370,6 +394,25 @@
         }
       })();
 
+      /* ── Ko'rilganlar tarixi (faqat login qilingan foydalanuvchi uchun) ── */
+      (async function loadWatchHistory() {
+        if (typeof Auth === 'undefined' || !Auth.isLoggedIn() || typeof ProgressAPI === 'undefined') return;
+        const history = await ProgressAPI.history();
+        if (!history.length) return;
+        const section = document.getElementById('history-section');
+        const row = document.getElementById('history-row');
+        // Progress bar'ni buildCard formatini buzmasdan overlay sifatida qo'shamiz
+        row.innerHTML = history.map(m => {
+          const pct = m.watchDuration ? Math.min(100, Math.round(m.watchProgress / m.watchDuration * 100)) : 0;
+          return `<div style="position:relative">${App.buildCard(m, "")}
+            <div style="position:absolute;left:8px;right:8px;bottom:8px;height:3px;background:rgba(255,255,255,0.25);border-radius:2px;overflow:hidden;pointer-events:none">
+              <div style="height:100%;width:${pct}%;background:#fff"></div>
+            </div>
+          </div>`;
+        }).join("");
+        section.style.display = '';
+      })();
+
       /* ── HERO MULTI-FILM PLAYER ── */
       var heroMuted       = true;
       var heroIdx         = 0;
@@ -578,22 +621,39 @@
 
       function stepHero(dir) { setHero(heroIdx + dir); }
 
-      /* ── Qo'lda surish (swipe) — karusel kabi oldinga/orqaga ── */
+      /* ── Qo'lda surish (swipe) — karusel kabi oldinga/orqaga, barmoqqa
+         ergashib surilish animatsiyasi bilan ── */
       (function initHeroSwipe() {
         var card = document.getElementById('hero-card');
         if (!card) return;
-        var startX = 0, startY = 0, isSwipe = false, justSwiped = false;
+        var startX = 0, startY = 0, isSwipe = false, justSwiped = false, dragDx = 0;
+        function dragEl() { return document.getElementById('hero-img'); }
         card.addEventListener('touchstart', function (e) {
           startX = e.touches[0].clientX;
           startY = e.touches[0].clientY;
-          isSwipe = false;
+          isSwipe = false; dragDx = 0;
+          var el = dragEl();
+          if (el) el.style.transition = 'none';
         }, { passive: true });
         card.addEventListener('touchmove', function (e) {
           var dx = e.touches[0].clientX - startX;
           var dy = e.touches[0].clientY - startY;
           if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 10) isSwipe = true;
+          if (!isSwipe) return;
+          dragDx = dx;
+          var el = dragEl();
+          if (el) {
+            el.style.transform = 'translateX(' + (dx * 0.55) + 'px) scale(1.02)';
+            el.style.opacity = String(1 - Math.min(Math.abs(dx) / 500, 0.35));
+          }
         }, { passive: true });
         card.addEventListener('touchend', function (e) {
+          var el = dragEl();
+          if (el) {
+            el.style.transition = 'transform 0.32s cubic-bezier(0.16,1,0.3,1), opacity 0.32s ease';
+            el.style.transform = '';
+            el.style.opacity = '';
+          }
           if (!isSwipe) return;
           var dx = e.changedTouches[0].clientX - startX;
           if (Math.abs(dx) > 40) {

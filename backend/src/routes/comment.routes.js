@@ -4,6 +4,7 @@ const authMiddleware = require('../middleware/auth.middleware');
 const validate = require('../middleware/validate.middleware');
 const v = require('../validators/comment.validator');
 
+router.get('/user/mine', authMiddleware, ctrl.getMyComments);
 router.get('/movie/:movieId', ctrl.getMovieComments);
 router.post('/movie/:movieId', authMiddleware, validate(v.createComment), ctrl.addComment);
 router.patch('/:id', authMiddleware, validate(v.updateComment), ctrl.updateComment);

@@ -105,7 +105,7 @@ body.catalog-page .category-card:active {
   transform: scale(0.99);
 }
 body.catalog-page .category-card.selected {
-  outline-color: rgba(232, 182, 76, 0.55);
+  outline-color: rgba(255, 255, 255, 0.55);
 }
 body.catalog-page .cat-name { color: var(--text-primary); }
 body.catalog-page .cat-count { color: var(--text-secondary); }

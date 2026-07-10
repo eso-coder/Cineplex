@@ -55,7 +55,7 @@ body.search-page .search-big-wrap {
 }
 body.search-page .search-big-wrap:focus-within {
   background: var(--glass-bg-hover);
-  border-color: rgba(232, 182, 76, 0.5);
+  border-color: rgba(255, 255, 255, 0.5);
   outline: none;
 }
 body.search-page .search-big-input { color: var(--text-primary); }

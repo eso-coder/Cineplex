@@ -48,6 +48,16 @@ const getMovieComments = asyncHandler(async (req, res) => {
   });
 });
 
+// GET /api/comments/user/mine — joriy foydalanuvchining barcha sharhlari (profil "Reviews" tabi uchun)
+const getMyComments = asyncHandler(async (req, res) => {
+  const comments = await Comment.find({ user: req.user._id, parentComment: null })
+    .populate('movie', 'title poster bannerUrl releaseYear')
+    .sort({ createdAt: -1 })
+    .limit(100)
+    .lean();
+  sendSuccess(res, comments.filter((c) => c.movie));
+});
+
 // POST /api/comments/movie/:movieId
 const addComment = asyncHandler(async (req, res) => {
   const { movieId } = req.params;
@@ -132,4 +142,4 @@ const replyComment = asyncHandler(async (req, res) => {
   sendCreated(res, reply, 'Reply added');
 });
 
-module.exports = { getMovieComments, addComment, updateComment, deleteComment, toggleLike, replyComment };
+module.exports = { getMovieComments, getMyComments, addComment, updateComment, deleteComment, toggleLike, replyComment };

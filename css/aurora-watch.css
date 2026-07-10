@@ -99,8 +99,8 @@ body.watch-page #top-fav-btn {
 body.watch-page #top-fav-btn:hover { background: var(--glass-bg-hover); }
 body.watch-page #top-fav-btn.active {
   color: var(--accent);
-  border-color: rgba(232, 182, 76, 0.4);
-  background: rgba(232, 182, 76, 0.1);
+  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.1);
 }
 body.watch-page .watch-top-title { color: var(--text-primary); }
 body.watch-page .watch-top-year { color: var(--text-muted); }
@@ -216,8 +216,8 @@ body.watch-page .episode-item:hover {
   border-color: var(--glass-border);
 }
 body.watch-page .episode-item.active {
-  border-color: rgba(232, 182, 76, 0.35);
-  background: rgba(232, 182, 76, 0.06);
+  border-color: rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.06);
 }
 body.watch-page .ep-title { color: var(--text-primary); }
 body.watch-page .ep-duration { color: var(--text-muted); }

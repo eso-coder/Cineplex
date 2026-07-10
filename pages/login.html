@@ -55,7 +55,7 @@
       margin-bottom: 32px;
     }
     .auth-brand-name {
-      font-size: 22px;
+      font-size: 33px;
       font-weight: 800;
       letter-spacing: 5px;
       text-transform: uppercase;
@@ -63,7 +63,7 @@
     }
     .auth-brand-name span { color: rgba(255,255,255,0.55); }
     .auth-brand-tagline {
-      font-size: 11px;
+      font-size: 16.5px;
       color: rgba(255,255,255,0.55);
       letter-spacing: 2px;
       text-transform: uppercase;
@@ -73,13 +73,13 @@
     /* Header */
     .auth-header { margin-bottom: 28px; }
     .auth-title {
-      font-size: 26px;
+      font-size: 39px;
       font-weight: 700;
       color: #ffffff;
       margin-bottom: 6px;
     }
     .auth-sub {
-      font-size: 13px;
+      font-size: 19.5px;
       color: rgba(255,255,255,0.60);
       line-height: 1.6;
     }
@@ -101,7 +101,7 @@
     .field { margin-bottom: 18px; }
     .field-label {
       display: block;
-      font-size: 11px;
+      font-size: 16.5px;
       font-weight: 600;
       letter-spacing: 1.2px;
       text-transform: uppercase;
@@ -127,7 +127,7 @@
       padding: 13px 44px 13px 42px;
       color: #ffffff;
       font-family: 'Outfit', sans-serif;
-      font-size: 14px;
+      font-size: 21px;
       font-weight: 500;
       outline: none;
       backdrop-filter: blur(8px);
@@ -159,7 +159,7 @@
     .field-toggle-pw:hover { color: rgba(193,193,193,0.7); }
 
     .field-err {
-      font-size: 11px;
+      font-size: 16.5px;
       color: rgba(104,104,104,0.85);
       margin-top: 5px;
       padding-left: 2px;
@@ -207,12 +207,12 @@
       transform: rotate(45deg);
     }
     .remember-label {
-      font-size: 12px;
+      font-size: 18px;
       color: rgba(255,255,255,0.38);
       user-select: none;
     }
     .forgot-link {
-      font-size: 12px;
+      font-size: 18px;
       color: rgba(255,255,255,0.38);
       text-decoration: none;
       transition: color 0.18s;
@@ -225,7 +225,7 @@
       border: 1px solid rgba(104,104,104,0.22);
       border-radius: var(--r-md);
       padding: 12px 14px;
-      font-size: 13px;
+      font-size: 19.5px;
       color: rgba(141,141,141,0.95);
       margin-bottom: 18px;
       display: none;
@@ -236,7 +236,7 @@
       border: 1px solid rgba(155,155,155,0.2);
       border-radius: var(--r-md);
       padding: 12px 14px;
-      font-size: 13px;
+      font-size: 19.5px;
       color: rgba(183,183,183,0.95);
       margin-bottom: 18px;
       display: none;
@@ -251,7 +251,7 @@
       background: #ffffff;
       color: #000000;
       font-family: 'Outfit', sans-serif;
-      font-size: 15px;
+      font-size: 22.5px;
       font-weight: 700;
       border: none;
       cursor: pointer;
@@ -282,6 +282,45 @@
 
     @keyframes spin { to { transform: rotate(360deg); } }
 
+    .auth-oauth-divider {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin: 22px 0 16px;
+      color: var(--text-muted, rgba(255,255,255,0.45));
+      font-size: 16.5px;
+      font-weight: 600;
+      letter-spacing: 1.2px;
+    }
+    .auth-oauth-divider::before,
+    .auth-oauth-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.14), transparent);
+    }
+    .auth-oauth-row { display: flex; justify-content: center; }
+    .auth-oauth-btn {
+      width: 100%;
+      max-width: 320px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 14px 20px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #fff;
+      font-family: 'Outfit', sans-serif;
+      font-size: 21px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.16s, border-color 0.16s;
+    }
+    .auth-oauth-btn:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.24); }
+    .auth-oauth-btn.am-gsi { padding: 0; background: transparent; border: none; }
+
     /* Back link */
     .auth-back {
       display: flex;
@@ -289,7 +328,7 @@
       justify-content: center;
       gap: 6px;
       margin-top: 20px;
-      font-size: 12px;
+      font-size: 18px;
       color: rgba(255,255,255,0.3);
       text-decoration: none;
       transition: color 0.18s;
@@ -298,7 +337,7 @@
 
     @media (max-width: 480px) {
       .auth-card { padding: 32px 22px 28px; }
-      .auth-title { font-size: 22px; }
+      .auth-title { font-size: 33px; }
     }
   </style>
 </head>
@@ -375,6 +414,14 @@
         </button>
 
       </form>
+
+      <div class="auth-oauth-divider" id="auth-oauth-divider" style="display:none">OR CONTINUE WITH</div>
+      <div class="auth-oauth-row" id="auth-oauth-row" style="display:none">
+        <button type="button" class="auth-oauth-btn" id="auth-google-btn" aria-label="Continue with Google">
+          <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.27-4.74 3.27-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0 0 12 23z"/><path fill="#FBBC05" d="M5.84 14.1a6.6 6.6 0 0 1 0-4.2V7.06H2.18a11 11 0 0 0 0 9.88l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84C6.71 7.31 9.14 5.38 12 5.38z"/></svg>
+          <span>Google orqali kirish</span>
+        </button>
+      </div>
 
       <a href="../index.html" class="auth-back">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="m15 18-6-6 6-6"/></svg>
@@ -468,6 +515,51 @@
         btn.classList.remove('loading'); btn.disabled = false;
       }
     });
+
+    /* ── Google orqali kirish ── */
+    (function initGoogleSignIn() {
+      if (typeof AuthAPI === 'undefined' || !AuthAPI.oauthConfig) return;
+
+      function loadScript(src) {
+        return new Promise(function (resolve, reject) {
+          if (document.querySelector('script[src="' + src + '"]')) return resolve();
+          var s = document.createElement('script');
+          s.src = src; s.async = true;
+          s.onload = function () { resolve(); };
+          s.onerror = function () { reject(new Error('script load failed')); };
+          document.head.appendChild(s);
+        });
+      }
+
+      function onGoogleCredential(resp) {
+        if (!resp || !resp.credential) return;
+        AuthAPI.google({ token: resp.credential }).then(function () {
+          const redir = new URLSearchParams(location.search).get('redirect') || './profile.html';
+          window.location.replace(redir);
+        }).catch(function (err) {
+          document.getElementById('auth-alert-text').textContent = err.message || 'Google orqali kirishda xato.';
+          document.getElementById('auth-alert').classList.add('visible');
+        });
+      }
+
+      AuthAPI.oauthConfig().then(function (cfg) {
+        if (!cfg || !cfg.google || !cfg.google.enabled) return;
+        return loadScript('https://accounts.google.com/gsi/client').then(function () {
+          if (!window.google) return;
+          google.accounts.id.initialize({ client_id: cfg.google.clientId, callback: onGoogleCredential });
+          document.getElementById('auth-oauth-divider').style.display = '';
+          document.getElementById('auth-oauth-row').style.display = '';
+          var btn = document.getElementById('auth-google-btn');
+          var holder = document.createElement('div');
+          holder.className = 'auth-oauth-btn am-gsi';
+          btn.parentNode.replaceChild(holder, btn);
+          google.accounts.id.renderButton(holder, {
+            type: 'standard', shape: 'pill', theme: 'filled_black', size: 'large',
+            text: 'continue_with', logo_alignment: 'left', width: 320,
+          });
+        });
+      }).catch(function () { /* OAuth sozlanmagan — tugma yashirin qoladi */ });
+    })();
   </script>
 </body>
 </html>

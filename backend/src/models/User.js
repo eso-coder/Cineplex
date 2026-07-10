@@ -65,6 +65,14 @@ const userSchema = new mongoose.Schema(
     favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Movie' }],
     watchlist: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Movie' }],
 
+    // ── Ko'rish tarixi — "davom ettirish" va profil statistikasi uchun ──
+    watchHistory: [{
+      movie: { type: mongoose.Schema.Types.ObjectId, ref: 'Movie' },
+      progress: { type: Number, default: 0 },  // soniyalarda, qayerda to'xtagan
+      duration: { type: Number, default: 0 },  // videoning umumiy davomiyligi (soniya)
+      updatedAt: { type: Date, default: Date.now },
+    }],
+
     refreshToken: { type: String, select: false },
     isActive: { type: Boolean, default: true },
 

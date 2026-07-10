@@ -23,7 +23,7 @@ body.admin-page {
   --muted2: var(--text-muted);
   --r: var(--radius-input);
   --r2: var(--radius-card);
-  --focus-ring: 0 0 0 3px rgba(232, 182, 76, 0.35);
+  --focus-ring: 0 0 0 3px rgba(255, 255, 255, 0.35);
 
   background: var(--aurora), var(--bg-base);
 }
@@ -58,10 +58,10 @@ body.admin-page .sb-footer { border-color: var(--glass-border); }
 body.admin-page .nav-item.active {
   color: var(--text-primary);
   border-left-color: var(--accent);
-  background: rgba(232, 182, 76, 0.08);
+  background: rgba(255, 255, 255, 0.08);
 }
 body.admin-page .nav-item.active .nav-badge {
-  background: rgba(232, 182, 76, 0.18);
+  background: rgba(255, 255, 255, 0.18);
   color: var(--accent);
 }
 
@@ -94,7 +94,7 @@ body.admin-page .filter-select:focus,
 body.admin-page .filter-search:focus-within,
 body.admin-page .episode-row input:focus,
 body.admin-page .media-input-wrap:focus-within {
-  border-color: rgba(232, 182, 76, 0.5);
+  border-color: rgba(255, 255, 255, 0.5);
 }
 
 /* ═══════════════════════════════════════

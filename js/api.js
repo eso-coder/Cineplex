@@ -56,24 +56,40 @@ const CPCache = {
 };
 if (typeof window !== 'undefined') window.CPCache = CPCache;
 
-/* ─── Silent token refresh (singleton — avoids duplicate refresh calls) ─── */
+/* ─── Silent token refresh (singleton — avoids duplicate refresh calls) ───
+   Backend refresh token'ni ROTATSIYA qiladi (har chaqiruvda eskisi
+   bekor qilinib, yangisi qo'yiladi). Bir nechta tab ochiq bo'lsa, ikkala
+   tab deyarli bir vaqtda o'z refresh so'rovini yuborishi mumkin — birinchisi
+   muvaffaqiyatli bo'lib cookie'ni yangilaydi, ikkinchisi esa ALLAQACHON
+   ESKIRGAN tokenni yuborib 401 oladi. Bunday holatda darhol chiqib
+   ketish (logout) o'rniga, boshqa tab yangilagan cookie ulgurishi uchun
+   qisqa kutib BIR MARTA qayta urinamiz. ── */
 let _refreshInFlight = null;
+function _requestRefresh() {
+  return fetch(`${API_BASE}/auth/refresh-token`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+  })
+    .then(r => r.json().catch(() => ({})))
+    .then(d => {
+      if (d.success && d.data && d.data.accessToken) {
+        Auth.setToken(d.data.accessToken);
+        return true;
+      }
+      return false;
+    })
+    .catch(() => false);
+}
 async function _silentRefresh() {
   if (!_refreshInFlight) {
-    _refreshInFlight = fetch(`${API_BASE}/auth/refresh-token`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-    })
-      .then(r => r.json().catch(() => ({})))
-      .then(d => {
-        if (d.success && d.data && d.data.accessToken) {
-          Auth.setToken(d.data.accessToken);
-          return true;
-        }
-        return false;
+    _refreshInFlight = _requestRefresh()
+      .then(async (ok) => {
+        if (ok) return true;
+        // Boshqa tab ulgurib rotatsiya qilgan bo'lishi mumkin — biroz kutib qayta urinamiz
+        await new Promise(r => setTimeout(r, 400));
+        return _requestRefresh();
       })
-      .catch(() => false)
       .finally(() => { _refreshInFlight = null; });
   }
   return _refreshInFlight;
@@ -410,7 +426,8 @@ const MoviesAPI = {
     const resp = await apiFetch(`/movies/${id}`);
     // Increment view counter in background
     apiFetch(`/movies/${id}/view`, { method: 'POST' }).catch(() => {});
-    return { movie: normalizeMovie(resp.data), related: [] };
+    const related = Array.isArray(resp.data.related) ? resp.data.related.map(normalizeMovie) : [];
+    return { movie: normalizeMovie(resp.data), related };
   },
 
   async search(q) {
@@ -450,6 +467,34 @@ const WatchlistAPI = {
   remove(movieId) { return this.toggle(movieId); },
   check()         { return Promise.resolve({ inWatchlist: false }); }
 };
+
+/* ─── Watch progress / history ("davom ettirish" + ko'rilganlar tarixi) ─── */
+const ProgressAPI = {
+  async get(movieId) {
+    if (typeof Auth === 'undefined' || !Auth.isLoggedIn()) return { progress: 0, duration: 0 };
+    try {
+      const resp = await apiFetch(`/movies/${movieId}/progress`);
+      return resp.data;
+    } catch { return { progress: 0, duration: 0 }; }
+  },
+
+  save(movieId, progress, duration) {
+    if (typeof Auth === 'undefined' || !Auth.isLoggedIn()) return Promise.resolve();
+    return apiFetch(`/movies/${movieId}/progress`, {
+      method: 'POST',
+      body: JSON.stringify({ progress, duration }),
+    }).catch(() => {});
+  },
+
+  async history() {
+    if (typeof Auth === 'undefined' || !Auth.isLoggedIn()) return [];
+    try {
+      const resp = await apiFetch('/movies/user/history');
+      return (resp.data || []).map(normalizeMovie);
+    } catch { return []; }
+  },
+};
+if (typeof window !== 'undefined') window.ProgressAPI = ProgressAPI;
 
 /* ─── Watch session API (CloudFront signed cookie orqali video himoyasi) ───
    videoUrl — ixtiyoriy: aynan qaysi video (film yoki bitta serial qismi)
@@ -500,7 +545,20 @@ const ReviewsAPI = {
   },
 
   delete(id)  { return apiFetch(`/comments/${id}`, { method: 'DELETE' }); },
-  helpful(id) { return apiFetch(`/comments/${id}/like`, { method: 'POST' }); }
+  helpful(id) { return apiFetch(`/comments/${id}/like`, { method: 'POST' }); },
+
+  async mine() {
+    const resp = await apiFetch('/comments/user/mine');
+    return (resp.data || []).map(c => ({
+      id: (c._id || '').toString(),
+      movieId: (c.movie?._id || '').toString(),
+      title: c.movie?.title || '',
+      poster: c.movie?.poster?.url || c.movie?.bannerUrl || '',
+      year: c.movie?.releaseYear || '',
+      body: c.text || '',
+      created_at: c.createdAt || '',
+    }));
+  },
 };
 
 /* ─── Actors API (stub) ─── */
