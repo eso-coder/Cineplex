@@ -392,15 +392,21 @@
     });
   }
 
-  // Config'ni bir marta olib, yoqilgan providerlar SDK'sini yuklab/initsiyalaymiz
+  // Config'ni olib, yoqilgan providerlar SDK'sini yuklab/initsiyalaymiz.
+  // Muvaffaqiyatsiz/bo'sh urinish abadiy "eslab qolinmaydi" — gisInited/appleInited
+  // true bo'lmaguncha har chaqiruvda qayta urinib ko'radi (masalan, birinchi
+  // urinish AuthAPI hali tayyor bo'lmasdan yoki tarmoq muammosi tufayli
+  // muvaffaqiyatsiz bo'lsa, keyingi tugma bosilganda stub rejimida abadiy
+  // qolib qolmaslik uchun).
   function prepareOAuth() {
-    if (oauthPrep) return oauthPrep;
-    // AuthAPI hali yuklanmagan bo'lsa — memoize qilmaymiz, keyin qayta urinamiz
+    if (gisInited && (appleInited || !oauthCfg || !oauthCfg.apple || !oauthCfg.apple.enabled)) {
+      return Promise.resolve();
+    }
     if (!(window.AuthAPI && AuthAPI.oauthConfig)) return Promise.resolve();
     oauthPrep = AuthAPI.oauthConfig().then(function (cfg) {
       oauthCfg = cfg || {};
       var tasks = [];
-      if (cfg && cfg.google && cfg.google.enabled) {
+      if (cfg && cfg.google && cfg.google.enabled && !gisInited) {
         tasks.push(loadScript('https://accounts.google.com/gsi/client').then(function () {
           if (window.google && !gisInited) {
             window.google.accounts.id.initialize({ client_id: cfg.google.clientId, callback: onGoogleCredential });
@@ -408,7 +414,7 @@
           }
         }).catch(function () {}));
       }
-      if (cfg && cfg.apple && cfg.apple.enabled) {
+      if (cfg && cfg.apple && cfg.apple.enabled && !appleInited) {
         tasks.push(loadScript('https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js').then(function () {
           if (window.AppleID && !appleInited) {
             window.AppleID.auth.init({ clientId: cfg.apple.clientId, scope: 'name email', redirectURI: location.origin + '/', usePopup: true });
@@ -417,7 +423,7 @@
         }).catch(function () {}));
       }
       return Promise.all(tasks);
-    }).catch(function () { /* config yo'q → stub rejimi qoladi */ });
+    }).catch(function () { /* config yo'q → stub rejimi qoladi, keyingi chaqiruv qayta urinadi */ });
     return oauthPrep;
   }
 
