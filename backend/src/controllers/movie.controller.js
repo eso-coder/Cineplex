@@ -1,7 +1,7 @@
 const Movie = require('../models/Movie');
 const Genre = require('../models/Genre');
 const User = require('../models/User');
-const Fuse = require('fuse.js');
+const { fuzzySearch } = require('../utils/fuzzySearch');
 const asyncHandler = require('../utils/asyncHandler');
 const ApiError = require('../utils/ApiError');
 const { sendSuccess, sendPaginated } = require('../utils/response');
@@ -46,22 +46,16 @@ const getMovies = asyncHandler(async (req, res) => {
   // Katalog kichik bo'lgani uchun barcha nomzodlarni xotirada tekshirish tez ishlaydi.
   if (search && search.trim()) {
     const candidates = await Movie.find(filter).populate('genres', 'name slug').lean();
-    const fuse = new Fuse(candidates, {
-      keys: [
-        { name: 'title', weight: 2 },
-        { name: 'title_ru', weight: 2 },
-        { name: 'title_en', weight: 2 },
-        { name: 'description', weight: 0.5 },
-        { name: 'description_ru', weight: 0.5 },
-        { name: 'description_en', weight: 0.5 },
-        { name: 'cast', weight: 1 },
-        { name: 'genres.name', weight: 1 },
-      ],
-      threshold: 0.4, // 0 = aniq mos kelish, 1 = deyarli har narsa; 0.4 — yumshoq/taxminiy
-      ignoreLocation: true,
-      minMatchCharLength: 2,
-    });
-    const matched = fuse.search(search.trim()).map((r) => r.item);
+    const matched = fuzzySearch(candidates, search, [
+      { name: 'title', weight: 2 },
+      { name: 'title_ru', weight: 2 },
+      { name: 'title_en', weight: 2 },
+      { name: 'description', weight: 0.5 },
+      { name: 'description_ru', weight: 0.5 },
+      { name: 'description_en', weight: 0.5 },
+      { name: 'cast', weight: 1 },
+      { name: 'genres.name', weight: 1 },
+    ]);
     const total = matched.length;
     const skip = (pageNum - 1) * limitNum;
     const movies = matched.slice(skip, skip + limitNum);
