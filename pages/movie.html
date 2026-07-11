@@ -1325,6 +1325,50 @@
     window._cpHeroTrailer = null;
     window._cpHeroMuted = true;
 
+    /* ─── Tavsiya (related) filmlarni KECH render qilish ───
+       Sahifa CPCache'dan darhol chizilganda related hali API'dan kelmagan
+       bo'ladi — fon so'rovi javob bergach shu funksiya bo'limni to'ldiradi. */
+    function renderRelatedLate(related) {
+      if (!related || !related.length) return;
+      _apiRelated = related;
+      /* Mobil layout */
+      const mGrid = document.getElementById('mob-related-grid');
+      const mPage = document.getElementById('mob-page');
+      if (mGrid && mPage && mPage.style.display === 'block' && !mGrid.children.length) {
+        document.getElementById('mob-related-section').style.display = '';
+        mGrid.style.display = 'grid';
+        document.getElementById('mob-related-divider').style.display = '';
+        mGrid.innerHTML = related.slice(0, 6).map(m =>
+          `<div class="mob-related-card" onclick="App.go('../pages/movie.html?id=${m.id}')">
+            <img class="mob-related-img" src="${m.img || ''}" alt="${m.title}" loading="lazy">
+            <div class="mob-related-info">
+              <div class="mob-related-title">${m.title}</div>
+              <div class="mob-related-meta">★ ${m.rating} · ${m.year}</div>
+            </div>
+          </div>`
+        ).join('');
+        return;
+      }
+      /* Desktop layout */
+      const row = document.getElementById('related-row');
+      if (row) {
+        if (!row.children.length) row.innerHTML = related.map(m => App.buildCard(m, '../')).join('');
+        return;
+      }
+      const root = document.getElementById('detail-root');
+      const reviews = root ? root.querySelector('.reviews-section') : null;
+      if (root && reviews) {
+        const sec = document.createElement('div');
+        sec.className = 'dp-related-section animate-in visible';
+        sec.innerHTML = `
+          <div class="dp-section-label">SHUNGA O'XSHASH</div>
+          <div class="movies-row" id="related-row" style="padding:30px 0">
+            ${related.map(m => App.buildCard(m, '../')).join('')}
+          </div>`;
+        root.insertBefore(sec, reviews);
+      }
+    }
+
     /* ─── Gradient palette for cast avatars ─── */
     const CAST_GRADS = Array(8).fill('linear-gradient(135deg,#3a3a3a,#121212)');
 
@@ -1439,10 +1483,14 @@
         const c = CPCache.get('movie_' + id);
         if (c && c.v) {
           movie = _applyMovieDefaults(c.v);
-          /* Fonda to'liq detalni olib cache'ni yangilaymiz (ko'rish soni ham shu yerda sanaladi) */
+          /* Fonda to'liq detalni olib cache'ni yangilaymiz (ko'rish soni ham shu yerda sanaladi).
+             Related (tavsiya) filmlar ham shu javobda keladi — kelgach kech render qilamiz. */
           if (typeof MoviesAPI !== 'undefined') {
             MoviesAPI.getById(id)
-              .then(resp => { if (resp && resp.movie) CPCache.set('movie_' + id, resp.movie); })
+              .then(resp => {
+                if (resp && resp.movie) CPCache.set('movie_' + id, resp.movie);
+                if (resp && resp.related) renderRelatedLate(resp.related);
+              })
               .catch(() => {});
           }
         }

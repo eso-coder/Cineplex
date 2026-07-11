@@ -33,7 +33,7 @@ body.home-page .navbar::before {
   bottom: 0;
   z-index: -1;
   background-color: transparent;
-  border-radius: 0 0 var(--radius-card) var(--radius-card);
+  border-radius: 0;
   transition: background-color 0.1s linear;
 }
 
