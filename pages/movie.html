@@ -32,34 +32,6 @@
       background: var(--bg);
       min-height: 100vh;
     }
-    /* Blur effect description orqa tarafi uchun*/
-
-     .mob-hero-gradient {
-        position: absolute;
-        left: 0;
-        right: 0;
-        bottom: -200px;
-        /* hero ichida pastdan + mob-info ichiga (-margin qancha bo'lsa) */
-        height: calc(65% + 140px);
-        pointer-events: none;
-        z-index: 3;
-        /* hero-img (1) dan yuqori, mob-info (5) dan past */
-      }
-
-      .mob-hero-gradient::before,
-      .mob-hero-gradient::after {
-        content: '';
-        position: absolute;
-        inset: 0;
-        pointer-events: none;
-      }
-
-      /* Gradientlar olib tashlandi — mask-image mob-hero-img'ning o'zida */
-      .mob-hero-gradient::before,
-      .mob-hero-gradient::after {
-        display: none;
-      }
-
     /* .ambient-bg (qattiq qora fon) #movie-bg-blur (poster blur fon)dan KEYIN
        DOM'da joylashgani uchun uni to'liq yopib qo'yardi — desktop'da blur
        banner umuman ko'rinmasdi. Shu sahifada ambient-bg o'chiriladi. */
@@ -422,21 +394,11 @@
       /* ══════════════════════════════════
          MOB-INFO  —  Cinema Card Redesign
       ══════════════════════════════════ */
-      @keyframes mobSlideUp {
-        from { opacity: 0; transform: translateY(28px); }
-        to   { opacity: 1; transform: translateY(0); }
-      }
-      @keyframes posterPop {
-        from { opacity: 0; transform: translateY(14px) scale(0.95); }
-        to   { opacity: 1; transform: translateY(0) scale(1); }
-      }
-
       .mob-info {
         position: relative;
         z-index: 5;
         margin-top: -130px;
         padding: 0 20px 0;
-        animation: mobSlideUp 0.5s cubic-bezier(0.16,1,0.3,1) 0.08s both;
       }
 
       .mob-info-row {
@@ -451,7 +413,6 @@
         width: 112px;
         position: relative;
         z-index: 2;
-        animation: posterPop 0.55s cubic-bezier(0.16,1,0.3,1) 0.05s both;
       }
       .mob-info-poster img {
         width: 100%;
@@ -633,7 +594,6 @@
       .mob-section {
         padding: 0 18px;
         margin-bottom: 24px;
-        animation: mobSlideUp 0.45s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
       }
 
       .mob-section-title {
@@ -1192,8 +1152,6 @@
     <!-- Hero poster -->
     <div class="mob-hero" id="mob-hero">
       <img class="mob-hero-img" id="mob-hero-img" src="" alt="">
-      <div class="mob-hero-gradient"></div>
-      
     </div>
 
     <!-- Info -->
@@ -1316,7 +1274,6 @@
     const isMobile = () => window.innerWidth <= 640;
 
     App.initNavbar('', '../');
-    App.initAnimations();
 
     const id = App.getParam('id');
     let movie = null;
@@ -1351,6 +1308,25 @@
         return;
       }
       /* Desktop layout */
+      /* Galereya bo'sh qolgan bo'lsa (filmning o'z rasmlari yo'q) —
+         o'xshash filmlarning TAKRORLANMAYDIGAN posterlaridan to'ldiramiz.
+         Oldingi xato: related hali kelmaganda bitta poster 6 marta
+         takrorlanardi; endi faqat shu yerda, real data bilan chiziladi. */
+      const gGrid = document.getElementById('dp-gallery-grid');
+      if (gGrid && !gGrid.children.length) {
+        const seen = new Set();
+        const urls = related
+          .map(m => m && m.img)
+          .filter(u => u && u !== movie.img && !seen.has(u) && seen.add(u))
+          .slice(0, 6);
+        if (urls.length >= 3) {
+          window._galleryUrls = urls;
+          gGrid.innerHTML = urls.map((u, i) =>
+            `<div class="dp-gallery-item" onclick="openLightbox(${i})" style="cursor:pointer"><img src="${u}" alt="" loading="lazy"></div>`).join('');
+          const gSec = document.getElementById('dp-gallery-section');
+          if (gSec) gSec.style.display = '';
+        }
+      }
       const row = document.getElementById('related-row');
       if (row) {
         if (!row.children.length) row.innerHTML = related.map(m => App.buildCard(m, '../')).join('');
@@ -1361,7 +1337,7 @@
       const reviews = root ? root.querySelector('.reviews-section') : null;
       if (root && reviews) {
         const sec = document.createElement('div');
-        sec.className = 'dp-related-section animate-in visible';
+        sec.className = 'dp-related-section';
         sec.innerHTML = `
           <div class="dp-section-label">SHUNGA O'XSHASH</div>
           <div class="movies-row" id="related-row">
@@ -1808,7 +1784,7 @@
 
         const related = _apiRelated || [];
         const relatedHTML = related.length ? `
-          <div class="dp-related-section animate-in">
+          <div class="dp-related-section">
             <div class="dp-section-label">SHUNGA O'XSHASH</div>
             <div class="section-header" style="padding:0;margin-bottom:16px">
               <div></div>
@@ -1829,7 +1805,7 @@
         const heroTrailerInfo = (function () {
           if (movie.trailerS3Url) return {
             type: 'video',
-            html: `<video class="dp-hero-trailer" id="dp-trailer" src="${movie.trailerS3Url}" autoplay muted loop playsinline disablepictureinpicture disableremoteplayback controlslist="nodownload nofullscreen noremoteplayback noplaybackrate"></video>`
+            html: `<div class="dp-hero-media"><video class="dp-hero-trailer" id="dp-trailer" src="${movie.trailerS3Url}" autoplay muted loop playsinline disablepictureinpicture disableremoteplayback controlslist="nodownload nofullscreen noremoteplayback noplaybackrate"></video></div>`
           };
           const raw = movie.trailer_id || movie.trailerUrl || movie.trailer_url;
           const htid = raw && typeof extractYouTubeId === 'function' ? (extractYouTubeId(raw) || raw) : raw;
@@ -1837,12 +1813,12 @@
           const _org = window.location.origin;
           return {
             type: 'youtube', id: htid,
-            html: `<iframe class="dp-hero-trailer" id="dp-trailer" src="https://www.youtube-nocookie.com/embed/${htid}?autoplay=1&mute=1&controls=0&loop=1&playlist=${htid}&rel=0&playsinline=1&origin=${_org}&enablejsapi=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>`
+            html: `<div class="dp-hero-media"><iframe class="dp-hero-trailer" id="dp-trailer" src="https://www.youtube-nocookie.com/embed/${htid}?autoplay=1&mute=1&controls=0&loop=1&playlist=${htid}&rel=0&playsinline=1&origin=${_org}&enablejsapi=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe></div>`
           };
         })();
 
         document.getElementById('detail-root').innerHTML = `
-          <div class="dp-hero animate-in">
+          <div class="dp-hero">
             <img class="dp-hero-img" src="${movie.banner_img || movie.img}" alt="${movie.title}" onerror="if(this.src!=='${movie.img}'&&'${movie.img}'){this.src='${movie.img}';}else{this.style.display='none';}">
             ${heroTrailerInfo.html}
             <div class="dp-hero-overlay"></div>
@@ -1877,7 +1853,7 @@
               </div>
             </div>
           </div>
-          <div class="dp-info-section animate-in" style="transition-delay:0.06s">
+          <div class="dp-info-section">
             <div class="dp-poster"><img src="${movie.img}" alt="${movie.title}"></div>
             <div class="dp-details">
               <div class="dp-text-collapse" id="dp-text-collapse">
@@ -1911,20 +1887,19 @@
               </div>
             </div>
           </div>
-          ${galleryHTML ? `
-          <div class="dp-gallery animate-in" style="transition-delay:0.1s">
+          <div class="dp-gallery" id="dp-gallery-section"${galleryHTML ? '' : ' style="display:none"'}>
             <div class="dp-gallery-head">
               <div class="dp-section-label">GALLEREYA</div>
               ${galleryViewAll}
             </div>
-            <div class="dp-gallery-grid">${galleryHTML}</div>
-          </div>` : ''}
-          <div class="dp-cast-section animate-in" style="transition-delay:0.14s">
+            <div class="dp-gallery-grid" id="dp-gallery-grid">${galleryHTML}</div>
+          </div>
+          <div class="dp-cast-section">
             <div class="dp-section-label">AKTYORLAR</div>
             <div class="dp-cast-scroll" id="dp-cast-scroll">${castHTML}</div>
           </div>
           ${relatedHTML}
-          <section class="reviews-section animate-in" style="transition-delay:0.18s">
+          <section class="reviews-section">
             <div class="reviews-header">
               <div class="reviews-title">Sharhlar</div>
               <div class="reviews-count" id="review-count">0 ta sharh</div>
@@ -1953,7 +1928,6 @@
             <div class="reviews-list" id="reviews-list"></div>
           </section>`;
 
-        App.initAnimations();
         App.initDragScroll('related-row');
         window._cpHeroTrailer = heroTrailerInfo;
         window._cpHeroMuted = true;

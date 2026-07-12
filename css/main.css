@@ -4554,6 +4554,31 @@ body.movie-page .navbar.scrolled {
 }
 
 /* ── Movie detail page — background trailer ── */
+/* Trailer o'lchamlari hero'dan katta (markazlashtirilib kesiladi), shu
+   sababli mask to'g'ridan-to'g'ri video/iframe'ga emas, aynan hero
+   o'lchamidagi shu wrapper'ga beriladi — video ham banner rasmi kabi
+   pastda shaffofga eriydi, dp-info-section bilan chegara chizig'i
+   umuman qolmaydi. */
+.dp-hero-media {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(to bottom,
+    black 0%,
+    black 45%,
+    rgba(0, 0, 0, 0.6) 68%,
+    transparent 90%
+  );
+  mask-image: linear-gradient(to bottom,
+    black 0%,
+    black 45%,
+    rgba(0, 0, 0, 0.6) 68%,
+    transparent 90%
+  );
+}
+
 .dp-hero-trailer {
   position: absolute;
   top: 50%;
