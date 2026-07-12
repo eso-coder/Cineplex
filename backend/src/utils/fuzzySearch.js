@@ -84,4 +84,4 @@ function fuzzySearch(items, query, keys, threshold = 0.45) {
     .map((r) => r.item);
 }
 
-module.exports = { fuzzySearch, scoreField, normalize };
+module.exports = { fuzzySearch };

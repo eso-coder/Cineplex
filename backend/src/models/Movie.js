@@ -71,13 +71,9 @@ const movieSchema = new mongoose.Schema(
   }
 );
 
-// language_override: 'lang' prevents MongoDB from treating the 'language' field
-// as a text-index language selector, which would break inserts with language: ''
-movieSchema.index({ title: 'text', description: 'text' }, { language_override: 'lang' });
 movieSchema.index({ genres: 1 });
 movieSchema.index({ releaseYear: -1 });
 movieSchema.index({ averageRating: -1 });
 movieSchema.index({ views: -1 });
-movieSchema.index({ isFeatured: 1 });
 
 module.exports = mongoose.model('Movie', movieSchema);

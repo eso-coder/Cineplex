@@ -28,9 +28,6 @@ npm run dev       # Start dev server (port 5000)
 | `JWT_REFRESH_SECRET` | Refresh token secret (min 32 chars) |
 | `JWT_ACCESS_EXPIRY` | Access token TTL (default `15m`) |
 | `JWT_REFRESH_EXPIRY` | Refresh token TTL (default `7d`) |
-| `CLOUDINARY_CLOUD_NAME` | Cloudinary cloud name |
-| `CLOUDINARY_API_KEY` | Cloudinary API key |
-| `CLOUDINARY_API_SECRET` | Cloudinary API secret |
 | `CLIENT_URL` | Frontend origin for CORS |
 
 ---

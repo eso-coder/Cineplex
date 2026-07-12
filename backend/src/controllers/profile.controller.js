@@ -64,7 +64,8 @@ const getActivity = asyncHandler(async (req, res) => {
   const rows = await UserFilm.find({ user: id, watched: true })
     .sort({ watchedAt: -1 })
     .limit(limit)
-    .populate('film');
+    .populate('film', 'title releaseYear poster bannerUrl')
+    .lean();
   sendSuccess(res, rows.filter((r) => r.film).map(toFilmCard), 'Activity loaded');
 });
 
@@ -73,7 +74,8 @@ const getFavourites = asyncHandler(async (req, res) => {
   const id = toObjectId(req.params.userId);
   const rows = await UserFilm.find({ user: id, isFavourite: true })
     .sort({ updatedAt: -1 })
-    .populate('film');
+    .populate('film', 'title releaseYear poster bannerUrl')
+    .lean();
   sendSuccess(res, rows.filter((r) => r.film).map(toFilmCard), 'Favourites loaded');
 });
 

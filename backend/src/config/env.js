@@ -28,18 +28,12 @@ module.exports = {
     pass: process.env.SMTP_PASS || process.env.GMAIL_APP_PASSWORD || process.env.EMAIL_PASS || '',
     from: process.env.MAIL_FROM || 'CINEPLEX <no-reply@cineplex.app>',
   },
-  cloudinary: {
-    cloudName: process.env.CLOUDINARY_CLOUD_NAME || '',
-    apiKey: process.env.CLOUDINARY_API_KEY || '',
-    apiSecret: process.env.CLOUDINARY_API_SECRET || '',
-  },
   google: {
     clientId: process.env.GOOGLE_CLIENT_ID || '',
   },
   apple: {
     clientId: process.env.APPLE_CLIENT_ID || '',
   },
-  tmdbApiKey: process.env.TMDB_API_KEY || '',
 
   // ── CloudFront signed cookies (video segmentlarini himoyalash) ──
   // Uch birdek to'ldirilmasa, video himoyasi o'chirilgan holda ishlaydi

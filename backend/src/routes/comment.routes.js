@@ -10,6 +10,5 @@ router.post('/movie/:movieId', authMiddleware, validate(v.createComment), ctrl.a
 router.patch('/:id', authMiddleware, validate(v.updateComment), ctrl.updateComment);
 router.delete('/:id', authMiddleware, ctrl.deleteComment);
 router.post('/:id/like', authMiddleware, ctrl.toggleLike);
-router.post('/:id/reply', authMiddleware, validate(v.replyComment), ctrl.replyComment);
 
 module.exports = router;

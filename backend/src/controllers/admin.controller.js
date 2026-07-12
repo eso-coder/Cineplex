@@ -18,8 +18,8 @@ const getDashboard = asyncHandler(async (req, res) => {
     Comment.countDocuments(),
     Rating.countDocuments(),
   ]);
-  const recentMovies = await Movie.find().sort({ createdAt: -1 }).limit(5).select('title poster views averageRating');
-  const recentUsers = await User.find().sort({ createdAt: -1 }).limit(5).select('name email role createdAt');
+  const recentMovies = await Movie.find().sort({ createdAt: -1 }).limit(5).select('title poster views averageRating').lean();
+  const recentUsers = await User.find().sort({ createdAt: -1 }).limit(5).select('name email role createdAt').lean();
   sendSuccess(res, { stats: { users, movies, comments, ratings }, recentMovies, recentUsers });
 });
 
@@ -97,6 +97,46 @@ const deleteUser = asyncHandler(async (req, res) => {
 
 // ─── MOVIES ──────────────────────────────────────────────────────────────────
 
+// Formadan (multipart) kelgan string maydonlarni to'g'ri turlarga keltiradi:
+// JSON-string massivlar, vergul bilan ajratilgan ro'yxatlar va raqamlar.
+// createMovie va updateMovie'da bir xil ishlatiladi.
+function normalizeMovieBody(data) {
+  if (data.gallery && typeof data.gallery === 'string') {
+    try { data.gallery = JSON.parse(data.gallery).filter(Boolean); }
+    catch { data.gallery = []; }
+  }
+
+  // Subtitles JSON: [{lang, label, url}]
+  if (data.subtitles && typeof data.subtitles === 'string') {
+    try { data.subtitles = JSON.parse(data.subtitles).filter(s => s && s.url); }
+    catch { data.subtitles = []; }
+  }
+
+  // Episodes JSON: [{season, number, title, videoUrl, duration, thumb}]
+  if (data.episodeList && typeof data.episodeList === 'string') {
+    try { data.episodeList = JSON.parse(data.episodeList).filter(e => e && e.videoUrl); }
+    catch { data.episodeList = []; }
+    // seasons/episodes hisoblarini qismlardan avtomatik chiqaramiz
+    if (Array.isArray(data.episodeList) && data.episodeList.length) {
+      data.seasons  = new Set(data.episodeList.map(e => e.season || 1)).size;
+      data.episodes = data.episodeList.length;
+    }
+  }
+
+  if (typeof data.genres === 'string')
+    data.genres = data.genres.split(',').map((g) => g.trim()).filter(Boolean);
+  if (typeof data.cast === 'string')
+    data.cast = data.cast.split(',').map((c) => c.trim()).filter(Boolean);
+
+  // Numeric coercion
+  if (data.imdbRating) data.imdbRating = parseFloat(data.imdbRating) || 0;
+  if (data.ageRating)  data.ageRating  = parseInt(data.ageRating,  10) || 0;
+  if (data.seasons)    data.seasons    = parseInt(data.seasons,    10) || 0;
+  if (data.episodes)   data.episodes   = parseInt(data.episodes,   10) || 0;
+
+  return data;
+}
+
 const createMovie = [
   handleUpload(imageUpload.fields([
     { name: 'poster', maxCount: 1 },
@@ -118,47 +158,13 @@ const createMovie = [
       throw ApiError.badRequest('Poster fayl yoki URL kiritilishi shart');
     }
 
-    const movieData = { ...req.body, poster, createdBy: req.user._id };
+    const movieData = normalizeMovieBody({ ...req.body, poster, createdBy: req.user._id });
 
     // Banner
     if (bannerFile) {
       const { url } = await uploadToS3(bannerFile.buffer, 'banners', bannerFile.mimetype, bannerFile.originalname);
       movieData.bannerUrl = url;
     }
-
-    // Gallery JSON
-    if (movieData.gallery && typeof movieData.gallery === 'string') {
-      try { movieData.gallery = JSON.parse(movieData.gallery).filter(Boolean); }
-      catch { movieData.gallery = []; }
-    }
-
-    // Subtitles JSON: [{lang, label, url}]
-    if (movieData.subtitles && typeof movieData.subtitles === 'string') {
-      try { movieData.subtitles = JSON.parse(movieData.subtitles).filter(s => s && s.url); }
-      catch { movieData.subtitles = []; }
-    }
-
-    // Episodes JSON: [{season, number, title, videoUrl, duration, thumb}]
-    if (movieData.episodeList && typeof movieData.episodeList === 'string') {
-      try { movieData.episodeList = JSON.parse(movieData.episodeList).filter(e => e && e.videoUrl); }
-      catch { movieData.episodeList = []; }
-      // seasons/episodes hisoblarini qismlardan avtomatik chiqaramiz
-      if (Array.isArray(movieData.episodeList) && movieData.episodeList.length) {
-        movieData.seasons  = new Set(movieData.episodeList.map(e => e.season || 1)).size;
-        movieData.episodes = movieData.episodeList.length;
-      }
-    }
-
-    if (typeof movieData.genres === 'string')
-      movieData.genres = movieData.genres.split(',').map((g) => g.trim()).filter(Boolean);
-    if (typeof movieData.cast === 'string')
-      movieData.cast = movieData.cast.split(',').map((c) => c.trim()).filter(Boolean);
-
-    // Numeric coercion
-    if (movieData.imdbRating) movieData.imdbRating = parseFloat(movieData.imdbRating) || 0;
-    if (movieData.ageRating)  movieData.ageRating  = parseInt(movieData.ageRating,  10) || 0;
-    if (movieData.seasons)    movieData.seasons    = parseInt(movieData.seasons,    10) || 0;
-    if (movieData.episodes)   movieData.episodes   = parseInt(movieData.episodes,   10) || 0;
 
     // Admin ru/en tarjimasini qo'lda kiritmagan bo'lsa — asl (uz) matndan
     // avtomatik tarjima qilib to'ldiramiz (qo'lda kiritilgan bo'lsa unga tegmaymiz).
@@ -179,7 +185,7 @@ const updateMovie = [
     const movie = await Movie.findById(req.params.id);
     if (!movie) throw ApiError.notFound('Movie');
 
-    const updates = { ...req.body };
+    const updates = normalizeMovieBody({ ...req.body });
     const posterFile = req.files?.poster?.[0];
     const bannerFile = req.files?.banner?.[0];
 
@@ -196,36 +202,6 @@ const updateMovie = [
       const { url } = await uploadToS3(bannerFile.buffer, 'banners', bannerFile.mimetype, bannerFile.originalname);
       updates.bannerUrl = url;
     }
-
-    if (updates.gallery && typeof updates.gallery === 'string') {
-      try { updates.gallery = JSON.parse(updates.gallery).filter(Boolean); }
-      catch { updates.gallery = []; }
-    }
-
-    if (updates.subtitles && typeof updates.subtitles === 'string') {
-      try { updates.subtitles = JSON.parse(updates.subtitles).filter(s => s && s.url); }
-      catch { updates.subtitles = []; }
-    }
-
-    // Episodes JSON: [{season, number, title, videoUrl, duration, thumb}]
-    if (updates.episodeList && typeof updates.episodeList === 'string') {
-      try { updates.episodeList = JSON.parse(updates.episodeList).filter(e => e && e.videoUrl); }
-      catch { updates.episodeList = []; }
-      if (Array.isArray(updates.episodeList) && updates.episodeList.length) {
-        updates.seasons  = new Set(updates.episodeList.map(e => e.season || 1)).size;
-        updates.episodes = updates.episodeList.length;
-      }
-    }
-
-    if (typeof updates.genres === 'string')
-      updates.genres = updates.genres.split(',').map((g) => g.trim()).filter(Boolean);
-    if (typeof updates.cast === 'string')
-      updates.cast = updates.cast.split(',').map((c) => c.trim()).filter(Boolean);
-
-    if (updates.imdbRating) updates.imdbRating = parseFloat(updates.imdbRating) || 0;
-    if (updates.ageRating)  updates.ageRating  = parseInt(updates.ageRating,  10) || 0;
-    if (updates.seasons)    updates.seasons    = parseInt(updates.seasons,    10) || 0;
-    if (updates.episodes)   updates.episodes   = parseInt(updates.episodes,   10) || 0;
 
     // Yangi kiritilgan (yoki eski, hali tarjima qilinmagan) title/description
     // uchun yetishmayotgan ru/en tarjimalarini avtomatik to'ldiramiz.
@@ -246,38 +222,6 @@ const updateMovie = [
     sendSuccess(res, updated, 'Movie updated');
   }),
 ];
-
-// POST /api/admin/movies/backfill-translations — mavjud (eski) filmlarda
-// yetishmayotgan title_ru/title_en/description_ru/description_en'ni
-// asl (uz) matndan avtomatik tarjima qilib to'ldiradi. Bir martalik migratsiya
-// uchun — allaqachon tarjimasi bor filmlarga tegmaydi.
-const backfillTranslations = asyncHandler(async (req, res) => {
-  const movies = await Movie.find({
-    $or: [
-      { title_ru: '' }, { title_en: '' },
-      { description_ru: '' }, { description_en: '' },
-    ],
-  }).select('title description title_ru title_en description_ru description_en');
-
-  let updated = 0;
-  const failed = [];
-  for (const movie of movies) {
-    try {
-      const auto = await autoTranslateMovieFields(movie.toObject());
-      if (Object.keys(auto).length) {
-        // updateOne + $set — to'liq hujjatni qayta validatsiya qilmasdan
-        // (partial select bilan yuklangan hujjatda .save() required
-        // maydonlar yetishmasligi sababli xato berishi mumkin edi).
-        await Movie.updateOne({ _id: movie._id }, { $set: auto });
-        updated += 1;
-      }
-    } catch (err) {
-      failed.push({ id: movie._id, title: movie.title, error: err.message });
-    }
-  }
-
-  sendSuccess(res, { scanned: movies.length, updated, failed }, 'Backfill complete');
-});
 
 const deleteMovie = asyncHandler(async (req, res) => {
   const movie = await Movie.findByIdAndDelete(req.params.id);
@@ -348,7 +292,7 @@ const deleteGenre = asyncHandler(async (req, res) => {
 module.exports = {
   getDashboard,
   getUsers, getUserDetail, updateUser, deleteUser,
-  createMovie, updateMovie, deleteMovie, backfillTranslations,
+  createMovie, updateMovie, deleteMovie,
   getComments, deleteComment,
   getGenres, createGenre, updateGenre, deleteGenre,
 };

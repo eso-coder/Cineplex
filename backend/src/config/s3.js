@@ -51,13 +51,4 @@ const imageUpload = multer({
   },
 });
 
-const videoUpload = multer({
-  storage: multer.memoryStorage(),
-  limits: { fileSize: 100 * 1024 * 1024 },
-  fileFilter: (req, file, cb) => {
-    if (/^video\//.test(file.mimetype)) return cb(null, true);
-    cb(new Error('Only video files are allowed'));
-  },
-});
-
-module.exports = { uploadToS3, deleteFromS3, imageUpload, videoUpload };
+module.exports = { uploadToS3, deleteFromS3, imageUpload };

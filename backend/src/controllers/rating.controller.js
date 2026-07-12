@@ -28,21 +28,4 @@ const rateMovie = asyncHandler(async (req, res) => {
   sendSuccess(res, { rating, movie: updatedMovie }, existing ? 'Rating updated' : 'Rating added');
 });
 
-// GET /api/ratings/movie/:movieId/my-rating
-const getMyRating = asyncHandler(async (req, res) => {
-  const rating = await Rating.findOne({ movie: req.params.movieId, user: req.user._id });
-  sendSuccess(res, rating || null);
-});
-
-// DELETE /api/ratings/movie/:movieId
-const deleteRating = asyncHandler(async (req, res) => {
-  const rating = await Rating.findOneAndDelete({
-    movie: req.params.movieId,
-    user: req.user._id,
-  });
-
-  if (!rating) throw ApiError.notFound('Rating');
-  sendSuccess(res, null, 'Rating removed');
-});
-
-module.exports = { rateMovie, getMyRating, deleteRating };
+module.exports = { rateMovie };

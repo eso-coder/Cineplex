@@ -7,6 +7,10 @@ const asyncHandler = require('../utils/asyncHandler');
 const ApiError = require('../utils/ApiError');
 const { sendSuccess, sendPaginated } = require('../utils/response');
 
+// Ro'yxat (karta) javoblarida og'ir maydonlar jo'natilmaydi — ular faqat
+// bitta film sahifasida (getMovie) kerak. Seriallarda episodeList ayniqsa katta.
+const LIST_EXCLUDE = '-episodeList -subtitles -gallery -videoUrl';
+
 const SORT_MAP = {
   newest: { createdAt: -1 },
   oldest: { createdAt: 1 },
@@ -46,7 +50,10 @@ const getMovies = asyncHandler(async (req, res) => {
   // fuzzy (taxminiy, to'liq yozilmagan so'z bo'yicha ham) qidiruv qilamiz.
   // Katalog kichik bo'lgani uchun barcha nomzodlarni xotirada tekshirish tez ishlaydi.
   if (search && search.trim()) {
-    const candidates = await Movie.find(filter).populate('genres', 'name slug').lean();
+    const candidates = await Movie.find(filter)
+      .select(LIST_EXCLUDE)
+      .populate('genres', 'name slug')
+      .lean();
     const matched = fuzzySearch(candidates, search, [
       { name: 'title', weight: 2 },
       { name: 'title_ru', weight: 2 },
@@ -70,6 +77,7 @@ const getMovies = asyncHandler(async (req, res) => {
   const skip = (pageNum - 1) * limitNum;
   const [movies, total] = await Promise.all([
     Movie.find(filter)
+      .select(LIST_EXCLUDE)
       .populate('genres', 'name slug')
       .sort(sortObj)
       .skip(skip)
@@ -87,40 +95,15 @@ const getMovies = asyncHandler(async (req, res) => {
   });
 });
 
-// GET /api/movies/featured
-const getFeatured = asyncHandler(async (req, res) => {
-  const movies = await Movie.find({ isFeatured: true })
-    .populate('genres', 'name slug')
-    .sort({ createdAt: -1 })
-    .limit(10)
-    .lean();
-  res.set('Cache-Control', PUBLIC_CACHE);
-  sendSuccess(res, movies);
-});
-
 // GET /api/movies/trending
 const getTrending = asyncHandler(async (req, res) => {
   const movies = await Movie.find()
+    .select(LIST_EXCLUDE)
     .populate('genres', 'name slug')
     .sort({ views: -1 })
     .limit(10)
     .lean();
   res.set('Cache-Control', PUBLIC_CACHE);
-  sendSuccess(res, movies);
-});
-
-// GET /api/movies/search
-const searchMovies = asyncHandler(async (req, res) => {
-  const q = req.query.q?.trim();
-  if (!q) throw ApiError.badRequest('Search query required');
-
-  const re = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
-  const movies = await Movie.find({ $or: [{ title: re }, { description: re }] })
-    .populate('genres', 'name slug')
-    .sort({ createdAt: -1 })
-    .limit(20)
-    .lean();
-
   sendSuccess(res, movies);
 });
 
@@ -139,6 +122,7 @@ const getMovie = asyncHandler(async (req, res) => {
       _id: { $ne: movie._id },
       genres: { $in: movie.genres.map((g) => g._id) },
     })
+      .select(LIST_EXCLUDE)
       .populate('genres', 'name slug')
       .sort({ averageRating: -1, views: -1 })
       .limit(12)
@@ -155,29 +139,6 @@ const getMovie = asyncHandler(async (req, res) => {
 const incrementView = asyncHandler(async (req, res) => {
   await Movie.findByIdAndUpdate(req.params.id, { $inc: { views: 1 } });
   sendSuccess(res, null, 'View counted');
-});
-
-// POST /api/movies/:id/favorite
-const toggleFavorite = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.user._id);
-  const movieId = req.params.id;
-
-  const movie = await Movie.findById(movieId);
-  if (!movie) throw ApiError.notFound('Movie');
-
-  const idx = user.favorites.findIndex((id) => id.toString() === movieId);
-  let action;
-
-  if (idx === -1) {
-    user.favorites.push(movieId);
-    action = 'added';
-  } else {
-    user.favorites.splice(idx, 1);
-    action = 'removed';
-  }
-
-  await user.save({ validateBeforeSave: false });
-  sendSuccess(res, { favorites: user.favorites }, `${action === 'added' ? 'Added to' : 'Removed from'} favorites`);
 });
 
 // POST /api/movies/:id/watchlist
@@ -212,19 +173,32 @@ const saveProgress = asyncHandler(async (req, res) => {
   const movie = await Movie.findById(movieId).select('_id');
   if (!movie) throw ApiError.notFound('Movie');
 
-  const user = await User.findById(req.user._id);
-  const entry = user.watchHistory.find((h) => h.movie.toString() === movieId);
-  if (entry) {
-    entry.progress = progress;
-    entry.duration = duration || entry.duration;
-    entry.updatedAt = new Date();
-  } else {
-    user.watchHistory.unshift({ movie: movieId, progress, duration, updatedAt: new Date() });
-  }
-  // Ko'rish tarixini oxirgi 50 ta bilan cheklaymiz (hujjat shishib ketmasligi uchun)
-  if (user.watchHistory.length > 50) user.watchHistory = user.watchHistory.slice(0, 50);
+  // Butun User hujjatini yuklamasdan, mavjud yozuvni to'g'ridan-to'g'ri yangilaymiz.
+  const setOps = {
+    'watchHistory.$.progress': progress,
+    'watchHistory.$.updatedAt': new Date(),
+  };
+  if (duration) setOps['watchHistory.$.duration'] = duration;
+  const updated = await User.updateOne(
+    { _id: req.user._id, 'watchHistory.movie': movieId },
+    { $set: setOps }
+  );
 
-  await user.save({ validateBeforeSave: false });
+  if (!updated.matchedCount) {
+    // Yozuv yo'q — boshiga qo'shamiz; $slice tarixini oxirgi 50 ta bilan cheklaydi.
+    await User.updateOne(
+      { _id: req.user._id },
+      {
+        $push: {
+          watchHistory: {
+            $each: [{ movie: movieId, progress, duration, updatedAt: new Date() }],
+            $position: 0,
+            $slice: 50,
+          },
+        },
+      }
+    );
+  }
 
   // Video 85%+ ko'rilgan bo'lsa — "Films"/"Activity"/statistika (profil sahifasi)
   // uchun ishlatiladigan UserFilm yozuvini ham watched=true qilib belgilaymiz.
@@ -264,15 +238,6 @@ const getWatchHistory = asyncHandler(async (req, res) => {
   sendSuccess(res, history);
 });
 
-// GET /api/movies/user/favorites
-const getFavorites = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.user._id).populate({
-    path: 'favorites',
-    populate: { path: 'genres', select: 'name slug' },
-  });
-  sendSuccess(res, user.favorites);
-});
-
 // GET /api/movies/user/watchlist
 const getWatchlist = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user._id).populate({
@@ -284,14 +249,10 @@ const getWatchlist = asyncHandler(async (req, res) => {
 
 module.exports = {
   getMovies,
-  getFeatured,
   getTrending,
-  searchMovies,
   getMovie,
   incrementView,
-  toggleFavorite,
   toggleWatchlist,
-  getFavorites,
   getWatchlist,
   saveProgress,
   getProgress,

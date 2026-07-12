@@ -23,6 +23,7 @@ const commentSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Comment',
       default: null,
+      index: true,
     },
     likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   },
