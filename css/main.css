@@ -2808,12 +2808,13 @@ main {
 }
 
 /* ── Info row ── */
+/* Shaffof — orqada fixed #movie-bg-blur (xuddi shu banner, blur bilan)
+   ko'rinib turadi, shu bilan hero va bu qism birlashib ketadi (mobil
+   .mob-info bilan bir xil printsip). Alohida quti/chegara YO'Q. */
 .dp-info-section {
   display: flex;
   gap: 34px;
   padding: 36px 50px 42px;
-  background: rgba(8, 8, 10, 0.55);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .dp-poster {
@@ -3033,10 +3034,10 @@ main {
 }
 
 /* ── Gallery ── */
+/* Shaffof — hero/info bilan bir xil fon (#movie-bg-blur) davom etadi,
+   banner va gallery orasida ko'rinadigan chegara qolmaydi. */
 .dp-gallery {
   padding: 52px 0 0;
-  background: rgba(8, 8, 10, 0.55);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .dp-gallery-head {
