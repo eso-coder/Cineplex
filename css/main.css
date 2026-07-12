@@ -2810,11 +2810,18 @@ main {
 /* ── Info row ── */
 /* Shaffof — orqada fixed #movie-bg-blur (xuddi shu banner, blur bilan)
    ko'rinib turadi, shu bilan hero va bu qism birlashib ketadi (mobil
-   .mob-info bilan bir xil printsip). Alohida quti/chegara YO'Q. */
+   .mob-info bilan bir xil printsip). Alohida quti/chegara YO'Q.
+   Manfiy margin-top poster/description'ni hero'ning eng pastki — allaqachon
+   to'liq xiralashib (mask-image bilan) faqat #movie-bg-blur ko'rinib turgan —
+   qismiga bosib chiqaradi. Real o'lchov bilan tekshirilgan: .dp-hero-meta
+   matnidan ~18px pastda tugaydi, ustiga chiqib ketmaydi. */
 .dp-info-section {
+  position: relative;
+  z-index: 5;
   display: flex;
   gap: 34px;
   padding: 36px 50px 42px;
+  margin-top: -65px;
 }
 
 .dp-poster {
