@@ -1848,7 +1848,10 @@ main {
   display: flex;
   gap: 14px;
   overflow-x: auto;
-  padding-bottom: 8px;
+  padding-top: 28px;
+  padding-bottom: 28px;
+  margin-top: -28px;
+  margin-bottom: -20px;
   scroll-behavior: smooth;
 }
 
@@ -1896,6 +1899,7 @@ main {
   cursor: pointer;
   position: relative;
   overflow: visible;
+  isolation: isolate;
   transition: transform 0.32s var(--ease-spring);
 }
 
@@ -1986,13 +1990,40 @@ main {
 .mco-top {
   display: flex;
   justify-content: flex-end;
-  gap: 5px;
-  padding: 8px 8px 0;
+  gap: 8px;
+  padding: 10px 10px 0;
+}
+
+.mco-like-btn,
+.mco-wl-btn {
+  opacity: 0;
+  transform: scale(0.72) translateY(-4px);
+  transition:
+    opacity 0.32s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.32s cubic-bezier(0.16, 1, 0.3, 1),
+    background 0.18s,
+    color 0.18s;
+}
+
+.movie-card:hover .mco-like-btn,
+.movie-card:hover .mco-wl-btn {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+}
+
+.movie-card:hover .mco-wl-btn {
+  transition-delay: 0.03s;
+}
+
+.mco-like-btn svg,
+.mco-wl-btn svg {
+  width: 16px;
+  height: 16px;
 }
 
 .mco-like-btn {
-  width: 28px;
-  height: 28px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   background: var(--glass-2);
   backdrop-filter: var(--glass-blur);
@@ -2003,7 +2034,6 @@ main {
   justify-content: center;
   color: rgba(255, 255, 255, 0.85);
   cursor: pointer;
-  transition: background 0.18s, color 0.18s;
 }
 
 .mco-like-btn:hover {
@@ -2027,8 +2057,8 @@ main {
 }
 
 .mco-wl-btn {
-  width: 28px;
-  height: 28px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   background: var(--glass-2);
   backdrop-filter: var(--glass-blur);
@@ -2039,9 +2069,6 @@ main {
   justify-content: center;
   color: rgba(255, 255, 255, 0.85);
   cursor: pointer;
-  transition:
-    background 0.18s,
-    color 0.18s;
 }
 
 .mco-wl-btn:hover,
@@ -2568,6 +2595,37 @@ main {
   gap: 24px 12px;
 }
 
+/* "Yangi chiqmalar" — cursor bilan surib bo'ladigan gorizontal qator */
+#new-row.drag-row {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  gap: 14px;
+  padding-top: 28px;
+  padding-bottom: 28px;
+  margin-top: -28px;
+  margin-bottom: -20px;
+  cursor: grab;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+#new-row.drag-row::-webkit-scrollbar {
+  display: none;
+}
+
+#new-row.drag-row.dragging {
+  cursor: grabbing;
+  scroll-behavior: auto;
+  user-select: none;
+}
+
+#new-row.drag-row .movie-card {
+  width: var(--card-w);
+  flex-shrink: 0;
+}
+
 .catalog-grid .movie-card {
   width: 100%;
 }
@@ -2622,6 +2680,7 @@ main {
 .dp-hero-overlay {
   position: absolute;
   inset: 0;
+  z-index: 1;
   background: linear-gradient(
     to bottom,
     rgba(5, 5, 5, 0.12) 0%,
@@ -2676,7 +2735,7 @@ main {
   left: 0;
   right: 0;
   padding: 0 50px 42px;
-  z-index: 2;
+  z-index: 3;
 }
 
 .dp-hero-title {
@@ -2733,7 +2792,6 @@ main {
   aspect-ratio: 9 / 16;
   border-radius: var(--r-md);
   overflow: hidden;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.85);
   border: 1px solid rgba(255, 255, 255, 0.1);
   align-self: flex-start;
 }
@@ -4496,9 +4554,6 @@ video.hero-bg-iframe {
     background 0.2s,
     border-color 0.2s,
     transform 0.2s;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.14),
-    0 4px 18px rgba(0, 0, 0, 0.45);
 }
 .dp-hero-ctrl-btn:hover {
   background: var(--glass-3);

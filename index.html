@@ -148,7 +148,7 @@
           <div class="section-title" data-i18n="sec.new">Yangi chiqmalar</div>
           <a href="pages/new.html" class="section-link" data-i18n="btn.seeall">Barchasini ko'rish</a>
         </div>
-        <div class="catalog-grid" id="new-row" style="padding: 0"></div>
+        <div class="catalog-grid drag-row" id="new-row" style="padding: 0"></div>
       </section>
 
       <!-- ── STUDIO LOGOS ── -->
@@ -339,6 +339,52 @@
       /* Sayt introsi: sessiyada 1 marta, skip bilan, tugagach panellar
          stagger bilan ochiladi (App.initAnimations reveal orqali). */
       AuroraIntro.boot();
+
+      /* "Yangi chiqmalar" qatorini sichqoncha bilan ushlab surish */
+      (function initDragScroll() {
+        const row = document.getElementById("new-row");
+        if (!row) return;
+        let isDown = false;
+        let moved = false;
+        let startX = 0;
+        let startScroll = 0;
+
+        row.addEventListener("mousedown", (e) => {
+          isDown = true;
+          moved = false;
+          row.classList.add("dragging");
+          startX = e.pageX;
+          startScroll = row.scrollLeft;
+        });
+
+        window.addEventListener("mouseup", () => {
+          if (!isDown) return;
+          isDown = false;
+          row.classList.remove("dragging");
+        });
+
+        window.addEventListener("mousemove", (e) => {
+          if (!isDown) return;
+          const dx = e.pageX - startX;
+          if (Math.abs(dx) > 4) moved = true;
+          if (moved) {
+            e.preventDefault();
+            row.scrollLeft = startScroll - dx;
+          }
+        });
+
+        /* Surilgandan keyin karta ustidagi click (navigatsiya)ni bosib qo'ymaslik */
+        row.addEventListener(
+          "click",
+          (e) => {
+            if (moved) {
+              e.preventDefault();
+              e.stopPropagation();
+            }
+          },
+          true
+        );
+      })();
 
       (async function loadHomeMovies() {
         const tRow = document.getElementById("trending-row");
