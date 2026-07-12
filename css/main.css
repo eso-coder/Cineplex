@@ -2817,11 +2817,30 @@ main {
    matnidan ~18px pastda tugaydi, ustiga chiqib ketmaydi. */
 .dp-info-section {
   position: relative;
+  isolation: isolate;
   z-index: 5;
   display: flex;
   gap: 34px;
   padding: 36px 50px 42px;
   margin-top: -65px;
+}
+
+/* Hero'ning xira tugash nuqtasidan davom etadigan yumshoq qorong'ilashuv —
+   xom blur fon "dog'li" ko'rinmasligi va Cast/description matni har doim
+   o'qiladigan bo'lishi uchun. Qattiq quti emas, silliq gradient — shu
+   sababli hero bilan "birlashgan" taassurot buzilmaydi. */
+.dp-info-section::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(5, 5, 5, 0.4) 35%,
+    rgba(5, 5, 5, 0.6) 100%
+  );
+  pointer-events: none;
 }
 
 .dp-poster {
