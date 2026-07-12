@@ -2106,30 +2106,6 @@ main {
   fill: currentColor;
 }
 
-.mco-center {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  pointer-events: none;
-}
-
-.mco-play {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: rgba(255, 255, 255, 0.92);
-  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.5));
-  transition:
-    transform 0.18s,
-    color 0.18s;
-}
-
-.mco-play:hover {
-  transform: scale(1.15);
-  color: #ffffff;
-}
-
 /* Pastki info panel — yoyilgan (fade bilan tarqalgan) blur fon ustida.
    mask-image blur qatlamining yuqori chekkasini yumshoq eritib yuboradi,
    shunda panel posterga "yopishtirilgan quti" emas, tabiiy yoyilgan
@@ -2195,6 +2171,27 @@ main {
   line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+/* To'liq kenglikdagi asosiy CTA — hover panelining eng pastida */
+.mco-watch-btn {
+  width: 100%;
+  margin-top: 12px;
+  padding: 11px 16px;
+  gap: 8px;
+  font-size: 14px;
+  opacity: 0;
+  transform: translateY(6px);
+  transition:
+    opacity 0.32s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.32s cubic-bezier(0.16, 1, 0.3, 1),
+    background var(--ds-dur, 0.2s) var(--ds-ease, ease);
+}
+
+.movie-card:hover .mco-watch-btn {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: 0.06s;
 }
 
 .movie-poster {
