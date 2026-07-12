@@ -1856,14 +1856,25 @@ main {
 
 .movies-row {
   display: flex;
-  padding: 50px 0px;
   gap: 14px;
   overflow-x: auto;
-  padding-top: 28px;
-  padding-bottom: 28px;
-  margin-top: -28px;
-  margin-bottom: -20px;
+  /* Hover'da kartalar scale/glow bilan yoyiladi — bu qator sarlavha
+     bilan qo'shni bo'lgani uchun manfiy margin ishlatilmaydi (aks holda
+     hover'dagi karta sarlavha ustiga chiqib qoladi); shunchaki keng
+     padding bilan bo'sh joy beriladi, overflow-x scrollport chekkasi
+     bo'ylab kesilib qolmasin deb. */
+  padding: 48px 0;
   scroll-behavior: smooth;
+}
+
+.movies-row.drag-scroll {
+  cursor: grab;
+}
+
+.movies-row.drag-scroll.dragging {
+  cursor: grabbing;
+  scroll-behavior: auto;
+  user-select: none;
 }
 
 .movies-row::-webkit-scrollbar {
@@ -2642,17 +2653,6 @@ main {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
   gap: 24px 12px;
-}
-
-/* "Yangi chiqmalar" — cursor bilan surib bo'ladigan gorizontal qator */
-#new-row.movies-row {
-  cursor: grab;
-}
-
-#new-row.movies-row.dragging {
-  cursor: grabbing;
-  scroll-behavior: auto;
-  user-select: none;
 }
 
 .catalog-grid .movie-card {

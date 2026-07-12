@@ -1352,6 +1352,7 @@
       const row = document.getElementById('related-row');
       if (row) {
         if (!row.children.length) row.innerHTML = related.map(m => App.buildCard(m, '../')).join('');
+        App.initDragScroll('related-row');
         return;
       }
       const root = document.getElementById('detail-root');
@@ -1361,10 +1362,11 @@
         sec.className = 'dp-related-section animate-in visible';
         sec.innerHTML = `
           <div class="dp-section-label">SHUNGA O'XSHASH</div>
-          <div class="movies-row" id="related-row" style="padding:30px 0">
+          <div class="movies-row" id="related-row">
             ${related.map(m => App.buildCard(m, '../')).join('')}
           </div>`;
         root.insertBefore(sec, reviews);
+        App.initDragScroll('related-row');
       }
     }
 
@@ -1821,7 +1823,7 @@
                 </button>
               </div>
             </div>
-            <div class="movies-row" id="related-row" style="padding:30px 0">
+            <div class="movies-row" id="related-row">
               ${related.map(m => App.buildCard(m, '../')).join('')}
             </div>
           </div>` : '';
@@ -1953,6 +1955,7 @@
           </section>`;
 
         App.initAnimations();
+        App.initDragScroll('related-row');
         window._cpHeroTrailer = heroTrailerInfo;
         window._cpHeroMuted = true;
 

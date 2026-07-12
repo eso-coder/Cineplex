@@ -369,6 +369,57 @@ const App = {
     if (el) el.scrollBy({ left: dir * (160 * 3 + 42), behavior: 'smooth' });
   },
 
+  /* Gorizontal qatorni sichqoncha bilan ushlab surish (masalan "Yangi
+     chiqmalar", "Shunga o'xshash"). Bir necha marta chaqirilsa ham
+     xavfsiz — allaqachon bog'langan qatorga qayta listener qo'shmaydi. */
+  initDragScroll(id) {
+    const row = document.getElementById(id);
+    if (!row || row.dataset.dragInit) return;
+    row.dataset.dragInit = '1';
+    row.classList.add('drag-scroll');
+
+    let isDown = false;
+    let moved = false;
+    let startX = 0;
+    let startScroll = 0;
+
+    row.addEventListener('mousedown', (e) => {
+      isDown = true;
+      moved = false;
+      row.classList.add('dragging');
+      startX = e.pageX;
+      startScroll = row.scrollLeft;
+    });
+
+    window.addEventListener('mouseup', () => {
+      if (!isDown) return;
+      isDown = false;
+      row.classList.remove('dragging');
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!isDown) return;
+      const dx = e.pageX - startX;
+      if (Math.abs(dx) > 4) moved = true;
+      if (moved) {
+        e.preventDefault();
+        row.scrollLeft = startScroll - dx;
+      }
+    });
+
+    /* Surilgandan keyingi click (karta navigatsiyasi)ni bosib qo'ymaslik */
+    row.addEventListener(
+      'click',
+      (e) => {
+        if (moved) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+      },
+      true
+    );
+  },
+
   initGenrePills(containerId, onSelect) {
     const container = document.getElementById(containerId);
     if (!container) return;
