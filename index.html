@@ -367,14 +367,14 @@
       (async function loadHomeMovies() {
         const tRow = document.getElementById("trending-row");
         const nRow = document.getElementById("new-row");
-        const draw = (el, list, fb) =>
-          el.innerHTML = ((list && list.length) ? list : fb()).map(m => App.buildCard(m, "")).join("");
+        const draw = (el, list) =>
+          el.innerHTML = (list || []).map(m => App.buildCard(m, "")).join("");
 
         /* 1) Cache'dan DARHOL chizamiz — API javobini kutmasdan (qora ekran yo'q) */
         const cT = CPCache.get('home_trending');
         const cN = CPCache.get('home_new');
-        if (cT && cT.v) draw(tRow, cT.v, getTrending);
-        if (cN && cN.v) draw(nRow, cN.v, getNew);
+        if (cT && cT.v) draw(tRow, cT.v);
+        if (cN && cN.v) draw(nRow, cN.v);
 
         /* 2) Fonda yangisini olib, cache'ni va ekranni yangilaymiz */
         try {
@@ -382,15 +382,14 @@
             MoviesAPI.trending(),
             MoviesAPI.newMovies()
           ]);
-          draw(tRow, trending, getTrending);
-          draw(nRow, newMovies, getNew);
+          draw(tRow, trending);
+          draw(nRow, newMovies);
           CPCache.set('home_trending', trending);
           CPCache.set('home_new', newMovies);
           /* Har bir filmni id bo'yicha cache — movie sahifasi darhol ochilishi uchun */
           [...trending, ...newMovies].forEach(m => { if (m && m.id) CPCache.set('movie_' + m.id, m); });
         } catch {
-          if (!(cT && cT.v)) draw(tRow, [], getTrending);
-          if (!(cN && cN.v)) draw(nRow, [], getNew);
+          /* API xato bo'lsa cache'dagi (yuqorida chizilgan) natija qoladi */
         }
       })();
 

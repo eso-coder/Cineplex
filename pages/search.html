@@ -110,12 +110,8 @@
         try {
           const data = await MoviesAPI.search(q);
           results = data.data || data || [];
-          /* Merge with static results not yet in DB */
-          const staticResults = searchMovies(q);
-          const ids = new Set(results.map(m => m.id));
-          staticResults.forEach(m => { if (!ids.has(m.id)) results.push(m); });
         } catch {
-          results = searchMovies(q);
+          results = [];
         }
 
         label.innerHTML = results.length

@@ -1012,8 +1012,16 @@ textarea.form-ctrl{resize:vertical;min-height:88px;line-height:1.6}
 <div id="admin-toast"></div>
 
 <script src="../js/data.js"></script>
-<script src="../js/actors_data.js"></script>
 <script>
+/* actors_data.js (1.4 MB) — panelni bloklamasdan fonda yuklanadi;
+   aktyor tanlash/ro'yxat bo'limlari ochilguncha odatda tayyor bo'ladi. */
+(function () {
+  const s = document.createElement('script');
+  s.src = '../js/actors_data.js';
+  s.async = true;
+  document.head.appendChild(s);
+})();
+
 const API = (function () {
   try {
     var h = window.location.hostname;

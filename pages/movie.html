@@ -1305,7 +1305,6 @@
   </main>
 
   <script src="../js/data.js"></script>
-  <script src="../js/actors_data.js"></script>
   <script src="../js/i18n.js"></script>
   <script src="../js/app.js"></script>
   <script src="../js/api.js"></script>
@@ -1318,7 +1317,7 @@
     App.initAnimations();
 
     const id = App.getParam('id');
-    let movie = getMovieById(id);
+    let movie = null;
     let _apiRelated = null;
     let _mobTrailerInfo = null;
     let selectedStars = 0;
@@ -1371,6 +1370,66 @@
 
     /* ─── Gradient palette for cast avatars ─── */
     const CAST_GRADS = Array(8).fill('linear-gradient(135deg,#3a3a3a,#121212)');
+
+    /* ─── actors_data.js (1.4 MB) LAZY yuklanadi ───
+       Sahifa avval initsiallar bilan chiziladi; fayl kelgach cast bo'limlari
+       foto/profil-link bilan qayta to'ldiriladi. Render hech qachon bloklanmaydi. */
+    (function loadActorsDataLazy() {
+      const s = document.createElement('script');
+      s.src = '../js/actors_data.js';
+      s.async = true;
+      s.onload = () => {
+        if (!movie || !movie.cast || !movie.cast.length) return;
+        const mob = document.getElementById('mob-cast-scroll');
+        if (mob && mob.children.length) mob.innerHTML = buildMobCastHTML(movie.cast);
+        const dp = document.getElementById('dp-cast-scroll');
+        if (dp && dp.children.length) dp.innerHTML = buildDpCastHTML(movie.cast);
+      };
+      document.head.appendChild(s);
+    })();
+
+    /* ─── Cast HTML builderlar (birinchi render + actors_data kelgach qayta render) ─── */
+    function buildMobCastHTML(cast) {
+      return cast.map(name => {
+        const inits = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+        const actorData = typeof ACTORS_DATA !== 'undefined'
+          ? ACTORS_DATA.find(a => a.name.toLowerCase() === name.toLowerCase()) : null;
+        const photo = actorData && actorData.photo ? actorData.photo : null;
+        const actorId = actorData ? actorData.id : null;
+        const clickFn = actorId
+          ? `App.go('../pages/actor-profile.html?id=${actorId}')`
+          : `openActorModal('${name.replace(/'/g,"\\'")}', 'linear-gradient(135deg,#3a3a3a,#121212)')`;
+        return `<div class="mob-cast-card" onclick="${clickFn}">
+          <div class="mob-cast-photo-wrap">
+            ${photo ? `<img src="${photo}" alt="${name}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">` : ''}
+            <div class="mob-cast-photo-fallback" style="${photo ? 'display:none' : ''}">${inits}</div>
+          </div>
+          <div class="mob-cast-name">${name}</div>
+          <div class="mob-cast-char">${actorData && actorData.character ? actorData.character : ''}</div>
+        </div>`;
+      }).join('');
+    }
+
+    function buildDpCastHTML(cast) {
+      return cast.map((name, i) => {
+        const inits = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+        const grad = CAST_GRADS[i % CAST_GRADS.length];
+        const actorData = typeof ACTORS_DATA !== 'undefined'
+          ? ACTORS_DATA.find(a => a.name.toLowerCase() === name.toLowerCase()) : null;
+        const actorId = actorData ? actorData.id : null;
+        const photo = actorData && actorData.photo ? actorData.photo : null;
+        const avatarEl = photo
+          ? `<img class="dp-cast-photo" src="${photo}" alt="${name}"
+               onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" loading="lazy">
+             <div class="dp-cast-avatar" style="background:${grad};display:none">${inits}</div>`
+          : `<div class="dp-cast-avatar" style="background:${grad}">${inits}</div>`;
+        const clickTarget = actorId
+          ? `App.go('../pages/actor-profile.html?id=${actorId}')`
+          : `openActorModal('${name.replace(/'/g, "\\'")}', '${grad}')`;
+        return `<div class="dp-cast-card" onclick="${clickTarget}" style="cursor:pointer">
+          ${avatarEl}<div class="dp-cast-name">${name}</div></div>`;
+      }).join('');
+    }
 
     /* ─── Stars builder ─── */
     function buildStars(n, total = 5) {
@@ -1530,7 +1589,7 @@
       /* ─── Trailer info ─── */
       _mobTrailerInfo = (function () {
         if (movie.trailerS3Url) return { type: 'video', src: movie.trailerS3Url };
-        const raw = (typeof TRAILER_IDS !== 'undefined' && TRAILER_IDS[movie.id]) || movie.trailer_id || movie.trailerUrl || movie.trailer_url;
+        const raw = movie.trailer_id || movie.trailerUrl || movie.trailer_url;
         const ytid = raw && typeof extractYouTubeId === 'function' ? extractYouTubeId(raw) : null;
         if (ytid) return { type: 'youtube', id: ytid };
         return { type: 'none' };
@@ -1637,24 +1696,7 @@
         if (movie.cast && movie.cast.length) {
           document.getElementById('mob-cast-section').style.display = '';
           document.getElementById('mob-cast-divider').style.display = '';
-          document.getElementById('mob-cast-scroll').innerHTML = movie.cast.map(name => {
-            const inits = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
-            const actorData = typeof ACTORS_DATA !== 'undefined'
-              ? ACTORS_DATA.find(a => a.name.toLowerCase() === name.toLowerCase()) : null;
-            const photo = actorData && actorData.photo ? actorData.photo : null;
-            const actorId = actorData ? actorData.id : null;
-            const clickFn = actorId
-              ? `App.go('../pages/actor-profile.html?id=${actorId}')`
-              : `openActorModal('${name.replace(/'/g,"\\'")}', 'linear-gradient(135deg,#3a3a3a,#121212)')`;
-            return `<div class="mob-cast-card" onclick="${clickFn}">
-              <div class="mob-cast-photo-wrap">
-                ${photo ? `<img src="${photo}" alt="${name}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">` : ''}
-                <div class="mob-cast-photo-fallback" style="${photo ? 'display:none' : ''}">${inits}</div>
-              </div>
-              <div class="mob-cast-name">${name}</div>
-              <div class="mob-cast-char">${actorData && actorData.character ? actorData.character : ''}</div>
-            </div>`;
-          }).join('');
+          document.getElementById('mob-cast-scroll').innerHTML = buildMobCastHTML(movie.cast);
         }
 
         /* Gallery */
@@ -1675,8 +1717,7 @@
         }
 
         /* Related */
-        const related = (_apiRelated && _apiRelated.length)
-          ? _apiRelated : (typeof getRelated === 'function' ? getRelated(movie) : []);
+        const related = _apiRelated || [];
         if (related.length) {
           document.getElementById('mob-related-section').style.display = '';
           document.getElementById('mob-related-grid').style.display    = 'grid';
@@ -1750,8 +1791,7 @@
           galleryHTML = movie.gallery.slice(0, 6).map((url, i) =>
             `<div class="dp-gallery-item" onclick="openLightbox(${i})" style="cursor:pointer"><img src="${url}" alt="" loading="lazy"></div>`).join('');
         } else {
-          const gMovies = (_apiRelated && _apiRelated.length
-            ? _apiRelated : (typeof getRelated === 'function' ? getRelated(movie) : [])).slice(0, 6);
+          const gMovies = (_apiRelated || []).slice(0, 6);
           while (gMovies.length < 6) gMovies.push(movie);
           dpGalleryUrls = gMovies.map(m => m.img);
           galleryHTML = gMovies.map((m, i) =>
@@ -1764,27 +1804,9 @@
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m9 18 6-6-6-6"/></svg></button>`
           : '';
 
-        const castHTML = movie.cast.map((name, i) => {
-          const inits = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
-          const grad = CAST_GRADS[i % CAST_GRADS.length];
-          const actorData = typeof ACTORS_DATA !== 'undefined'
-            ? ACTORS_DATA.find(a => a.name.toLowerCase() === name.toLowerCase()) : null;
-          const actorId = actorData ? actorData.id : null;
-          const photo = actorData && actorData.photo ? actorData.photo : null;
-          const avatarEl = photo
-            ? `<img class="dp-cast-photo" src="${photo}" alt="${name}"
-                 onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" loading="lazy">
-               <div class="dp-cast-avatar" style="background:${grad};display:none">${inits}</div>`
-            : `<div class="dp-cast-avatar" style="background:${grad}">${inits}</div>`;
-          const clickTarget = actorId
-            ? `App.go('../pages/actor-profile.html?id=${actorId}')`
-            : `openActorModal('${name.replace(/'/g, "\\'")}', '${grad}')`;
-          return `<div class="dp-cast-card" onclick="${clickTarget}" style="cursor:pointer">
-            ${avatarEl}<div class="dp-cast-name">${name}</div></div>`;
-        }).join('');
+        const castHTML = buildDpCastHTML(movie.cast);
 
-        const related = _apiRelated && _apiRelated.length
-          ? _apiRelated : (typeof getRelated === 'function' ? getRelated(movie) : []);
+        const related = _apiRelated || [];
         const relatedHTML = related.length ? `
           <div class="dp-related-section animate-in">
             <div class="dp-section-label">SHUNGA O'XSHASH</div>
@@ -1809,7 +1831,7 @@
             type: 'video',
             html: `<video class="dp-hero-trailer" id="dp-trailer" src="${movie.trailerS3Url}" autoplay muted loop playsinline disablepictureinpicture disableremoteplayback controlslist="nodownload nofullscreen noremoteplayback noplaybackrate"></video>`
           };
-          const raw = (typeof TRAILER_IDS !== 'undefined' && TRAILER_IDS[movie.id]) || movie.trailer_id || movie.trailerUrl || movie.trailer_url;
+          const raw = movie.trailer_id || movie.trailerUrl || movie.trailer_url;
           const htid = raw && typeof extractYouTubeId === 'function' ? (extractYouTubeId(raw) || raw) : raw;
           if (!htid) return { type: 'none', html: '' };
           const _org = window.location.origin;
@@ -1898,7 +1920,7 @@
           </div>
           <div class="dp-cast-section animate-in" style="transition-delay:0.14s">
             <div class="dp-section-label">AKTYORLAR</div>
-            <div class="dp-cast-scroll">${castHTML}</div>
+            <div class="dp-cast-scroll" id="dp-cast-scroll">${castHTML}</div>
           </div>
           ${relatedHTML}
           <section class="reviews-section animate-in" style="transition-delay:0.18s">
@@ -2356,7 +2378,7 @@
 
     window.openActorModal = function (name, gradient) {
       const inits = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
-      const films = MOVIES.filter(m => m.cast && m.cast.includes(name));
+      const films = [];
       const actorData = typeof ACTORS_DATA !== 'undefined'
         ? ACTORS_DATA.find(a => a.name.toLowerCase() === name.toLowerCase()) : null;
       const bio = actorData && actorData.bio ? actorData.bio : ACTOR_BIOS[name.length % ACTOR_BIOS.length];

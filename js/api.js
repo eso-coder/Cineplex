@@ -442,9 +442,6 @@ const MoviesAPI = {
     return resp;
   },
 
-  moviesOnly() { return this.list({ limit: 500, page: 1 }); },
-  seriesOnly() { return this.list({ limit: 500, page: 1 }); },
-
   // Admin
   create(data)   { return apiFetch('/admin/movies', { method: 'POST', body: JSON.stringify(data) }); },
   update(id, d)  { return apiFetch(`/admin/movies/${id}`, { method: 'PATCH', body: JSON.stringify(d) }); },
@@ -464,8 +461,7 @@ const WatchlistAPI = {
     return { added, message: resp.message };
   },
 
-  remove(movieId) { return this.toggle(movieId); },
-  check()         { return Promise.resolve({ inWatchlist: false }); }
+  remove(movieId) { return this.toggle(movieId); }
 };
 
 /* ─── Watch progress / history ("davom ettirish" + ko'rilganlar tarixi) ─── */
@@ -508,13 +504,6 @@ const WatchAPI = {
       body: JSON.stringify(videoUrl ? { videoUrl } : {}),
     });
   },
-};
-
-/* ─── History API (stub — no backend equivalent yet) ─── */
-const HistoryAPI = {
-  get()    { return Promise.resolve([]); },
-  save()   { return Promise.resolve({}); },
-  clear()  { return Promise.resolve({}); }
 };
 
 /* ─── Reviews (Comments + Ratings) API ─── */
@@ -561,12 +550,6 @@ const ReviewsAPI = {
   },
 };
 
-/* ─── Actors API (stub) ─── */
-const ActorsAPI = {
-  list()    { return Promise.resolve([]); },
-  getById() { return Promise.resolve(null); }
-};
-
 /* ─── Admin API ─── */
 const AdminAPI = {
   stats()               { return apiFetch('/admin/dashboard'); },
@@ -575,11 +558,6 @@ const AdminAPI = {
   deleteUser(id)        { return apiFetch(`/admin/users/${id}`, { method: 'DELETE' }); },
   reviews(params = {})  { return apiFetch('/admin/comments?' + new URLSearchParams(params)); },
   deleteReview(id)      { return apiFetch(`/admin/comments/${id}`, { method: 'DELETE' }); }
-};
-
-/* ─── Stats API (stub) ─── */
-const StatsAPI = {
-  myStats() { return Promise.resolve({ watchlist: 0, watched: 0, minutes: 0 }); }
 };
 
 /* ─── Watchlist toggle — localStorage cp_watchlist + backend if logged in ─── */

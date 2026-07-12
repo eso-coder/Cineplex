@@ -110,9 +110,9 @@
     (async () => {
       try {
         const data = await MoviesAPI.newMovies();
-        newList = (data && data.length) ? data : getNew();
+        newList = data || [];
       } catch {
-        newList = getNew();
+        newList = [];
       }
       buildHeroBand(newList);
       render(newList);

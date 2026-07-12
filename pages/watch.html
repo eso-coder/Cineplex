@@ -968,7 +968,8 @@
     App.initNavbar('', '../');
 
     const id = App.getParam('id');
-    let movie = getMovieById(id);
+    let movie = null;
+    let relatedList = [];
     const videoEl = document.getElementById('real-player');
 
     /* ── "Davom ettirish" — saqlangan joydan davom etish + progress saqlash ── */
@@ -1146,7 +1147,7 @@
       }
 
       /* ── Related ── */
-      const related = getRelated(movie).slice(0, 6);
+      const related = relatedList.slice(0, 6);
       if (related.length) {
         document.getElementById('related-section').innerHTML = `
           <div class="section-header">
@@ -1160,12 +1161,13 @@
       }
     }
 
-    /* ── Load from API if not found in local data ── */
+    /* ── Load from API ── */
     (async () => {
       if (!movie && typeof MoviesAPI !== 'undefined') {
         try {
           const resp = await MoviesAPI.getById(id);
           movie = resp.movie;
+          relatedList = resp.related || [];
         } catch {}
       }
       renderWatchPage();
@@ -1957,24 +1959,6 @@
     };
 
     updateUI();
-
-    /* ── Save watch progress to API periodically ── */
-    if (movie && typeof Auth !== 'undefined' && Auth.isLoggedIn()) {
-      let lastSaved = -1;
-      function currentPct() {
-        if (hasRealVideo() && !isNaN(videoEl.duration) && videoEl.duration > 0)
-          return Math.round(videoEl.currentTime / videoEl.duration * 100);
-        return Math.round(progress);
-      }
-      setInterval(() => {
-        const pct = currentPct();
-        if (pct !== lastSaved && pct > 0) { lastSaved = pct; HistoryAPI.save(movie.id, pct).catch(() => {}); }
-      }, 15000);
-      window.addEventListener('beforeunload', () => {
-        const pct = currentPct();
-        if (pct > 0) HistoryAPI.save(movie.id, pct).catch(() => {});
-      });
-    }
 
     /* ── Watchlist toggle via API ── */
     window.toggleFavAPI = async function () {

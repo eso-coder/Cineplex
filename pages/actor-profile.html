@@ -381,8 +381,7 @@
           ${c.text}
         </div>`).join('');
 
-      /* Known for — match with MOVIES dataset */
-      const dbMovies = MOVIES.filter(m => m.cast && m.cast.some(n => n.toLowerCase() === actor.name.toLowerCase()));
+      const dbMovies = [];
 
       const knownForHTML = (actor.knownFor || []).map(title => `
         <div class="ap-known-card">

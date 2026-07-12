@@ -100,9 +100,9 @@
     (async () => {
       try {
         const data = await MoviesAPI.list({ type: 'movie', limit: 500 });
-        allMovies = (data.data && data.data.length) ? data.data : getMoviesOnly();
+        allMovies = data.data || [];
       } catch {
-        allMovies = getMoviesOnly();
+        allMovies = [];
       }
       applyFiltersAndSort();
       App.buildGenreBar('genre-bar', allMovies, 'film', genre => {
