@@ -1788,19 +1788,15 @@
           ? `${movie.seasons} Seasons · ${movie.episodes} Episodes`
           : movie.duration;
 
+        /* Galereya faqat filmning O'Z rasmlari bo'lsa ko'rsatiladi (mobil
+           layout bilan bir xil qoida). Oldingi fallback bitta posterni 6
+           marta takrorlab qo'yardi — o'chirildi. */
         let dpGalleryUrls = [];
-        let galleryHTML;
+        let galleryHTML = '';
         if (movie.gallery && movie.gallery.length) {
           dpGalleryUrls = movie.gallery;
           galleryHTML = movie.gallery.slice(0, 6).map((url, i) =>
             `<div class="dp-gallery-item" onclick="openLightbox(${i})" style="cursor:pointer"><img src="${url}" alt="" loading="lazy"></div>`).join('');
-        } else {
-          const gMovies = (_apiRelated || []).slice(0, 6);
-          while (gMovies.length < 6) gMovies.push(movie);
-          dpGalleryUrls = gMovies.map(m => m.img);
-          galleryHTML = gMovies.map((m, i) =>
-            `<div class="dp-gallery-item" onclick="openLightbox(${i})" style="cursor:pointer">
-              <img src="${m.img}" alt="${m.title}" loading="lazy"></div>`).join('');
         }
         window._galleryUrls = dpGalleryUrls;
         const galleryViewAll = dpGalleryUrls.length > 6
@@ -1915,13 +1911,14 @@
               </div>
             </div>
           </div>
+          ${galleryHTML ? `
           <div class="dp-gallery animate-in" style="transition-delay:0.1s">
             <div class="dp-gallery-head">
               <div class="dp-section-label">GALLEREYA</div>
               ${galleryViewAll}
             </div>
             <div class="dp-gallery-grid">${galleryHTML}</div>
-          </div>
+          </div>` : ''}
           <div class="dp-cast-section animate-in" style="transition-delay:0.14s">
             <div class="dp-section-label">AKTYORLAR</div>
             <div class="dp-cast-scroll" id="dp-cast-scroll">${castHTML}</div>

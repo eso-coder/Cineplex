@@ -1881,14 +1881,16 @@ main {
   display: none;
 }
 
-/* Yangi chiqmalar (gorizontal qator) kartalari — catalog-grid'dagi kartalar
-   bilan BIR XIL o'lchamda: 6 ta karta + 5 ta 14px oraliq to'liq kenglikni
-   egallaydi (xuddi 6 ustunli grid kabi). */
-#new-row .movie-card {
+/* Yangi chiqmalar va Shunga o'xshash (gorizontal qator) kartalari —
+   catalog-grid'dagi kartalar bilan BIR XIL o'lchamda: 6 ta karta + 5 ta
+   14px oraliq to'liq kenglikni egallaydi (xuddi 6 ustunli grid kabi). */
+#new-row .movie-card,
+#related-row .movie-card {
   width: calc((100% - 70px) / 6);
 }
 @media (max-width: 900px) {
-  #new-row .movie-card { width: var(--card-w); }
+  #new-row .movie-card,
+  #related-row .movie-card { width: var(--card-w); }
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -2155,7 +2157,7 @@ main {
   align-items: center;
   gap: 6px;
   font-size: 11.5px;
-  color: rgba(255, 255, 255, 0.65);
+  color: rgba(255, 255, 255, 0.88);
   flex-wrap: wrap;
 }
 
@@ -2175,7 +2177,7 @@ main {
 .mco-desc {
   font-size: 17px;
   line-height: 1.45;
-  color: rgba(255, 255, 255, 0.55);
+  color: rgba(255, 255, 255, 0.82);
   margin-top: 5px;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -2807,6 +2809,28 @@ main {
   opacity: 0.3;
 }
 
+/* Title/reyting/meta orqasidagi alohida frost qatlami — trailer video
+   yorug' sahnalarida ham matn doim o'qiladigan bo'ladi. .dp-hero-content
+   z-index:3 o'z stacking context'ini yaratadi, shu sababli ::before
+   (z:-1) matndan ORQADA, lekin video/overlay'dan OLDINDA turadi.
+   mask barcha chekkalarni eritadi — quti emas, yumshoq "hovuz". */
+.dp-hero-content::before {
+  content: '';
+  position: absolute;
+  inset: -32px 0 0 0;
+  z-index: -1;
+  background: rgba(8, 10, 9, 0.3);
+  backdrop-filter: blur(22px) saturate(1.1);
+  -webkit-backdrop-filter: blur(22px) saturate(1.1);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 34%, black 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, black 34%, black 100%);
+  pointer-events: none;
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .dp-hero-content::before { background: rgba(8, 10, 9, 0.55); }
+}
+
 /* ── Info row ── */
 /* Shaffof — orqada fixed #movie-bg-blur (xuddi shu banner, blur bilan)
    ko'rinib turadi, shu bilan hero va bu qism birlashib ketadi (mobil
@@ -2825,22 +2849,28 @@ main {
   margin-top: -65px;
 }
 
-/* Hero'ning xira tugash nuqtasidan davom etadigan yumshoq qorong'ilashuv —
-   xom blur fon "dog'li" ko'rinmasligi va Cast/description matni har doim
-   o'qiladigan bo'lishi uchun. Qattiq quti emas, silliq gradient — shu
-   sababli hero bilan "birlashgan" taassurot buzilmaydi. */
+/* HAQIQIY frosted-glass qatlam — matnlar orqasida doim xira turadi.
+   MUHIM: oddiy gradient emas, backdrop-filter! Oldingi urinishlar
+   ko'rinmasligining sababi: pastdagi fon (#movie-bg-blur) allaqachon
+   blur(32px) bo'lgani uchun gradient hech narsani "xiralashtirmasdi".
+   backdrop-filter esa ustki qismda o'tkir trailer videoni ham haqiqatan
+   blur qiladi. mask-image tepa chekkani eritadi — qattiq to'rtburchak
+   chizig'i ko'rinmaydi. */
 .dp-info-section::before {
   content: '';
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: linear-gradient(
-    to bottom,
-    transparent 0%,
-    rgba(5, 5, 5, 0.4) 35%,
-    rgba(5, 5, 5, 0.6) 100%
-  );
+  background: rgba(8, 10, 9, 0.42);
+  backdrop-filter: blur(26px) saturate(1.15);
+  -webkit-backdrop-filter: blur(26px) saturate(1.15);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 18%, black 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, black 18%, black 100%);
   pointer-events: none;
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .dp-info-section::before { background: rgba(8, 10, 9, 0.78); }
 }
 
 .dp-poster {

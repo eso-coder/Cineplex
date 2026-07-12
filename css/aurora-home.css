@@ -178,10 +178,15 @@ body.home-page .movie-title {
   font-weight: 500;
 }
 body.home-page .movie-meta-row,
-body.home-page .movie-series-row,
-body.home-page .mco-meta,
-body.home-page .mco-desc {
+body.home-page .movie-series-row {
   color: var(--text-muted);
+}
+/* Hover overlay'dagi matn yorqin — qorong'i panel ustida aniq o'qilsin */
+body.home-page .mco-meta {
+  color: rgba(255, 255, 255, 0.88);
+}
+body.home-page .mco-desc {
+  color: rgba(255, 255, 255, 0.82);
 }
 body.home-page .mco-title {
   color: var(--text-primary);
