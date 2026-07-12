@@ -32,6 +32,33 @@
       background: var(--bg);
       min-height: 100vh;
     }
+    /* Blur effect description orqa tarafi uchun*/
+
+     .mob-hero-gradient {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: -200px;
+        /* hero ichida pastdan + mob-info ichiga (-margin qancha bo'lsa) */
+        height: calc(65% + 140px);
+        pointer-events: none;
+        z-index: 3;
+        /* hero-img (1) dan yuqori, mob-info (5) dan past */
+      }
+
+      .mob-hero-gradient::before,
+      .mob-hero-gradient::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+      }
+
+      /* Gradientlar olib tashlandi — mask-image mob-hero-img'ning o'zida */
+      .mob-hero-gradient::before,
+      .mob-hero-gradient::after {
+        display: none;
+      }
 
     /* .ambient-bg (qattiq qora fon) #movie-bg-blur (poster blur fon)dan KEYIN
        DOM'da joylashgani uchun uni to'liq yopib qo'yardi — desktop'da blur
@@ -298,31 +325,6 @@
       }
 
       /* ── Gradient blur: hero ham mob-info ni qoplaydi ── */
-      .mob-hero-gradient {
-        position: absolute;
-        left: 0;
-        right: 0;
-        bottom: -200px;
-        /* hero ichida pastdan + mob-info ichiga (-margin qancha bo'lsa) */
-        height: calc(65% + 140px);
-        pointer-events: none;
-        z-index: 3;
-        /* hero-img (1) dan yuqori, mob-info (5) dan past */
-      }
-
-      .mob-hero-gradient::before,
-      .mob-hero-gradient::after {
-        content: '';
-        position: absolute;
-        inset: 0;
-        pointer-events: none;
-      }
-
-      /* Gradientlar olib tashlandi — mask-image mob-hero-img'ning o'zida */
-      .mob-hero-gradient::before,
-      .mob-hero-gradient::after {
-        display: none;
-      }
 
       .mob-hero-trailer-btn {
         position: absolute;
