@@ -1,0 +1,7 @@
+fars/
+fars-v3/
+Cineplex Chat Bot/
+*.md
+start.bat
+backend/node_modules/
+backend/logs/
