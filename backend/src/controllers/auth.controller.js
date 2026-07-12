@@ -43,27 +43,6 @@ const issueSession = async (res, user, message, created = false) => {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// LEGACY: POST /api/auth/register  (name + email + password → OTP verification)
-// ─────────────────────────────────────────────────────────────────────────────
-const register = asyncHandler(async (req, res) => {
-  const { name, email, password } = req.body;
-  const existing = await User.findOne({ email });
-  if (existing && existing.isVerified) throw ApiError.conflict('Email already registered');
-
-  const code = generateOtp();
-  const expiresAt = new Date(Date.now() + OTP_TTL_MS);
-  await Otp.deleteMany({ email });
-  await Otp.create({ email, code, expiresAt, used: false, payload: { name, password } });
-
-  const { delivered, devCode } = await sendOtpEmail(email, code);
-  return sendCreated(
-    res,
-    { email, otpSent: true, delivered, ...(devCode ? { devCode } : {}) },
-    'Verification code sent'
-  );
-});
-
-// ─────────────────────────────────────────────────────────────────────────────
 // POST /api/auth/signup  → create/update a pending OTP, send the code by email
 // ─────────────────────────────────────────────────────────────────────────────
 const signup = asyncHandler(async (req, res) => {
@@ -95,6 +74,15 @@ const signup = asyncHandler(async (req, res) => {
     'Verification code sent'
   );
 });
+
+// LEGACY: POST /api/auth/register (name + email + password) — register.html
+// hali shu yo'lni ishlatadi; name'ni firstName/lastName'ga bo'lib signup'ga uzatamiz.
+const register = (req, res, next) => {
+  const { name = '', email, password } = req.body;
+  const [firstName, ...rest] = String(name).trim().split(/\s+/);
+  req.body = { firstName: firstName || '', lastName: rest.join(' '), email, password };
+  return signup(req, res, next);
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // POST /api/auth/verify-otp  → confirm code, create account, return JWT

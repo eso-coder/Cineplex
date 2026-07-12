@@ -76,8 +76,7 @@
       '    <button class="am-btn" id="am-signup-btn" type="button">Create an account</button>',
       '    <div class="am-divider">OR SIGN IN WITH</div>',
       '    <div class="am-social-row">',
-      '      <button class="am-social" data-provider="google" type="button" aria-label="Continue with Google">' + ICONS.google + '</button>',
-      '      <button class="am-social" data-provider="apple" type="button" aria-label="Continue with Apple">' + ICONS.apple + '</button>',
+      '      <button class="am-social" data-provider="google" type="button" aria-label="Continue with Google">' + ICONS.google + '<span>Continue with Google</span></button>',
       '    </div>',
       '    <div class="am-footer">By creating an account, you agree to our <a href="#">Terms &amp; Service</a></div>',
       '  </div>',
@@ -92,8 +91,7 @@
       '    <button class="am-btn" id="am-signin-btn" type="button">Sign in</button>',
       '    <div class="am-divider">OR SIGN IN WITH</div>',
       '    <div class="am-social-row">',
-      '      <button class="am-social" data-provider="google" type="button" aria-label="Continue with Google">' + ICONS.google + '</button>',
-      '      <button class="am-social" data-provider="apple" type="button" aria-label="Continue with Apple">' + ICONS.apple + '</button>',
+      '      <button class="am-social" data-provider="google" type="button" aria-label="Continue with Google">' + ICONS.google + '<span>Continue with Google</span></button>',
       '    </div>',
       '  </div>',
 
@@ -167,7 +165,7 @@
     var menu = $('#am-cc-menu');
     menu.innerHTML = COUNTRIES.map(function (c) {
       return '<button class="am-cc-opt" type="button" data-cc="' + c.c + '">' +
-        '<span class="am-flag" style="font-size: 27px">' + c.f + '</span><span>' + c.n + '</span>' +
+        '<span class="am-flag" style="font-size: 30.5px">' + c.f + '</span><span>' + c.n + '</span>' +
         '<span class="am-dial">' + c.d + '</span></button>';
     }).join('');
     menu.querySelectorAll('.am-cc-opt').forEach(function (opt) {
@@ -392,15 +390,21 @@
     });
   }
 
-  // Config'ni bir marta olib, yoqilgan providerlar SDK'sini yuklab/initsiyalaymiz
+  // Config'ni olib, yoqilgan providerlar SDK'sini yuklab/initsiyalaymiz.
+  // Muvaffaqiyatsiz/bo'sh urinish abadiy "eslab qolinmaydi" — gisInited/appleInited
+  // true bo'lmaguncha har chaqiruvda qayta urinib ko'radi (masalan, birinchi
+  // urinish AuthAPI hali tayyor bo'lmasdan yoki tarmoq muammosi tufayli
+  // muvaffaqiyatsiz bo'lsa, keyingi tugma bosilganda stub rejimida abadiy
+  // qolib qolmaslik uchun).
   function prepareOAuth() {
-    if (oauthPrep) return oauthPrep;
-    // AuthAPI hali yuklanmagan bo'lsa — memoize qilmaymiz, keyin qayta urinamiz
-    if (!(window.AuthAPI && AuthAPI.oauthConfig)) return Promise.resolve();
+    if (gisInited && (appleInited || !oauthCfg || !oauthCfg.apple || !oauthCfg.apple.enabled)) {
+      return Promise.resolve();
+    }
+    if (typeof AuthAPI === 'undefined' || !AuthAPI.oauthConfig) return Promise.resolve();
     oauthPrep = AuthAPI.oauthConfig().then(function (cfg) {
       oauthCfg = cfg || {};
       var tasks = [];
-      if (cfg && cfg.google && cfg.google.enabled) {
+      if (cfg && cfg.google && cfg.google.enabled && !gisInited) {
         tasks.push(loadScript('https://accounts.google.com/gsi/client').then(function () {
           if (window.google && !gisInited) {
             window.google.accounts.id.initialize({ client_id: cfg.google.clientId, callback: onGoogleCredential });
@@ -408,7 +412,7 @@
           }
         }).catch(function () {}));
       }
-      if (cfg && cfg.apple && cfg.apple.enabled) {
+      if (cfg && cfg.apple && cfg.apple.enabled && !appleInited) {
         tasks.push(loadScript('https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js').then(function () {
           if (window.AppleID && !appleInited) {
             window.AppleID.auth.init({ clientId: cfg.apple.clientId, scope: 'name email', redirectURI: location.origin + '/', usePopup: true });
@@ -417,7 +421,7 @@
         }).catch(function () {}));
       }
       return Promise.all(tasks);
-    }).catch(function () { /* config yo'q → stub rejimi qoladi */ });
+    }).catch(function () { /* config yo'q → stub rejimi qoladi, keyingi chaqiruv qayta urinadi */ });
     return oauthPrep;
   }
 
@@ -443,10 +447,14 @@
       holder.style.background = 'transparent';
       holder.style.border = 'none';
       holder.style.overflow = 'hidden';
+      holder.style.width = '100%';
+      holder.style.display = 'flex';
+      holder.style.justifyContent = 'center';
       btn.parentNode.replaceChild(holder, btn);
       try {
         window.google.accounts.id.renderButton(holder, {
-          type: 'icon', shape: 'square', theme: 'filled_black', size: 'large',
+          type: 'standard', shape: 'pill', theme: 'filled_black', size: 'large',
+          text: 'continue_with', logo_alignment: 'left', width: 320,
         });
       } catch (e) { /* ignore */ }
     });

@@ -113,19 +113,19 @@ const App = {
             <div class="pdd-quick-icon">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
             </div>
-            <span>Saqlangan</span>
+            <span>${T('nav.saved', 'Saqlangan')}</span>
           </a>
           <a class="pdd-quick-item" href="${searchPage}">
             <div class="pdd-quick-icon">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
             </div>
-            <span>Qidiruv</span>
+            <span>${T('nav.search', 'Qidiruv')}</span>
           </a>
           <div class="pdd-quick-item" id="profile-settings-btn">
             <div class="pdd-quick-icon">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
             </div>
-            <span>Sozlamalar</span>
+            <span>${T('nav.settings', 'Sozlamalar')}</span>
           </div>
         </div>
 
@@ -136,21 +136,21 @@ const App = {
           <div class="pdd-item-icon">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
           </div>
-          <span>Profil</span>
+          <span>${T('nav.profile', 'Profil')}</span>
           <svg class="pdd-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 18 6-6-6-6"/></svg>
         </a>
         <a class="pdd-item" href="${profilePage}">
           <div class="pdd-item-icon">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
           </div>
-          <span>Saqlangan</span>
+          <span>${T('nav.saved', 'Saqlangan')}</span>
           <svg class="pdd-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 18 6-6-6-6"/></svg>
         </a>
         <a class="pdd-item" href="#">
           <div class="pdd-item-icon">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.49 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.4 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.4a16 16 0 0 0 5.72 5.72l1.7-1.7a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 14.92z"/></svg>
           </div>
-          <span>Qo'llab-quvvatlash</span>
+          <span>${T('nav.support', "Qo'llab-quvvatlash")}</span>
           <svg class="pdd-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 18 6-6-6-6"/></svg>
         </a>
         <a class="pdd-item" href="#">
@@ -167,7 +167,7 @@ const App = {
           <div class="pdd-item-icon pdd-danger-icon">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
           </div>
-          <span>Chiqish</span>
+          <span>${T('nav.logout', 'Chiqish')}</span>
         </div>
       </div>
     </div>
@@ -458,9 +458,9 @@ const App = {
     const titleAttr = E(m.title);
     return `<div class="movie-card" data-id="${E(m.id)}" data-genre="${E((m.genre||[]).join(' '))}"
 onclick="App.go('${href}')">
-  ${m.img ? `<img class="movie-glow" src="${E(m.img)}" alt="" aria-hidden="true" loading="lazy">` : ''}
+  ${m.img ? `<img class="movie-glow" src="${E(m.img)}" alt="" aria-hidden="true" loading="lazy" width="300" height="450">` : ''}
   <div class="movie-poster">
-    <img src="${E(m.img || '')}" alt="${titleAttr}" loading="lazy" ${!m.img ? 'style="display:none"' : ''}>
+    <img src="${E(m.img || '')}" alt="${titleAttr}" loading="lazy" width="300" height="450" ${!m.img ? 'style="display:none"' : ''}>
     ${badge}
     <div class="movie-card-overlay">
       <div class="mco-top">
@@ -511,7 +511,7 @@ onclick="App.go('${href}')">
 </div>`;
   },
 
-  loadCardTrailer(card, id) {
+  loadCardTrailer(card) {
     const parent = card.parentElement;
     if (parent) {
       const allCards = [...parent.querySelectorAll('.movie-card')];
@@ -538,17 +538,6 @@ onclick="App.go('${href}')">
         prev.style.opacity   = '0';
       }
     }
-    if (typeof TRAILERS === 'undefined') return;
-    const ytId = TRAILERS[id];
-    if (!ytId) return;
-    const vid = card.querySelector('.cp-video');
-    if (!vid || vid.querySelector('iframe')) return;
-    const iframe = document.createElement('iframe');
-    iframe.className = 'cp-iframe';
-    iframe.setAttribute('allow', 'autoplay; encrypted-media');
-    iframe.setAttribute('allowfullscreen', '');
-    iframe.src = `https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1&controls=0&rel=0&modestbranding=1&loop=1&playlist=${ytId}&playsinline=1`;
-    vid.appendChild(iframe);
   },
 
   unloadCardTrailer(card) {
@@ -559,8 +548,6 @@ onclick="App.go('${href}')">
         sib.style.opacity   = '';
       });
     }
-    const iframe = card.querySelector('.cp-video iframe');
-    if (iframe) { iframe.src = ''; iframe.remove(); }
   },
 
   /* ── Intro (home only) ── */
@@ -584,3 +571,18 @@ onclick="App.go('${href}')">
 };
 
 window.scrollRow = (id, dir) => App.scrollRow(id, dir);
+
+/* ── YouTube trailer'lar avtomatik striming paytida kamida 1080p sifatda
+   ishga tushishi uchun (agar 1080p mavjud bo'lmasa, eng baland mavjud
+   sifat ishlatiladi — YouTube shunday fallback qiladi). ── */
+window.addEventListener('message', function (e) {
+  try {
+    const data = JSON.parse(typeof e.data === 'string' ? e.data : '{}');
+    if (data.event !== 'onReady' && data.event !== 'onStateChange') return;
+    document.querySelectorAll('.cp-iframe').forEach(function (fr) {
+      if (fr.contentWindow === e.source) {
+        fr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setPlaybackQuality', args: ['hd1080'] }), '*');
+      }
+    });
+  } catch (err) { /* ignore */ }
+});

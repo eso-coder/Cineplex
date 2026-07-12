@@ -48,7 +48,15 @@
 
   function setLang(lang) {
     if (LANGS.indexOf(lang) === -1) return;
-    try { localStorage.setItem('cp_lang', lang); } catch (e) {}
+    try {
+      localStorage.setItem('cp_lang', lang);
+      // CPCache (js/api.js) film/kontent ma'lumotlarini tilga bog'liq holda emas,
+      // faqat id bo'yicha keshlaydi — til almashtirilganda eski (boshqa tildagi)
+      // keshlangan nusxa ko'rsatilib qolmasligi uchun hammasini tozalaymiz.
+      Object.keys(localStorage)
+        .filter(function (k) { return k.indexOf('cpc_') === 0; })
+        .forEach(function (k) { localStorage.removeItem(k); });
+    } catch (e) {}
     document.documentElement.setAttribute('lang', lang);
     window.location.reload();
   }

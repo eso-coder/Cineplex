@@ -21,31 +21,22 @@ const getMovieComments = asyncHandler(async (req, res) => {
     Comment.countDocuments({ movie: movieId, parentComment: null }),
   ]);
 
-  // Attach replies for this page's comments
-  const commentIds = comments.map((c) => c._id);
-  const replies = await Comment.find({ parentComment: { $in: commentIds } })
-    .populate('user', 'name avatar')
-    .sort({ createdAt: 1 })
-    .lean();
-
-  const repliesMap = {};
-  for (const reply of replies) {
-    const key = reply.parentComment.toString();
-    if (!repliesMap[key]) repliesMap[key] = [];
-    repliesMap[key].push(reply);
-  }
-
-  const commentsWithReplies = comments.map((c) => ({
-    ...c,
-    replies: repliesMap[c._id.toString()] || [],
-  }));
-
-  sendPaginated(res, commentsWithReplies, {
+  sendPaginated(res, comments, {
     page,
     limit,
     total,
     totalPages: Math.ceil(total / limit),
   });
+});
+
+// GET /api/comments/user/mine — joriy foydalanuvchining barcha sharhlari (profil "Reviews" tabi uchun)
+const getMyComments = asyncHandler(async (req, res) => {
+  const comments = await Comment.find({ user: req.user._id, parentComment: null })
+    .populate('movie', 'title poster bannerUrl releaseYear')
+    .sort({ createdAt: -1 })
+    .limit(100)
+    .lean();
+  sendSuccess(res, comments.filter((c) => c.movie));
 });
 
 // POST /api/comments/movie/:movieId
@@ -115,21 +106,4 @@ const toggleLike = asyncHandler(async (req, res) => {
   sendSuccess(res, { likesCount: comment.likes.length }, 'Like toggled');
 });
 
-// POST /api/comments/:id/reply
-const replyComment = asyncHandler(async (req, res) => {
-  const parent = await Comment.findById(req.params.id);
-  if (!parent) throw ApiError.notFound('Comment');
-  if (parent.parentComment) throw ApiError.badRequest('Cannot reply to a reply');
-
-  const reply = await Comment.create({
-    movie: parent.movie,
-    user: req.user._id,
-    text: req.body.text,
-    parentComment: parent._id,
-  });
-
-  await reply.populate('user', 'name avatar');
-  sendCreated(res, reply, 'Reply added');
-});
-
-module.exports = { getMovieComments, addComment, updateComment, deleteComment, toggleLike, replyComment };
+module.exports = { getMovieComments, getMyComments, addComment, updateComment, deleteComment, toggleLike };

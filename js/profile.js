@@ -151,8 +151,7 @@
     // stats
     var s = stats || {};
     var statDefs = [
-      ['films', 'Films'], ['thisYear', 'This Year'], ['lists', 'Lists'],
-      ['following', 'Following'], ['followers', 'Followers'],
+      ['films', 'Films'], ['minutes', 'Minutes'], ['hours', 'Hours'],
     ];
     document.getElementById('pf2-stats').innerHTML = statDefs.map(function (d) {
       return '<div class="pf2-stat"><div class="pf2-stat-num">' + fmtStat(s[d[0]] != null ? s[d[0]] : 0) + '</div><div class="pf2-stat-label">' + d[1] + '</div></div>';
@@ -452,7 +451,11 @@
       return (current.activity || []).filter(function (f) { return f.liked; });
     }
 
-    if (tab === 'reviews') return [];
+    if (tab === 'reviews') {
+      return (current.reviews || []).map(function (r) {
+        return { id: r.movieId, title: r.title, year: r.year, posterUrl: r.poster };
+      });
+    }
     return [];
   }
 
@@ -548,19 +551,26 @@
 
     renderHeader(user, {}); // paint identity immediately
 
-    var stats = {}, activity = [], favourites = [];
+    var stats = {}, activity = [], favourites = [], reviews = [];
     try {
       var results = await Promise.all([
         ProfileAPI.stats(userId).catch(function () { return {}; }),
-        ActivityAPI.get(userId, 5).catch(function () { return []; }),
+        ActivityAPI.get(userId, 50).catch(function () { return []; }),
         FavouritesAPI.get(userId).catch(function () { return []; }),
+        (typeof ReviewsAPI !== 'undefined' ? ReviewsAPI.mine() : Promise.resolve([])).catch(function () { return []; }),
+        (typeof ProgressAPI !== 'undefined' ? ProgressAPI.history() : Promise.resolve([])).catch(function () { return []; }),
       ]);
       stats = results[0] || {};
       activity = results[1] || [];
       favourites = results[2] || [];
+      reviews = results[3] || [];
+      var history = results[4] || [];
+      var totalSeconds = history.reduce(function (sum, m) { return sum + (m.watchProgress || 0); }, 0);
+      stats.minutes = Math.round(totalSeconds / 60);
+      stats.hours = Math.round(totalSeconds / 3600);
     } catch (e) { /* keep defaults */ }
 
-    current = { user: user, stats: stats, activity: activity, films: favourites, watchlist: [] };
+    current = { user: user, stats: stats, activity: activity, films: activity, reviews: reviews, watchlist: [] };
     allFavourites = favourites;
 
     // Load watchlist for the Watchlist tab (best-effort)

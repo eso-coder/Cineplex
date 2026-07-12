@@ -2,5 +2,25 @@
   "version": 2,
   "rewrites": [
     { "source": "/api/:path*", "destination": "/api/index.js" }
+  ],
+  "headers": [
+    {
+      "source": "/(js|css)/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=86400, stale-while-revalidate=604800" }
+      ]
+    },
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=604800, stale-while-revalidate=2592000" }
+      ]
+    },
+    {
+      "source": "/favicon.svg",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=604800" }
+      ]
+    }
   ]
 }

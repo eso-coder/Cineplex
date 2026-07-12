@@ -28,9 +28,9 @@
     .new-featured:hover img { transform: scale(1.04); }
     .new-featured-grad { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 50%); }
     .new-featured-info { position: absolute; bottom: 16px; left: 18px; right: 60px; z-index: 2; }
-    .new-feat-badge { display: inline-block; background: rgba(255,255,255,0.18); color: #ffffff; font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 4px; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 5px; backdrop-filter: blur(6px); border: 1px solid rgba(255,255,255,0.25); }
-    .new-feat-title { font-size: 18px; font-weight: 800; line-height: 1.1; letter-spacing: -0.3px; }
-    .new-feat-meta { font-size: 11px; color: rgba(255,255,255,0.55); margin-top: 4px; }
+    .new-feat-badge { display: inline-block; background: rgba(255,255,255,0.18); color: #ffffff; font-size: 11.5px; font-weight: 800; padding: 2px 8px; border-radius: 4px; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 5px; backdrop-filter: blur(6px); border: 1px solid rgba(255,255,255,0.25); }
+    .new-feat-title { font-size: 20.5px; font-weight: 800; line-height: 1.1; letter-spacing: -0.3px; }
+    .new-feat-meta { font-size: 12.5px; color: rgba(255,255,255,0.55); margin-top: 4px; }
     .new-play-mini {
       position: absolute; right: 14px; bottom: 14px;
       width: 44px; height: 44px; border-radius: 50%;
@@ -110,9 +110,9 @@
     (async () => {
       try {
         const data = await MoviesAPI.newMovies();
-        newList = (data && data.length) ? data : getNew();
+        newList = data || [];
       } catch {
-        newList = getNew();
+        newList = [];
       }
       buildHeroBand(newList);
       render(newList);

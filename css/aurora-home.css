@@ -33,7 +33,7 @@ body.home-page .navbar::before {
   bottom: 0;
   z-index: -1;
   background-color: transparent;
-  border-radius: 0 0 var(--radius-card) var(--radius-card);
+  border-radius: 0;
   transition: background-color 0.1s linear;
 }
 
@@ -59,7 +59,7 @@ body.home-page .nav-search {
 }
 body.home-page .nav-search:focus-within {
   background: var(--glass-bg-hover);
-  border-color: rgba(232, 182, 76, 0.5);
+  border-color: rgba(255, 255, 255, 0.5);
   outline: none;
 }
 

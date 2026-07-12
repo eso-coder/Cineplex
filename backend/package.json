@@ -14,7 +14,6 @@
     "@aws-sdk/cloudfront-signer": "^3.1054.0",
     "apple-signin-auth": "^1.7.6",
     "bcryptjs": "^2.4.3",
-    "cloudinary": "^2.5.1",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",

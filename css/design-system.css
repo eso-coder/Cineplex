@@ -11,7 +11,7 @@
   --bg-base: #0b0f0d;
   --bg-elevated: #111613;
   --aurora: radial-gradient(ellipse 80% 60% at 50% 0%,
-            rgba(45, 90, 60, 0.35), transparent 70%);
+            rgba(255, 255, 255, 0.14), transparent 70%);
 
   /* Glass */
   --glass-bg: rgba(255, 255, 255, 0.06);
@@ -20,10 +20,10 @@
   --ds-blur: 24px;
   --ds-blur-mobile: 12px;
 
-  /* Accent — gold, ONE per screen region */
-  --accent: #e8b64c;
-  --accent-hover: #f2c765;
-  --accent-text: #1a1408;
+  /* Accent — white, ONE per screen region */
+  --accent: #ffffff;
+  --accent-hover: #e6e6e6;
+  --accent-text: #0a0a0c;
 
   /* Text */
   --text-primary: #f5f5f2;

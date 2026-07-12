@@ -1,44 +1,7 @@
 /* ═══════════════════════════════════════════════════════
-   CInemaplex — Movie & Series Dataset
-   All content is managed from the Admin Panel.
+   CInemaplex — localStorage holat helperlari (favorites,
+   watchlist, likes, toast). Kontent to'liq API'dan keladi.
 ═══════════════════════════════════════════════════════ */
-
-const MOVIES = [];
-
-/* ── YouTube Trailer IDs ── */
-const TRAILERS = {};
-
-/* ── Trailer IDs (YouTube) ── */
-const TRAILER_IDS = {};
-
-/* ── Helpers ── */
-function getMovieById(id) {
-  return MOVIES.find(m => m.id === +id) || null;
-}
-function getTrending() {
-  return MOVIES.filter(m => m.isTrending);
-}
-function getNew() {
-  return MOVIES.filter(m => m.isNew);
-}
-function getMoviesOnly() {
-  return MOVIES.filter(m => m.type === 'movie');
-}
-function getSeriesOnly() {
-  return MOVIES.filter(m => m.type === 'series');
-}
-function getByGenre(genre) {
-  if (!genre || genre === 'all') return MOVIES;
-  return MOVIES.filter(m => m.genre.includes(genre));
-}
-function searchMovies(q) {
-  const query = q.toLowerCase().trim();
-  if (!query) return [];
-  return MOVIES.filter(m => m.title.toLowerCase().includes(query) || m.genre.some(g => g.includes(query)));
-}
-function getRelated(movie) {
-  return MOVIES.filter(m => m.id !== movie.id && m.genre.some(g => movie.genre.includes(g))).slice(0, 8);
-}
 
 /* ── Favorites / Watchlist (localStorage) ── */
 function getFavorites() {

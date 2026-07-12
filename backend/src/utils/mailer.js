@@ -118,4 +118,4 @@ async function sendOtpEmail(email, code) {
   return { delivered: false, devCode: nodeEnv === 'production' ? null : code };
 }
 
-module.exports = { generateOtp, sendOtpEmail, smtpConfigured };
+module.exports = { generateOtp, sendOtpEmail };

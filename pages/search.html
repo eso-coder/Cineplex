@@ -14,7 +14,7 @@
     .popular-tag {
       padding: 6px 14px; border-radius: 50px;
       background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.09);
-      font-size: 13px; color: rgba(255,255,255,0.55); cursor: pointer;
+      font-size: 14.5px; color: rgba(255,255,255,0.55); cursor: pointer;
       transition: all 0.18s;
     }
     .popular-tag:hover { background: rgba(255,255,255,0.1); color: #ffffff; border-color: rgba(255,255,255,0.18); }
@@ -38,7 +38,7 @@
 
       <!-- Popular tags -->
       <div id="popular-section">
-        <div style="font-size: 12px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;">Mashhur qidiruvlar</div>
+        <div style="font-size: 13.5px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;">Mashhur qidiruvlar</div>
         <div class="popular-tags">
           <span class="popular-tag" onclick="setQuery('action')">Jangovar</span>
           <span class="popular-tag" onclick="setQuery('scifi')">Fantastika</span>
@@ -74,9 +74,12 @@
     const popSec = document.getElementById('popular-section');
     const clearBtn = document.getElementById('clear-btn');
 
-    /* Pre-fill from URL param */
-    const urlQ = App.getParam('q');
-    if (urlQ) { inp.value = urlQ; runSearch(urlQ); }
+    /* MUHIM: searchTimer `let` bilan e'lon qilingani uchun undan OLDIN
+       runSearch() chaqirilsa TDZ (temporal dead zone) xatosi chiqib,
+       butun script to'xtab qolardi — URL orqali ?q= bilan kelganda
+       qidiruv umuman ishlamay qolgan edi. Shu sababli deklaratsiya
+       runSearch'ning birinchi chaqiruvidan oldin turishi shart. */
+    let searchTimer;
 
     inp.addEventListener('input', () => { runSearch(inp.value); });
     inp.addEventListener('keydown', e => { if (e.key === 'Escape') { inp.value = ''; runSearch(''); } });
@@ -84,7 +87,9 @@
 
     window.setQuery = q => { inp.value = q; runSearch(q); inp.focus(); };
 
-    let searchTimer;
+    /* Pre-fill from URL param */
+    const urlQ = App.getParam('q');
+    if (urlQ) { inp.value = urlQ; runSearch(urlQ); }
     function runSearch(q) {
       clearBtn.style.display = q ? 'block' : 'none';
 
@@ -105,12 +110,8 @@
         try {
           const data = await MoviesAPI.search(q);
           results = data.data || data || [];
-          /* Merge with static results not yet in DB */
-          const staticResults = searchMovies(q);
-          const ids = new Set(results.map(m => m.id));
-          staticResults.forEach(m => { if (!ids.has(m.id)) results.push(m); });
         } catch {
-          results = searchMovies(q);
+          results = [];
         }
 
         label.innerHTML = results.length
