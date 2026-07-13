@@ -3190,10 +3190,10 @@ main {
 }
 
 /* ── Cast section ── */
+/* Shaffof — hero/info/gallery bilan bir xil uzluksiz fon (#movie-bg-blur)
+   davom etadi, gallery bilan bu bo'lim orasida chegara qolmaydi. */
 .dp-cast-section {
   padding: 52px 50px;
-  background: rgba(8, 8, 10, 0.55);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .dp-cast-scroll {
@@ -3245,10 +3245,10 @@ main {
 }
 
 /* ── Related section ── */
+/* Shaffof — cast bilan bir xil, uzluksiz fon davom etadi. Faqat reviews
+   (foydalanuvchi sharhlari, alohida funksional blok) qattiq fonda qoladi. */
 .dp-related-section {
   padding: 52px 50px;
-  background: rgba(8, 8, 10, 0.55);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .dp-related-section .section-title {
