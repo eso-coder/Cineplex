@@ -2202,6 +2202,7 @@ main {
 
 .movie-card:hover .mco-center {
   opacity: 1;
+  transition: 0.5s;
   pointer-events: all;
 }
 
@@ -2387,6 +2388,7 @@ main {
   line-height: 1.35;
   margin-bottom: 3px;
   display: -webkit-box;
+  z-index: 55;
   -webkit-line-clamp: 2;
   line-clamp: 2;
   -webkit-box-orient: vertical;
