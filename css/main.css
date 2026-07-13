@@ -2202,18 +2202,12 @@ main {
 
 .movie-card:hover .mco-center {
   opacity: 1;
-  transition: 0.5s;
   pointer-events: all;
 }
 
 .mco-play-btn {
   width: 64px;
   height: 64px;
-  border-radius: 50%;
-  background: var(--glass-2);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid rgba(255, 255, 255, 0.24);
   display: flex;
   align-items: center;
   justify-content: center;
