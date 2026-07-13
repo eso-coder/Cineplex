@@ -534,7 +534,7 @@ onclick="App.go('${href}')">
       </div>
       <div class="mco-center">
         <button class="mco-play-btn" type="button" onclick="event.stopPropagation();App.go('${href}')" title="Ko'rish">
-          <svg width="26" height="26" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></svg>
+          <svg viewBox="0 0 24 24"><path d="M6 4.983c0-1.532 1.693-2.465 2.986-1.645l9.5 6.017a1.96 1.96 0 0 1 0 3.29l-9.5 6.017C7.693 19.482 6 18.549 6 17.017V4.983z" fill="currentColor"/></svg>
         </button>
       </div>
       <div class="mco-bottom">
