@@ -1836,7 +1836,9 @@
                 <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
               </button>
             </div>` : ''}
-            <div class="dp-hero-content">
+          </div>
+          <div class="dp-info-section">
+            <div class="dp-info-header">
               ${movie.logoUrl
                 ? `<img class="dp-hero-logo-img" src="${movie.logoUrl}" alt="${movie.title}" onerror="this.style.display='none;this.nextElementSibling.style.display=\\'block\\''"><h1 class="dp-hero-title" style="display:none">${movie.title}</h1>`
                 : `<h1 class="dp-hero-title">${movie.title}</h1>`
@@ -1852,8 +1854,7 @@
                 <span>${movie.genre.map(g => g.charAt(0).toUpperCase() + g.slice(1)).join(', ')}</span>
               </div>
             </div>
-          </div>
-          <div class="dp-info-section">
+            <div class="dp-info-body">
             <div class="dp-poster"><img src="${movie.img}" alt="${movie.title}"></div>
             <div class="dp-details">
               <div class="dp-text-collapse" id="dp-text-collapse">
@@ -1885,6 +1886,7 @@
                   Ulashish
                 </button>
               </div>
+            </div>
             </div>
           </div>
           <div class="dp-gallery" id="dp-gallery-section"${galleryHTML ? '' : ' style="display:none"'}>

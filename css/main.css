@@ -2122,10 +2122,11 @@ main {
 /* Pastki info panel — yoyilgan (fade bilan tarqalgan) blur fon ustida.
    mask-image blur qatlamining yuqori chekkasini yumshoq eritib yuboradi,
    shunda panel posterga "yopishtirilgan quti" emas, tabiiy yoyilgan
-   shisha bo'lib ko'rinadi. */
+   shisha bo'lib ko'rinadi. padding-top kattalashtirildi — frost/blur
+   qatlami title'dan ancha yuqoriroqqa cho'zilib, balandroq bo'ladi. */
 .mco-bottom {
   margin-top: auto;
-  padding: 26px 12px 12px;
+  padding: 64px 12px 14px;
   background: linear-gradient(
     to top,
     rgba(0, 0, 0, 0.88) 0%,
@@ -2139,10 +2140,10 @@ main {
 }
 
 .mco-title {
-  font-size: 24px;
+  font-size: 27px;
   font-weight: 700;
   color: #ffffff;
-  line-height: 1.3;
+  line-height: 1.25;
   margin-bottom: 4px;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -2175,9 +2176,9 @@ main {
 }
 
 .mco-desc {
-  font-size: 17px;
+  font-size: 12.5px;
   line-height: 1.45;
-  color: rgba(255, 255, 255, 0.82);
+  color: rgba(255, 255, 255, 0.72);
   margin-top: 5px;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -2186,25 +2187,58 @@ main {
   overflow: hidden;
 }
 
-/* To'liq kenglikdagi asosiy CTA — hover panelining eng pastida */
-.mco-watch-btn {
-  width: 100%;
-  margin-top: 12px;
-  padding: 11px 16px;
-  gap: 8px;
-  font-size: 14px;
+/* Markazdagi katta Play tugmasi — yumshoq, qirralari o'tkir emas
+   (stroke-linejoin/linecap:round o'zi bilan bir xil rangda "yumshatadi").
+   Faqat opacity + scale bilan chiqadi (dizayn qoidasi). */
+.mco-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   opacity: 0;
-  transform: translateY(6px);
-  transition:
-    opacity 0.32s cubic-bezier(0.16, 1, 0.3, 1),
-    transform 0.32s cubic-bezier(0.16, 1, 0.3, 1),
-    background var(--ds-dur, 0.2s) var(--ds-ease, ease);
+  transition: opacity 0.28s var(--ease-out);
+  pointer-events: none;
 }
 
-.movie-card:hover .mco-watch-btn {
+.movie-card:hover .mco-center {
   opacity: 1;
-  transform: translateY(0);
-  transition-delay: 0.06s;
+  pointer-events: all;
+}
+
+.mco-play-btn {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--glass-2);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  cursor: pointer;
+  transform: scale(0.85);
+  transition:
+    transform 0.28s var(--ease-out),
+    background 0.18s;
+}
+
+.movie-card:hover .mco-play-btn {
+  transform: scale(1);
+}
+
+.mco-play-btn:hover {
+  background: var(--glass-3);
+  transform: scale(1.08);
+}
+
+.mco-play-btn:active {
+  transform: scale(0.96);
+}
+
+.mco-play-btn svg {
+  margin-left: 3px;
 }
 
 .movie-poster {
@@ -2677,8 +2711,8 @@ main {
 .dp-hero {
   position: relative;
   width: 100%;
-  height: 62vh;
-  min-height: 440px;
+  height: 78vh;
+  min-height: 560px;
   overflow: hidden;
   background: #050505;
 }
@@ -2760,14 +2794,13 @@ main {
   color: #ffffff;
 }
 
-/* Hero content: title + rating bottom-left */
-.dp-hero-content {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 0 50px 42px;
-  z-index: 3; /* fade (blur) qatlamidan yuqorida — matn xiralashmaydi */
+/* Title + rating + meta — endi hero ichida emas, dp-info-section'ning
+   birinchi bloki (dp-info-header) sifatida oddiy oqimda. dp-info-section
+   hero'ni bosib chiqqani uchun bu matn ham vizual jihatdan hero rasmi
+   ustida ko'rinadi, lekin frost/o'qilishi dp-info-section::before orqali
+   ta'minlanadi — alohida qatlam kerak emas. */
+.dp-info-header {
+  margin-bottom: 28px;
 }
 
 .dp-hero-title {
@@ -2809,44 +2842,29 @@ main {
   opacity: 0.3;
 }
 
-/* Title/reyting/meta orqasidagi alohida frost qatlami — trailer video
-   yorug' sahnalarida ham matn doim o'qiladigan bo'ladi. .dp-hero-content
-   z-index:3 o'z stacking context'ini yaratadi, shu sababli ::before
-   (z:-1) matndan ORQADA, lekin video/overlay'dan OLDINDA turadi.
-   mask barcha chekkalarni eritadi — quti emas, yumshoq "hovuz". */
-.dp-hero-content::before {
-  content: '';
-  position: absolute;
-  inset: -32px 0 0 0;
-  z-index: -1;
-  background: rgba(8, 10, 9, 0.3);
-  backdrop-filter: blur(22px) saturate(1.1);
-  -webkit-backdrop-filter: blur(22px) saturate(1.1);
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 34%, black 100%);
-  mask-image: linear-gradient(to bottom, transparent 0%, black 34%, black 100%);
-  pointer-events: none;
-}
-
-@supports not (backdrop-filter: blur(1px)) {
-  .dp-hero-content::before { background: rgba(8, 10, 9, 0.55); }
-}
-
-/* ── Info row ── */
-/* Shaffof — orqada fixed #movie-bg-blur (xuddi shu banner, blur bilan)
-   ko'rinib turadi, shu bilan hero va bu qism birlashib ketadi (mobil
-   .mob-info bilan bir xil printsip). Alohida quti/chegara YO'Q.
-   Manfiy margin-top poster/description'ni hero'ning eng pastki — allaqachon
-   to'liq xiralashib (mask-image bilan) faqat #movie-bg-blur ko'rinib turgan —
-   qismiga bosib chiqaradi. Real o'lchov bilan tekshirilgan: .dp-hero-meta
-   matnidan ~18px pastda tugaydi, ustiga chiqib ketmaydi. */
+/* ── Info section ── */
+/* title+rating+meta (dp-info-header) va poster+description (dp-info-body)
+   endi BITTA blok — dp-hero-content alohida qatlam emas. Manfiy margin-top
+   bu blokni hero balandligining o'rtasiga bosib chiqaradi (real o'lchov
+   bilan kalibrlangan), shu sababli sarlavha hero rasmi USTIDA ko'rinadi. */
 .dp-info-section {
   position: relative;
   isolation: isolate;
   z-index: 5;
   display: flex;
-  gap: 34px;
+  flex-direction: column;
   padding: 36px 50px 42px;
-  margin-top: -65px;
+  /* Sarlavha hero balandligining ANIQ O'RTASIDA chiqishi uchun: hero
+     balandligi max(78vh, 560px) (.dp-hero bilan bir xil formula), shuning
+     yarmini yuqoriga tortib, padding-top(36px)ni qo'shamiz — natijada
+     dp-info-header hero o'rtasida joylashadi (real o'lchov bilan
+     kalibrlangan va formula bilan tasdiqlangan). */
+  margin-top: calc(-0.5 * max(78vh, 560px) - 36px);
+}
+
+.dp-info-body {
+  display: flex;
+  gap: 34px;
 }
 
 /* HAQIQIY frosted-glass qatlam — matnlar orqasida doim xira turadi.
@@ -4967,7 +4985,7 @@ video.hero-bg-iframe {
     flex-wrap: wrap;
     gap: 4px 0;
   }
-  .dp-info-section {
+  .dp-info-body {
     flex-direction: column;
     gap: var(--space-4);
   }
@@ -5002,7 +5020,7 @@ video.hero-bg-iframe {
   }
 
   /* Detail page — tighten the large 50px section paddings on phones */
-  .dp-hero-content {
+  .dp-info-header {
     padding: 0 16px 20px;
   }
   .dp-info-section {

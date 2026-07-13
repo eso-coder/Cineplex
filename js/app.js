@@ -532,6 +532,11 @@ onclick="App.go('${href}')">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
         </button>
       </div>
+      <div class="mco-center">
+        <button class="mco-play-btn" type="button" onclick="event.stopPropagation();App.go('${href}')" title="Ko'rish">
+          <svg width="26" height="26" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></svg>
+        </button>
+      </div>
       <div class="mco-bottom">
         <div class="mco-title">${titleAttr}</div>
         <div class="mco-meta">
@@ -541,10 +546,6 @@ onclick="App.go('${href}')">
           ${seriesInfo ? `<div class="mco-dot"></div><span>${seriesInfo}</span>` : genre1 ? `<div class="mco-dot"></div><span>${E(genre1)}</span>` : ''}
         </div>
         ${m.description ? `<div class="mco-desc">${E(m.description)}</div>` : ''}
-        <button class="mco-watch-btn btn-ds-accent" type="button" onclick="event.stopPropagation();App.go('${href}')">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-          <span data-i18n="btn.watch">Ko'rish</span>
-        </button>
       </div>
     </div>
   </div>
