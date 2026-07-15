@@ -2374,9 +2374,10 @@ function loadHeroPage() {
   } catch(_) {}
   var list = document.getElementById('hero-items-list');
   if (list) list.innerHTML = '<div class="empty-state"><p>Yuklanmoqda...</p></div>';
-  SettingsAPI.hero()
-    .then(function(cfg) {
-      heroConfig = cfg.items || [];
+  api('GET', '/settings/hero')
+    .then(function(resp) {
+      var cfg = resp.data || {};
+      heroConfig = Array.isArray(cfg.items) ? cfg.items : [];
       var clk = document.getElementById('hero-clickable-toggle');
       if (clk) clk.checked = cfg.clickable !== false;
       renderHeroItems();
@@ -2438,19 +2439,32 @@ function renderHeroItems() {
    maydonlar (trailer, banner, yil, IMDB, yosh, davomiylik, ko'rishlar)
    avtomatik to'ldiriladi. Keyin xohlasa qo'lda tahrirlash mumkin. */
 function heroItemFromMovie(m) {
-  var age = m.age != null && String(m.age) !== '0' ? String(m.age) : '';
-  if (age && age.indexOf('+') < 0) age += '+';
-  var duration = m.duration || '';
-  if (!duration && m.type === 'series') duration = (m.seasons || 0) + ' Mavsum';
+  /* m — backend'ning XOM (normalizatsiyasiz) film obyekti */
+  var age = m.ageRating ? m.ageRating + '+' : '';
+  var duration = '';
+  if (m.type === 'series') {
+    duration = (m.seasons || 0) + ' Mavsum';
+  } else if (typeof m.duration === 'number' && m.duration > 0) {
+    var h = Math.floor(m.duration / 60), min = m.duration % 60;
+    duration = h > 0 ? (min > 0 ? h + 'h ' + min + 'm' : h + 'h') : min + 'm';
+  }
+  /* Trailer: YouTube bo'lsa ID, aks holda to'g'ridan-to'g'ri (S3) URL */
+  var trailer = '';
+  var rawTrailer = (m.trailerUrl || '').trim();
+  if (rawTrailer) {
+    var yt = extractYtId(rawTrailer);
+    trailer = yt || (/^https?:\/\//.test(rawTrailer) ? rawTrailer : '');
+  }
+  var rating = m.imdbRating || m.averageRating || 0;
   return {
-    id:       m.id,
-    trailer:  m.trailer_id || m.trailerS3Url || '',
-    img:      m.banner_img || m.img || '',
-    logoImg:  m.logoUrl || m.logo_url || '',
+    id:       String(m._id || m.id || ''),
+    trailer:  trailer,
+    img:      m.bannerUrl || (m.gallery && m.gallery[0]) || (m.poster && m.poster.url) || '',
+    logoImg:  m.logoUrl || '',
     logoMain: (m.title || '').toUpperCase(),
     logoSub:  '',
-    year:     String(m.year || ''),
-    imdb:     m.rating ? String(m.rating) : '',
+    year:     String(m.releaseYear || ''),
+    imdb:     rating ? String(rating) : '',
     age:      age,
     duration: duration,
     views:    m.views != null ? String(m.views) : '0'
@@ -2503,7 +2517,7 @@ function heroPickerLoad(q) {
   if (!list) return;
   list.innerHTML = '<div class="empty-state"><p>Yuklanmoqda...</p></div>';
   var params = q ? { search: q, limit: 50, page: 1 } : { sort: 'newest', limit: 100, page: 1 };
-  MoviesAPI.list(params)
+  api('GET', '/movies?' + new URLSearchParams(params))
     .then(function(resp) {
       var movies = resp.data || [];
       /* Allaqachon hero'da bor filmlarni belgilab qo'yamiz */
@@ -2515,13 +2529,16 @@ function heroPickerLoad(q) {
         return;
       }
       list.innerHTML = movies.map(function(m, i) {
-        var used = usedIds[String(m.id)];
+        var mid = String(m._id || m.id || '');
+        var used = usedIds[mid];
+        var poster = (m.poster && m.poster.url) || m.bannerUrl || '';
+        var rating = m.imdbRating || m.averageRating || 0;
         var hover = used ? '' : ' onmouseover="this.style.background=\'var(--bg4)\'" onmouseout="this.style.background=\'transparent\'"';
         return '<div onclick="' + (used ? '' : 'heroPickerSelect(' + i + ')') + '" style="display:flex;align-items:center;gap:12px;padding:8px;border-radius:8px;cursor:' + (used ? 'default' : 'pointer') + ';opacity:' + (used ? '0.4' : '1') + '"' + hover + '>' +
-          '<img src="' + esc(m.img || '') + '" style="width:40px;height:58px;object-fit:cover;border-radius:5px;background:var(--bg4)" onerror="this.style.visibility=\'hidden\'">' +
+          '<img src="' + esc(poster) + '" style="width:40px;height:58px;object-fit:cover;border-radius:5px;background:var(--bg4)" onerror="this.style.visibility=\'hidden\'">' +
           '<div style="flex:1;min-width:0">' +
             '<div style="font-weight:600;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(m.title || '') + '</div>' +
-            '<div style="font-size:12px;color:var(--muted)">' + esc(String(m.year || '')) + (m.rating ? ' · ★ ' + esc(String(m.rating)) : '') + (m.type === 'series' ? ' · Serial' : '') + '</div>' +
+            '<div style="font-size:12px;color:var(--muted)">' + esc(String(m.releaseYear || '')) + (rating ? ' · ★ ' + esc(String(rating)) : '') + (m.type === 'series' ? ' · Serial' : '') + '</div>' +
           '</div>' +
           (used ? '<span style="font-size:11.5px;color:var(--muted)">Qo\'shilgan</span>' : '<span style="font-size:12px;color:var(--muted2)">+ Tanlash</span>') +
         '</div>';
@@ -2556,10 +2573,11 @@ function moveHeroItem(i, dir) {
 function saveHeroConfig() {
   var clk = document.getElementById('hero-clickable-toggle');
   var cfg = { items: heroConfig, clickable: !clk || clk.checked };
-  AdminAPI.saveHero(cfg)
+  api('POST', '/admin/hero', cfg)
     .then(function() {
-      /* Shu brauzerdagi bosh sahifa cache'ini ham darhol yangilaymiz */
-      try { if (window.CPCache) CPCache.set('hero_cfg', cfg); } catch(_) {}
+      /* Shu brauzerdagi bosh sahifa cache'ini ham darhol yangilaymiz
+         (index.html CPCache'ni localStorage'da 'cpc_hero_cfg' kaliti bilan saqlaydi) */
+      try { localStorage.setItem('cpc_hero_cfg', JSON.stringify({ t: Date.now(), v: cfg })); } catch(_) {}
       toast('Hero konfiguratsiyasi saqlandi ✓ Barcha qurilmalarda kuchga kirdi.', 'success');
     })
     .catch(function(e) {
