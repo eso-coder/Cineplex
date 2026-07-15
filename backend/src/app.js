@@ -19,6 +19,7 @@ const ratingRoutes = require('./routes/rating.routes');
 const adminRoutes = require('./routes/admin.routes');
 const profileRoutes = require('./routes/profile.routes');
 const watchRoutes = require('./routes/watch.routes');
+const settingsRoutes = require('./routes/settings.routes');
 const { UPLOAD_ROOT } = require('./utils/upload');
 
 const app = express();
@@ -124,6 +125,7 @@ app.use('/api/profile', profileRoutes);
 app.use('/api/activity', profileRoutes.activityRouter);
 app.use('/api/favourites', profileRoutes.favouritesRouter);
 app.use('/api/watch', watchRoutes);
+app.use('/api/settings', settingsRoutes);
 
 // ─── 404: API → JSON, boshqa → index.html ────────────────────────────────────
 app.use((req, res) => {

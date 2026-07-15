@@ -513,13 +513,13 @@
         }
       }
 
-      /* Hero filmlarni admin paneldan o'qish, aks holda default */
-      var _DEFAULT_HERO_FILMS = [];
-      try {
-        var _savedHero = localStorage.getItem('cp_hero_config');
-        var heroFilms = _savedHero ? JSON.parse(_savedHero) : _DEFAULT_HERO_FILMS;
-        if (!Array.isArray(heroFilms)) heroFilms = _DEFAULT_HERO_FILMS;
-      } catch(_e) { var heroFilms = _DEFAULT_HERO_FILMS; }
+      /* Hero filmlar — FAQAT admin panelda tanlanganlar (backend'da saqlanadi).
+         Avvalgi xato: config localStorage'da bo'lgani uchun boshqa qurilmalarda
+         bo'sh bo'lib, "eng yangi filmlar" fallback'i ishlab ketardi — yangi
+         qo'shilgan har bir kino hero'da chiqib qolardi. Endi fallback yo'q:
+         admin ro'yxati bo'sh bo'lsa hero bo'limi yashiriladi. */
+      var heroFilms = [];
+      var heroClickableCfg = true;
 
       /* S3 / to'g'ridan-to'g'ri video URL ekanligini tekshirish */
       function isS3Trailer(url) {
@@ -600,7 +600,7 @@
           document.getElementById('hero-age').textContent       = d.age      || '';
           document.getElementById('hero-duration').textContent  = d.duration || '';
 
-          var heroClickable = localStorage.getItem('cp_hero_clickable') !== '0';
+          var heroClickable = heroClickableCfg;
           var heroCardEl = document.getElementById('hero-card');
           heroCardEl.onclick = heroClickable ? function() { App.go('pages/movie.html?id=' + d.id); } : null;
           heroCardEl.style.cursor = heroClickable ? 'pointer' : 'default';
@@ -700,53 +700,28 @@
         setHero(0);
       }
 
-      /* Initial: use admin-configured hero (localStorage) if present,
-         otherwise pull real movies from the backend so the hero shows on
-         ANY device — not only the one where admin set it up. */
-      if (heroFilms.length) {
-        bootHero();
-      } else {
-        (async function loadHeroFromBackend() {
-          function mapHero(list) {
-            return list.slice(0, 5).map(function(m) {
-              var age = m.age ? String(m.age) : '';
-              if (age && age.indexOf('+') < 0) age += '+';
-              return {
-                id:       m.id,
-                trailer:  m.trailer_id || m.trailerS3Url || '',
-                img:      m.banner_img || m.img || '',
-                logoImg:  m.logoUrl || m.logo_url || '',
-                logoMain: m.title || '',
-                logoSub:  '',
-                year:     m.year || '',
-                imdb:     m.rating || '',
-                age:      age,
-                duration: m.duration || '',
-                views:    m.views || ''
-              };
-            });
-          }
-
-          /* 1) Cache'dagi hero'ni DARHOL ko'rsatamiz (qora ekran yo'q) */
-          var cachedHero = CPCache.get('hero_films');
-          var booted = !!(cachedHero && cachedHero.v && cachedHero.v.length);
-          if (booted) { heroFilms = cachedHero.v; bootHero(); }
-
-          /* 2) Fonda yangilab, cache'ni yangilaymiz */
-          try {
-            var list = await MoviesAPI.newMovies();
-            if (list && list.length) {
-              var fresh = mapHero(list);
-              CPCache.set('hero_films', fresh);
-              if (!booted) { heroFilms = fresh; bootHero(); }
-            } else if (!booted) {
-              bootHero();
-            }
-          } catch (e) {
-            if (!booted) bootHero(); /* backend unavailable — hero stays hidden */
-          }
-        })();
-      }
+      /* Initial: hero konfiguratsiyasi backend'dan (admin panel boshqaradi).
+         1) Cache'dan DARHOL chizamiz (qora ekran yo'q)
+         2) Fonda API'dan yangisini olib, o'zgargan bo'lsa qayta chizamiz */
+      (function loadHeroConfig() {
+        var cached = CPCache.get('hero_cfg');
+        var booted = false;
+        if (cached && cached.v && Array.isArray(cached.v.items) && cached.v.items.length) {
+          heroFilms = cached.v.items;
+          heroClickableCfg = cached.v.clickable !== false;
+          booted = true;
+          bootHero();
+        }
+        if (typeof SettingsAPI === 'undefined') { if (!booted) handleHeroEmpty(); return; }
+        SettingsAPI.hero()
+          .then(function(cfg) {
+            CPCache.set('hero_cfg', cfg);
+            heroClickableCfg = cfg.clickable !== false;
+            var changed = JSON.stringify(cfg.items) !== JSON.stringify(heroFilms);
+            if (!booted || changed) { heroFilms = cfg.items; bootHero(); }
+          })
+          .catch(function() { if (!booted) handleHeroEmpty(); });
+      })();
 
       function toggleHeroVolume() {
         heroMuted = !heroMuted;

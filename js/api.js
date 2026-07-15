@@ -550,9 +550,20 @@ const ReviewsAPI = {
   },
 };
 
+/* ─── Settings API (bosh sahifa hero konfiguratsiyasi — backend'da saqlanadi) ─── */
+const SettingsAPI = {
+  async hero() {
+    const resp = await apiFetch('/settings/hero');
+    const d = resp.data || {};
+    return { items: Array.isArray(d.items) ? d.items : [], clickable: d.clickable !== false };
+  },
+};
+if (typeof window !== 'undefined') window.SettingsAPI = SettingsAPI;
+
 /* ─── Admin API ─── */
 const AdminAPI = {
   stats()               { return apiFetch('/admin/dashboard'); },
+  saveHero(cfg)         { return apiFetch('/admin/hero', { method: 'POST', body: JSON.stringify(cfg) }); },
   users(params = {})    { return apiFetch('/admin/users?' + new URLSearchParams(params)); },
   setUserRole(id, role) { return apiFetch(`/admin/users/${id}`, { method: 'PATCH', body: JSON.stringify({ role }) }); },
   deleteUser(id)        { return apiFetch(`/admin/users/${id}`, { method: 'DELETE' }); },

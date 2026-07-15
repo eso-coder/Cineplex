@@ -2360,27 +2360,31 @@ PAGE_LOADERS['hero']   = loadHeroPage;
 PAGE_TITLES['studios'] = 'Studiyalar';
 PAGE_LOADERS['studios']= loadStudiosPage;
 
-/* ─── HERO MANAGEMENT ─── */
-var DEFAULT_HERO_FILMS = [
-  { id: 8, trailer: 'Way9Dexny3w', img: 'https://rwvfilm.com/uploads/media/image/0001/03/thumb_2883_image_medium.jpg', logoMain: 'DUNE', logoSub: 'PART TWO', year: '2024', imdb: '4.9', age: '18+', duration: '2h 46m', views: '891' },
-  { id: 5, trailer: '_cHcfKNGsEM', img: 'https://rwvfilm.com/uploads/media/image/0001/04/thumb_3841_image_medium.jpg', logoMain: 'AVATAR', logoSub: 'FIRE & ASH', year: '2025', imdb: '4.8', age: '12+', duration: '3h 05m', views: '388' },
-  { id: 9, trailer: '', img: 'https://rwvfilm.com/uploads/media/image/0001/04/thumb_3956_image_medium.jpg', logoMain: 'FALLOUT', logoSub: '', year: '2024', imdb: '4.7', age: '18+', duration: '2 Seasons', views: '643' }
-];
-
+/* ─── HERO MANAGEMENT ───
+   Konfiguratsiya endi BACKEND'da saqlanadi (GET /settings/hero, POST /admin/hero) —
+   avvalgi localStorage varianti faqat shu brauzerda ishlab, boshqa qurilmalarda
+   hero bo'sh qolar va sayt "eng yangi filmlar"ga tushib ketardi. */
 var heroConfig = [];
 
 function loadHeroPage() {
+  /* Eski localStorage konfiguratsiyasini tozalaymiz — endi ishlatilmaydi */
   try {
-    var saved = localStorage.getItem('cp_hero_config');
-    heroConfig = saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(DEFAULT_HERO_FILMS));
-    if (!Array.isArray(heroConfig) || !heroConfig.length)
-      heroConfig = JSON.parse(JSON.stringify(DEFAULT_HERO_FILMS));
-  } catch(_) {
-    heroConfig = JSON.parse(JSON.stringify(DEFAULT_HERO_FILMS));
-  }
-  var clk = document.getElementById('hero-clickable-toggle');
-  if (clk) clk.checked = localStorage.getItem('cp_hero_clickable') !== '0';
-  renderHeroItems();
+    localStorage.removeItem('cp_hero_config');
+    localStorage.removeItem('cp_hero_clickable');
+  } catch(_) {}
+  var list = document.getElementById('hero-items-list');
+  if (list) list.innerHTML = '<div class="empty-state"><p>Yuklanmoqda...</p></div>';
+  SettingsAPI.hero()
+    .then(function(cfg) {
+      heroConfig = cfg.items || [];
+      var clk = document.getElementById('hero-clickable-toggle');
+      if (clk) clk.checked = cfg.clickable !== false;
+      renderHeroItems();
+    })
+    .catch(function(e) {
+      heroConfig = [];
+      if (list) list.innerHTML = '<div class="empty-state"><p>Yuklashda xato: ' + esc(e.message || '') + '</p></div>';
+    });
 }
 
 function renderHeroItems() {
@@ -2429,9 +2433,112 @@ function renderHeroItems() {
   }).join('');
 }
 
-function addHeroItem() {
-  heroConfig.push({ id: 0, trailer: '', img: '', logoMain: 'YANGI FILM', logoSub: '', year: new Date().getFullYear().toString(), imdb: '0.0', age: '18+', duration: '', views: '0' });
+/* ─── "Film qo'shish" — katalogdan tayyor filmni tanlash ───
+   Bo'sh forma o'rniga saytdagi filmlardan biri tanlanadi va barcha
+   maydonlar (trailer, banner, yil, IMDB, yosh, davomiylik, ko'rishlar)
+   avtomatik to'ldiriladi. Keyin xohlasa qo'lda tahrirlash mumkin. */
+function heroItemFromMovie(m) {
+  var age = m.age != null && String(m.age) !== '0' ? String(m.age) : '';
+  if (age && age.indexOf('+') < 0) age += '+';
+  var duration = m.duration || '';
+  if (!duration && m.type === 'series') duration = (m.seasons || 0) + ' Mavsum';
+  return {
+    id:       m.id,
+    trailer:  m.trailer_id || m.trailerS3Url || '',
+    img:      m.banner_img || m.img || '',
+    logoImg:  m.logoUrl || m.logo_url || '',
+    logoMain: (m.title || '').toUpperCase(),
+    logoSub:  '',
+    year:     String(m.year || ''),
+    imdb:     m.rating ? String(m.rating) : '',
+    age:      age,
+    duration: duration,
+    views:    m.views != null ? String(m.views) : '0'
+  };
+}
+
+var _heroPickerMovies = [];
+var _heroPickerTimer = null;
+
+function addHeroItem() { openHeroPicker(); }
+
+function openHeroPicker() {
+  var back = document.getElementById('hero-picker-back');
+  if (!back) {
+    back = document.createElement('div');
+    back.id = 'hero-picker-back';
+    back.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.72);z-index:400;display:none;align-items:center;justify-content:center;padding:20px';
+    back.innerHTML =
+      '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);width:640px;max-width:100%;max-height:82vh;display:flex;flex-direction:column;overflow:hidden">' +
+        '<div style="display:flex;align-items:center;gap:12px;padding:16px 18px;border-bottom:1px solid var(--border)">' +
+          '<div style="font-weight:700;font-size:15.5px;flex:1">Filmni tanlang</div>' +
+          '<button class="btn btn-ghost btn-sm" onclick="closeHeroPicker()">Yopish</button>' +
+        '</div>' +
+        '<div style="padding:12px 18px;border-bottom:1px solid var(--border)">' +
+          '<input type="text" class="form-ctrl" id="hero-picker-search" placeholder="Qidirish..." oninput="heroPickerSearch(this.value)">' +
+        '</div>' +
+        '<div id="hero-picker-list" style="overflow-y:auto;padding:10px 18px 16px;flex:1"></div>' +
+      '</div>';
+    back.addEventListener('click', function(e) { if (e.target === back) closeHeroPicker(); });
+    document.body.appendChild(back);
+  }
+  back.style.display = 'flex';
+  var s = document.getElementById('hero-picker-search');
+  if (s) { s.value = ''; s.focus(); }
+  heroPickerLoad('');
+}
+
+function closeHeroPicker() {
+  var back = document.getElementById('hero-picker-back');
+  if (back) back.style.display = 'none';
+}
+
+function heroPickerSearch(q) {
+  clearTimeout(_heroPickerTimer);
+  _heroPickerTimer = setTimeout(function() { heroPickerLoad(q.trim()); }, 300);
+}
+
+function heroPickerLoad(q) {
+  var list = document.getElementById('hero-picker-list');
+  if (!list) return;
+  list.innerHTML = '<div class="empty-state"><p>Yuklanmoqda...</p></div>';
+  var params = q ? { search: q, limit: 50, page: 1 } : { sort: 'newest', limit: 100, page: 1 };
+  MoviesAPI.list(params)
+    .then(function(resp) {
+      var movies = resp.data || [];
+      /* Allaqachon hero'da bor filmlarni belgilab qo'yamiz */
+      var usedIds = {};
+      heroConfig.forEach(function(it) { usedIds[String(it.id)] = true; });
+      _heroPickerMovies = movies;
+      if (!movies.length) {
+        list.innerHTML = '<div class="empty-state"><p>Film topilmadi</p></div>';
+        return;
+      }
+      list.innerHTML = movies.map(function(m, i) {
+        var used = usedIds[String(m.id)];
+        var hover = used ? '' : ' onmouseover="this.style.background=\'var(--bg4)\'" onmouseout="this.style.background=\'transparent\'"';
+        return '<div onclick="' + (used ? '' : 'heroPickerSelect(' + i + ')') + '" style="display:flex;align-items:center;gap:12px;padding:8px;border-radius:8px;cursor:' + (used ? 'default' : 'pointer') + ';opacity:' + (used ? '0.4' : '1') + '"' + hover + '>' +
+          '<img src="' + esc(m.img || '') + '" style="width:40px;height:58px;object-fit:cover;border-radius:5px;background:var(--bg4)" onerror="this.style.visibility=\'hidden\'">' +
+          '<div style="flex:1;min-width:0">' +
+            '<div style="font-weight:600;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(m.title || '') + '</div>' +
+            '<div style="font-size:12px;color:var(--muted)">' + esc(String(m.year || '')) + (m.rating ? ' · ★ ' + esc(String(m.rating)) : '') + (m.type === 'series' ? ' · Serial' : '') + '</div>' +
+          '</div>' +
+          (used ? '<span style="font-size:11.5px;color:var(--muted)">Qo\'shilgan</span>' : '<span style="font-size:12px;color:var(--muted2)">+ Tanlash</span>') +
+        '</div>';
+      }).join('');
+    })
+    .catch(function(e) {
+      list.innerHTML = '<div class="empty-state"><p>Xato: ' + esc(e.message || '') + '</p></div>';
+    });
+}
+
+function heroPickerSelect(i) {
+  var m = _heroPickerMovies[i];
+  if (!m) return;
+  heroConfig.push(heroItemFromMovie(m));
+  closeHeroPicker();
   renderHeroItems();
+  toast('"' + (m.title || '') + '" hero ro\'yxatiga qo\'shildi. Saqlashni unutmang!', 'success');
 }
 
 function removeHeroItem(i) {
@@ -2447,24 +2554,23 @@ function moveHeroItem(i, dir) {
 }
 
 function saveHeroConfig() {
-  try {
-    localStorage.setItem('cp_hero_config', JSON.stringify(heroConfig));
-    var clk = document.getElementById('hero-clickable-toggle');
-    localStorage.setItem('cp_hero_clickable', (clk && clk.checked) ? '1' : '0');
-    toast('Hero konfiguratsiyasi saqlandi ✓', 'success');
-  } catch(e) {
-    toast('Saqlashda xato: ' + e.message, 'error');
-  }
+  var clk = document.getElementById('hero-clickable-toggle');
+  var cfg = { items: heroConfig, clickable: !clk || clk.checked };
+  AdminAPI.saveHero(cfg)
+    .then(function() {
+      /* Shu brauzerdagi bosh sahifa cache'ini ham darhol yangilaymiz */
+      try { if (window.CPCache) CPCache.set('hero_cfg', cfg); } catch(_) {}
+      toast('Hero konfiguratsiyasi saqlandi ✓ Barcha qurilmalarda kuchga kirdi.', 'success');
+    })
+    .catch(function(e) {
+      toast('Saqlashda xato: ' + (e.message || ''), 'error');
+    });
 }
 
 function resetHeroConfig() {
-  heroConfig = JSON.parse(JSON.stringify(DEFAULT_HERO_FILMS));
-  localStorage.removeItem('cp_hero_config');
-  localStorage.removeItem('cp_hero_clickable');
-  var clk = document.getElementById('hero-clickable-toggle');
-  if (clk) clk.checked = true;
-  renderHeroItems();
-  toast('Asl sozlamalar tiklandi', 'info');
+  /* Saqlanmagan o'zgarishlarni bekor qilib, serverdagi holatni qayta yuklaymiz */
+  loadHeroPage();
+  toast('Serverdagi holat qayta yuklandi', 'info');
 }
 
 /* ─── Init ─── */

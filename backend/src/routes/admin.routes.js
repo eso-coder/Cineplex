@@ -1,5 +1,6 @@
 const router = require('express').Router();
 const ctrl = require('../controllers/admin.controller');
+const settingsCtrl = require('../controllers/settings.controller');
 const authMiddleware = require('../middleware/auth.middleware');
 const adminMiddleware = require('../middleware/admin.middleware');
 const validate = require('../middleware/validate.middleware');
@@ -31,6 +32,9 @@ router.delete('/users/:id', ctrl.deleteUser);
 router.post('/movies', ...ctrl.createMovie);
 router.patch('/movies/:id', ...ctrl.updateMovie);
 router.delete('/movies/:id', ctrl.deleteMovie);
+
+// Hero (bosh sahifa slideshow konfiguratsiyasi)
+router.post('/hero', settingsCtrl.saveHero);
 
 // Comments (moderation)
 router.get('/comments', ctrl.getComments);
