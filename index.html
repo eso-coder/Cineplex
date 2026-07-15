@@ -390,8 +390,23 @@
           draw(nRow, newMovies);
           CPCache.set('home_trending', trending);
           CPCache.set('home_new', newMovies);
-          /* Har bir filmni id bo'yicha cache — movie sahifasi darhol ochilishi uchun */
-          [...trending, ...newMovies].forEach(m => { if (m && m.id) CPCache.set('movie_' + m.id, m); });
+          /* Har bir filmni id bo'yicha cache — movie sahifasi darhol ochilishi uchun.
+             MUHIM: ro'yxat obyekti "yengil" (backend gallery/subtitles'ni kesadi) —
+             oldin saqlangan TO'LIQ detal ustiga yozib, galereyani yo'qotmaslik uchun
+             mavjud cache bilan birlashtiramiz (lite maydonlar yangilanadi, qolgani qoladi). */
+          [...trending, ...newMovies].forEach(m => {
+            if (!m || !m.id) return;
+            const prev = CPCache.get('movie_' + m.id);
+            const merged = prev && prev.v ? Object.assign({}, prev.v, m) : m;
+            /* normalizeMovie lite obyektga bo'sh gallery:[] qo'yadi — u to'liq
+               galereyani bosib yubormasin; banner ham gallery'dan kelgan bo'lsa saqlanadi */
+            if (prev && prev.v && (!m.gallery || !m.gallery.length) && prev.v.gallery && prev.v.gallery.length) {
+              merged.gallery = prev.v.gallery;
+              if (m.banner_img === m.img && prev.v.banner_img && prev.v.banner_img !== prev.v.img)
+                merged.banner_img = prev.v.banner_img;
+            }
+            CPCache.set('movie_' + m.id, merged);
+          });
         } catch {
           /* API xato bo'lsa cache'dagi (yuqorida chizilgan) natija qoladi */
         }

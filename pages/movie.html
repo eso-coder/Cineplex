@@ -1349,6 +1349,50 @@
       }
     }
 
+    /* ─── Haqiqiy galereyani KECH render qilish ───
+       Bosh sahifa cache'ga ro'yxat (lite) obyektini yozadi — unda `gallery`
+       maydoni YO'Q (backend LIST_EXCLUDE bilan kesib yuboradi). Shu sababli
+       cache'dan darhol chizilgan sahifada galereya bo'sh yoki o'xshash-film
+       posterlari bilan to'lgan bo'lardi. Fon so'rovi to'liq filmni keltirgach
+       shu funksiya galereyani filmning O'Z rasmlari bilan almashtiradi. */
+    function renderGalleryLate(fresh) {
+      if (!fresh || !fresh.gallery || !fresh.gallery.length) return;
+      const urls = fresh.gallery;
+      if (movie) movie.gallery = urls;
+      /* Allaqachon shu rasmlar chizilgan bo'lsa — tegmaymiz */
+      if (window._galleryUrls && window._galleryUrls[0] === urls[0]
+          && window._galleryUrls.length === urls.length) return;
+      window._galleryUrls = urls;
+      /* Mobil layout */
+      const mPage = document.getElementById('mob-page');
+      const mScroll = document.getElementById('mob-gallery-scroll');
+      if (mScroll && mPage && mPage.style.display === 'block') {
+        document.getElementById('mob-gallery-section').style.display = '';
+        document.getElementById('mob-gallery-divider').style.display = '';
+        mScroll.innerHTML = urls.map((url, i) =>
+          `<div class="mob-gallery-item" onclick="openLightbox(${i})">
+            <img src="${url}" alt="" loading="lazy">
+          </div>`).join('');
+        return;
+      }
+      /* Desktop layout */
+      const gGrid = document.getElementById('dp-gallery-grid');
+      if (gGrid) {
+        gGrid.innerHTML = urls.slice(0, 6).map((url, i) =>
+          `<div class="dp-gallery-item" onclick="openLightbox(${i})" style="cursor:pointer"><img src="${url}" alt="" loading="lazy"></div>`).join('');
+        const gSec = document.getElementById('dp-gallery-section');
+        if (gSec) gSec.style.display = '';
+        const gHead = gSec ? gSec.querySelector('.dp-gallery-head') : null;
+        if (gHead && urls.length > 6 && !gHead.querySelector('.dp-view-all-btn')) {
+          const btn = document.createElement('button');
+          btn.className = 'dp-view-all-btn';
+          btn.onclick = () => window.openGalleryAll();
+          btn.textContent = 'View All';
+          gHead.appendChild(btn);
+        }
+      }
+    }
+
     /* ─── Gradient palette for cast avatars ─── */
     const CAST_GRADS = Array(8).fill('linear-gradient(135deg,#3a3a3a,#121212)');
 
@@ -1529,6 +1573,9 @@
             MoviesAPI.getById(id)
               .then(resp => {
                 if (resp && resp.movie) CPCache.set('movie_' + id, resp.movie);
+                /* Avval haqiqiy galereya — shunda renderRelatedLate'dagi
+                   "bo'sh galereyani posterlar bilan to'ldirish" fallback'i ishlamaydi */
+                if (resp && resp.movie) renderGalleryLate(resp.movie);
                 if (resp && resp.related) renderRelatedLate(resp.related);
               })
               .catch(() => {});
