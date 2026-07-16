@@ -48,7 +48,7 @@ const movieSchema = new mongoose.Schema(
     bannerUrl:  { type: String, default: '' },
     logoUrl:    { type: String, default: '' },
     // Logo o'lchami foizda (100 = asl o'lcham) — admin paneldan boshqariladi
-    logoScale:  { type: Number, default: 100, min: 30, max: 350 },
+    logoScale:  { type: Number, default: 100, min: 30, max: 400 },
     gallery:    [{ type: String }],
     subtitles:  [{
       lang:  { type: String, trim: true, default: '' },  // 'uz', 'ru', 'en'
