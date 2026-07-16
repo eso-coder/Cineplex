@@ -132,9 +132,27 @@
       <section class="content-section animate-in" id="history-section" style="display:none">
         <div class="section-header">
           <div class="section-title">Ko'rilganlar tarixi</div>
+          <a href="#" class="section-link" id="history-row-toggle" data-i18n="btn.seeall">Barchasini ko'rish</a>
         </div>
         <div class="movies-row" id="history-row"></div>
       </section>
+      <script>
+        /* "Yangi chiqmalar"dagi kabi: gorizontal qator ⇄ to'liq grid */
+        (function () {
+          var toggle = document.getElementById('history-row-toggle');
+          var row = document.getElementById('history-row');
+          if (!toggle || !row) return;
+          var expanded = false;
+          toggle.addEventListener('click', function (e) {
+            e.preventDefault();
+            expanded = !expanded;
+            row.classList.toggle('catalog-grid', expanded);
+            row.classList.toggle('movies-row', !expanded);
+            toggle.textContent = expanded ? "Yopish" : "Barchasini ko'rish";
+            toggle.removeAttribute('data-i18n');
+          });
+        })();
+      </script>
 
       <!-- ── TRENDING ── -->
       <section
@@ -435,6 +453,8 @@
           poster.appendChild(bar);
         });
         section.style.display = '';
+        /* "Yangi chiqmalar"dagi kabi sichqoncha bilan ushlab surish */
+        App.initDragScroll('history-row');
       })();
 
       /* ── HERO MULTI-FILM PLAYER ── */
