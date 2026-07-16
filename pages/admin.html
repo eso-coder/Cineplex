@@ -2396,7 +2396,18 @@ function renderHeroItems() {
     return;
   }
   list.innerHTML = heroConfig.map(function(item, i) {
+    /* O'rin tanlash — istalgan filmni istalgan (masalan 1-) o'ringa qo'yish uchun */
+    var posOptions = heroConfig.map(function(_, p) {
+      return '<option value="' + p + '"' + (p === i ? ' selected' : '') + '>' + (p + 1) + '</option>';
+    }).join('');
     return '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:16px;margin-bottom:12px;">' +
+      '<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">' +
+        '<span style="min-width:28px;height:28px;padding:0 9px;border-radius:8px;background:var(--bg4);border:1px solid var(--border2);color:var(--text);font-weight:800;font-size:13.5px;display:inline-flex;align-items:center;justify-content:center">' + (i + 1) + '</span>' +
+        '<span style="font-size:12.5px;color:var(--muted)">' + (i === 0 ? '1-o\'rin — bosh hero' : (i + 1) + '-o\'rin') + '</span>' +
+        '<span style="flex:1"></span>' +
+        '<label style="font-size:12px;color:var(--muted)">O\'rin:</label>' +
+        '<select class="form-ctrl" style="width:auto;font-size:13px;padding:5px 8px" onchange="setHeroItemPos(' + i + ',this.value)">' + posOptions + '</select>' +
+      '</div>' +
       '<div style="display:grid;grid-template-columns:80px 1fr;gap:14px;align-items:start">' +
         '<div>' +
           (item.img ? '<img src="' + esc(item.img) + '" style="width:80px;height:120px;object-fit:cover;border-radius:8px;display:block;" onerror="this.style.display=\'none\'">' : '<div style="width:80px;height:120px;background:var(--bg4);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--muted2);font-size: 11.5px;">Rasm yo\'q</div>') +
@@ -2423,9 +2434,10 @@ function renderHeroItems() {
             '<div class="form-group" style="margin:0"><label>Yosh</label><input type="text" class="form-ctrl" style="font-size: 13.5px" value="' + esc(item.age||'') + '" oninput="heroConfig[' + i + '].age=this.value" placeholder="18+"></div>' +
             '<div class="form-group" style="margin:0"><label>Davomiylik</label><input type="text" class="form-ctrl" style="font-size: 13.5px" value="' + esc(item.duration||'') + '" oninput="heroConfig[' + i + '].duration=this.value" placeholder="2h 30m"></div>' +
           '</div>' +
-          '<div style="display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center">' +
+          '<div style="display:grid;grid-template-columns:1fr auto auto auto;gap:8px;align-items:center">' +
             '<div class="form-group" style="margin:0"><label>Ko\'rishlar soni</label><input type="text" class="form-ctrl" style="font-size: 13.5px" value="' + esc(item.views||'') + '" oninput="heroConfig[' + i + '].views=this.value" placeholder="891"></div>' +
             (i > 0 ? '<button class="btn btn-ghost btn-sm" onclick="moveHeroItem(' + i + ',-1)" title="Yuqoriga">↑</button>' : '<div></div>') +
+            (i < heroConfig.length - 1 ? '<button class="btn btn-ghost btn-sm" onclick="moveHeroItem(' + i + ',1)" title="Pastga">↓</button>' : '<div></div>') +
             '<button class="btn btn-danger btn-sm" onclick="removeHeroItem(' + i + ')">O\'chirish</button>' +
           '</div>' +
         '</div>' +
@@ -2481,9 +2493,11 @@ function openHeroPicker() {
   if (!back) {
     back = document.createElement('div');
     back.id = 'hero-picker-back';
-    back.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.72);z-index:400;display:none;align-items:center;justify-content:center;padding:20px';
+    back.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.82);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);z-index:400;display:none;align-items:center;justify-content:center;padding:20px';
     back.innerHTML =
-      '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);width:640px;max-width:100%;max-height:82vh;display:flex;flex-direction:column;overflow:hidden">' +
+      /* aurora-admin.css --bg2'ni shaffof glass'ga almashtiradi — modal orqasi
+         ko'rinib ketmasligi uchun bu yerda qattiq (opaq) rang ishlatiladi */
+      '<div style="background:#141418;border:1px solid var(--border);border-radius:var(--r2);width:640px;max-width:100%;max-height:82vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,0.6)">' +
         '<div style="display:flex;align-items:center;gap:12px;padding:16px 18px;border-bottom:1px solid var(--border)">' +
           '<div style="font-weight:700;font-size:15.5px;flex:1">Filmni tanlang</div>' +
           '<button class="btn btn-ghost btn-sm" onclick="closeHeroPicker()">Yopish</button>' +
@@ -2560,6 +2574,15 @@ function heroPickerSelect(i) {
 
 function removeHeroItem(i) {
   heroConfig.splice(i, 1);
+  renderHeroItems();
+}
+
+function setHeroItemPos(i, pos) {
+  /* Filmni tanlangan o'ringa ko'chiradi (masalan istalgan filmni 1-o'ringa) */
+  var j = parseInt(pos, 10);
+  if (isNaN(j) || j === i || j < 0 || j >= heroConfig.length) { renderHeroItems(); return; }
+  var item = heroConfig.splice(i, 1)[0];
+  heroConfig.splice(j, 0, item);
   renderHeroItems();
 }
 
