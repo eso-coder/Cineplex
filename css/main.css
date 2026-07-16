@@ -1874,9 +1874,13 @@ main {
      - row'dan KEYINGI DOM elementlari hit-test'da baribir yutadi;
      - row'dan OLDINGI .section-header esa z-index bilan ko'tarilgan
        (pastda), aks holda "Barchasini ko'rish" bosilmay qolardi.
-     Mask-gradient — sug'urta: nazariy gauss dumi chekkada yumshoq so'nadi. */
-  padding: 120px 0;
-  margin: -72px 0;
+     Mask-gradient — sug'urta: nazariy gauss dumi chekkada yumshoq so'nadi.
+     Gorizontal ham xuddi shu usul: 50px bleed scrollport'ni gutter bo'ylab
+     ekran chetigacha cho'zadi — birinchi/oxirgi kartaning glow'i endi
+     gutter chizig'ida emas, tabiiy ravishda ekran chetida tugaydi.
+     (Kartalar % kengligi row content-box'iga nisbatan — u o'zgarmaydi.) */
+  padding: 120px 50px;
+  margin: -72px -50px;
   -webkit-mask-image: linear-gradient(to bottom,
     transparent 0, #000 16px, #000 calc(100% - 16px), transparent 100%);
   mask-image: linear-gradient(to bottom,
@@ -2706,6 +2710,14 @@ main {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
   gap: 24px 12px;
+}
+
+/* Section ichida gutter'ni section'ning o'zi beradi (masalan, bosh
+   sahifadagi "Barchasini ko'rish" bilan grid'ga aylangan #new-row) —
+   ikki qavat padding bo'lib qolmasin. */
+.content-section .catalog-grid {
+  padding-left: 0;
+  padding-right: 0;
 }
 
 .catalog-grid .movie-card {
