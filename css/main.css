@@ -1460,34 +1460,42 @@ main {
 }
 
 /* Hero logo image (logo rasm mavjud bo'lsa matn o'rnida ko'rinadi).
-   --logo-scale (default 1) admin paneldan boshqariladi — logoni
-   kattalashtirish/kichiklashtirish uchun. */
+   --logo-scale (default 1) admin paneldan boshqariladi. transform bilan
+   masshtablanadi — layout'dagi joyi doim 100% holatdagidek qoladi:
+   kattarsa pastki-chap burchakka langar qilinib TEPAGA (treyler ustiga)
+   o'sadi, pastdagi ma'lumotlar/tugmalar joyidan siljimaydi. */
 .hero-logo-img {
-  max-height: calc(100px * var(--logo-scale, 1));
-  max-width: calc(360px * var(--logo-scale, 1));
+  max-height: 100px;
+  max-width: 360px;
   width: auto;
   height: auto;
   object-fit: contain;
   filter: drop-shadow(0 3px 16px rgba(0, 0, 0, 0.7));
   display: block;
+  transform: scale(var(--logo-scale, 1));
+  transform-origin: left bottom;
 }
 
 /* Movie detail page — desktop logo */
 .dp-hero-logo-img {
-  max-height: calc(80px * var(--logo-scale, 1));
-  max-width: calc(320px * var(--logo-scale, 1));
+  max-height: 80px;
+  max-width: 320px;
   width: auto;
   height: auto;
   object-fit: contain;
   filter: drop-shadow(0 2px 12px rgba(0, 0, 0, 0.6));
   display: block;
   margin-bottom: var(--space-3);
+  transform: scale(var(--logo-scale, 1));
+  transform-origin: left bottom;
 }
 
 /* Movie detail page — mobile logo */
 .mob-title-logo {
-  max-height: calc(52px * var(--logo-scale, 1));
-  max-width: calc(220px * var(--logo-scale, 1));
+  max-height: 52px;
+  max-width: 220px;
+  transform: scale(var(--logo-scale, 1));
+  transform-origin: left bottom;
   width: auto;
   height: auto;
   object-fit: contain;
@@ -4201,6 +4209,52 @@ body.movie-page .navbar.scrolled {
   gap: var(--space-4);
 }
 
+/* ── Janr kartalari tepasidagi sarlavha + "Barcha janrlar" tugmasi ── */
+.genre-bar-head {
+  padding: 0 var(--px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.genre-bar-title {
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.genre-seeall-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 160ms ease, border-color 160ms ease;
+}
+
+.genre-seeall-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.genre-seeall-count {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 999px;
+  padding: 1px 8px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
 /* ── Spotify-style genre card ── */
 .category-card {
   background-color: #333;
@@ -4908,8 +4962,8 @@ video.hero-bg-iframe {
     max-width: 100%;
   }
   .hero-logo-img {
-    max-height: calc(62px * var(--logo-scale, 1));
-    max-width: calc(220px * var(--logo-scale, 1));
+    max-height: 62px;
+    max-width: 220px;
   }
   .logo-main {
     font-size: 38.5px;

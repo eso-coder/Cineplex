@@ -465,6 +465,10 @@ textarea.form-ctrl{resize:vertical;min-height:88px;line-height:1.6}
       <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
       Aktyorlar
     </div>
+    <div class="nav-item" data-page="genres">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+      Janrlar
+    </div>
     <div class="sb-section">Sahifalar</div>
     <div class="nav-item" data-page="hero">
       <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 3l-4 4-4-4"/></svg>
@@ -704,6 +708,44 @@ textarea.form-ctrl{resize:vertical;min-height:88px;line-height:1.6}
       </div>
     </div>
 
+    <!-- GENRES (janr kartalari) -->
+    <div class="page" id="page-genres">
+      <div class="filters-row" style="margin-bottom:18px">
+        <div style="flex:1">
+          <div class="sec-title">Janr kartalari</div>
+          <div class="sec-sub" style="margin-top:4px">Filmlar va Seriallar sahifasidagi janr kartalari: nomi, rangi, yorlig'i va orqasidagi kichik poster rasm. Sahifada faqat belgilangan miqdordagi karta ko'rinadi — qolganlari "Barcha janrlar" tugmasi bosilganda ochiladi.</div>
+        </div>
+        <button class="btn btn-primary" onclick="addGenreCard()">
+          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Janr qo'shish
+        </button>
+      </div>
+
+      <!-- Visible count -->
+      <div style="margin-bottom:18px;display:flex;align-items:center;gap:10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:12px 16px;">
+        <label style="font-size: 13.5px;color:var(--muted);white-space:nowrap;">Ko'rinadigan kartalar soni</label>
+        <input id="genres-visible-input" type="number" min="1" max="40" class="form-ctrl" style="width:90px;font-size: 13.5px;" oninput="renderGenreCardsPreview()">
+        <span class="sec-sub" style="flex:1">"Barchasi" kartasi ham shu songa kiradi (masalan 8 = Barchasi + 7 janr)</span>
+      </div>
+
+      <!-- Genre list -->
+      <div id="genre-cards-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:18px;"></div>
+
+      <!-- Preview -->
+      <div style="margin-bottom:18px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:16px;">
+        <div style="font-size: 12.5px;color:var(--muted);margin-bottom:12px;letter-spacing:.5px;text-transform:uppercase;">Saytdagi ko'rinish (birinchi kartalar)</div>
+        <div id="genre-cards-preview" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;"></div>
+      </div>
+
+      <div style="margin-top:8px;display:flex;gap:10px;justify-content:flex-end">
+        <button class="btn btn-ghost" onclick="resetGenreCardsConfig()">Aslini tiklash</button>
+        <button class="btn btn-primary" onclick="saveGenreCardsConfig()">
+          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          Saqlash
+        </button>
+      </div>
+    </div>
+
   </div>
 </main>
 
@@ -855,7 +897,7 @@ textarea.form-ctrl{resize:vertical;min-height:88px;line-height:1.6}
             <span>Logo o'lchami</span>
             <b id="mf-logo-scale-val" style="font-size: 13px">100%</b>
           </label>
-          <input type="range" id="mf-logo-scale" min="30" max="350" step="5" value="100" oninput="refreshLogoScalePreview(this.value)" style="width:100%;margin-top:6px;accent-color:#fff">
+          <input type="range" id="mf-logo-scale" min="30" max="400" step="5" value="100" oninput="refreshLogoScalePreview(this.value)" style="width:100%;margin-top:6px;accent-color:#fff">
           <div style="margin-top:8px;background:#080810;border:1px solid var(--border);border-radius:9px;padding:16px;min-height:120px;display:flex;align-items:center;justify-content:flex-start;overflow:hidden">
             <img id="mf-logo-scale-prev" alt="" style="display:none;width:auto;height:auto;object-fit:contain;filter:drop-shadow(0 2px 12px rgba(0,0,0,0.6))" onerror="this.style.display='none'">
             <span id="mf-logo-scale-empty" style="font-size: 12px;color:var(--muted2)">Logo tanlanganda misol shu yerda ko'rinadi</span>
@@ -2473,7 +2515,7 @@ function renderHeroItems() {
           (item.logoImg ?
           '<div class="form-group" style="margin-bottom:10px">' +
             '<label style="display:flex;justify-content:space-between"><span>Logo o\'lchami</span><b id="hero-logo-scale-val-' + i + '" style="font-size:13px">' + (parseInt(item.logoScale,10) || 100) + '%</b></label>' +
-            '<input type="range" min="30" max="350" step="5" value="' + (parseInt(item.logoScale,10) || 100) + '" oninput="setHeroLogoScale(' + i + ',this.value)" style="width:100%;margin-top:4px;accent-color:#fff">' +
+            '<input type="range" min="30" max="400" step="5" value="' + (parseInt(item.logoScale,10) || 100) + '" oninput="setHeroLogoScale(' + i + ',this.value)" style="width:100%;margin-top:4px;accent-color:#fff">' +
             '<div style="margin-top:6px;background:#080810;border:1px solid var(--border);border-radius:8px;padding:12px;min-height:80px;display:flex;align-items:center;overflow:hidden">' +
               '<img id="hero-logo-scale-prev-' + i + '" src="' + esc(item.logoImg) + '" style="width:auto;height:auto;object-fit:contain;max-height:' + Math.round(100 * (parseInt(item.logoScale,10) || 100) / 100) + 'px;max-width:' + Math.round(360 * (parseInt(item.logoScale,10) || 100) / 100) + 'px;filter:drop-shadow(0 3px 16px rgba(0,0,0,0.7))" onerror="this.style.display=\'none\'">' +
             '</div>' +
@@ -2801,6 +2843,125 @@ function resetStudiosConfig() {
 
 function escHtml(str) {
   return (str || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+/* ════════════════════════════════════════════════════
+   GENRE CARDS MANAGEMENT
+   Filmlar/Seriallar sahifasidagi janr kartalari — backend'da saqlanadi
+   (GET /settings/genre-cards, POST /admin/genre-cards). Standart ro'yxat
+   backend'dan keladi, shuning uchun bu yerda dublikat yo'q.
+════════════════════════════════════════════════════ */
+PAGE_TITLES['genres']  = 'Janrlar';
+PAGE_LOADERS['genres'] = loadGenreCardsPage;
+
+var genreCardsConfig = [];
+
+function loadGenreCardsPage() {
+  var list = document.getElementById('genre-cards-list');
+  if (list) list.innerHTML = '<div class="empty-state"><p>Yuklanmoqda...</p></div>';
+  api('GET', '/settings/genre-cards')
+    .then(function(resp) {
+      var cfg = resp.data || {};
+      genreCardsConfig = Array.isArray(cfg.items) ? cfg.items : [];
+      var vc = document.getElementById('genres-visible-input');
+      if (vc) vc.value = cfg.visibleCount || 8;
+      renderGenreCards();
+    })
+    .catch(function(e) {
+      genreCardsConfig = [];
+      if (list) list.innerHTML = '<div class="empty-state"><p>Yuklashda xato: ' + esc(e.message || '') + '</p></div>';
+    });
+}
+
+function safeHexColor(c) {
+  return /^#[0-9a-fA-F]{6}$/.test(c || '') ? c : '#444444';
+}
+
+function renderGenreCards() {
+  var wrap = document.getElementById('genre-cards-list');
+  if (!wrap) return;
+  if (!genreCardsConfig.length) {
+    wrap.innerHTML = '<div class="empty-state"><p>Janrlar yo\'q. "Janr qo\'shish" tugmasini bosing.</p></div>';
+    renderGenreCardsPreview();
+    return;
+  }
+  wrap.innerHTML = genreCardsConfig.map(function(g, i) {
+    var thumb = g.img
+      ? '<img src="' + escHtml(g.img) + '" style="position:absolute;bottom:-6px;right:-8px;width:26px;height:36px;object-fit:cover;border-radius:3px;transform:rotate(22deg)" onerror="this.style.display=\'none\'">'
+      : '';
+    return '<div style="display:grid;grid-template-columns:46px 1fr 0.85fr 52px 0.75fr 1.5fr auto auto auto;gap:8px;align-items:center;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:10px 12px;">'
+      + '<div style="position:relative;overflow:hidden;height:40px;border-radius:8px;background:' + escHtml(safeHexColor(g.color)) + '">' + thumb + '</div>'
+      + '<input class="form-ctrl" style="font-size: 13.5px;" placeholder="Nomi (masalan: Jangovar)" value="' + escHtml(g.label || '') + '" oninput="genreCardsConfig[' + i + '].label=this.value;debounceGenrePreview()">'
+      + '<input class="form-ctrl" style="font-size: 13px;font-family:monospace" placeholder="kalit (action)" value="' + escHtml(g.key || '') + '" oninput="genreCardsConfig[' + i + '].key=this.value.toLowerCase().trim()" title="Filmdagi janr nomiga mos kalit (masalan: action, sci-fi)">'
+      + '<input type="color" value="' + escHtml(safeHexColor(g.color)) + '" oninput="genreCardsConfig[' + i + '].color=this.value;renderGenreCards()" style="width:44px;height:34px;padding:2px;border:1px solid var(--border);border-radius:6px;background:var(--bg4);cursor:pointer" title="Karta rangi">'
+      + '<input class="form-ctrl" style="font-size: 13px;" placeholder="Yorliq (Mashhur)" value="' + escHtml(g.tag || '') + '" oninput="genreCardsConfig[' + i + '].tag=this.value;debounceGenrePreview()">'
+      + '<input class="form-ctrl" style="font-size: 13px;" placeholder="Kichik rasm URL (bo\'sh — avtomatik eng yaxshi film posteri)" value="' + escHtml(g.img || '') + '" onchange="genreCardsConfig[' + i + '].img=this.value.trim();renderGenreCards()">'
+      + (i > 0 ? '<button class="btn btn-ghost btn-sm" onclick="moveGenreCard(' + i + ',-1)" title="Yuqoriga">↑</button>' : '<span style="width:28px"></span>')
+      + (i < genreCardsConfig.length - 1 ? '<button class="btn btn-ghost btn-sm" onclick="moveGenreCard(' + i + ',1)" title="Pastga">↓</button>' : '<span style="width:28px"></span>')
+      + '<button class="btn btn-danger btn-sm" onclick="removeGenreCard(' + i + ')" title="O\'chirish">✕</button>'
+      + '</div>';
+  }).join('');
+  renderGenreCardsPreview();
+}
+
+var _genrePreviewTimer = null;
+function debounceGenrePreview() {
+  clearTimeout(_genrePreviewTimer);
+  _genrePreviewTimer = setTimeout(renderGenreCardsPreview, 300);
+}
+
+function renderGenreCardsPreview() {
+  var box = document.getElementById('genre-cards-preview');
+  if (!box) return;
+  var vc = parseInt(document.getElementById('genres-visible-input')?.value, 10) || 8;
+  var cards = [{ label: 'Barchasi', color: '#c2255c', tag: '', img: '' }].concat(genreCardsConfig);
+  var shown = cards.slice(0, Math.max(1, vc));
+  box.innerHTML = shown.map(function(g) {
+    return '<div style="position:relative;overflow:hidden;height:86px;border-radius:12px;padding:12px 14px;background:' + escHtml(safeHexColor(g.color)) + ';color:#fff">'
+      + '<div style="font-weight:800;font-size:15px;text-shadow:0 1px 5px rgba(0,0,0,.3)">' + escHtml(g.label || g.key || '') + '</div>'
+      + '<div style="font-size:11.5px;color:rgba(255,255,255,.75);margin-top:2px">— ta film</div>'
+      + (g.tag ? '<span style="position:absolute;top:9px;right:9px;font-size:9px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;background:rgba(0,0,0,.35);border-radius:4px;padding:2px 6px">' + escHtml(g.tag) + '</span>' : '')
+      + (g.img ? '<img src="' + escHtml(g.img) + '" style="position:absolute;bottom:-8px;right:-10px;width:42px;height:58px;object-fit:cover;border-radius:4px;transform:rotate(24deg);box-shadow:0 4px 14px rgba(0,0,0,.4)" onerror="this.style.display=\'none\'">' : '')
+      + '</div>';
+  }).join('');
+}
+
+function addGenreCard() {
+  genreCardsConfig.push({ key: '', label: 'Yangi janr', color: '#555555', tag: '', img: '' });
+  renderGenreCards();
+}
+
+function removeGenreCard(i) {
+  genreCardsConfig.splice(i, 1);
+  renderGenreCards();
+}
+
+function moveGenreCard(i, dir) {
+  var j = i + dir;
+  if (j < 0 || j >= genreCardsConfig.length) return;
+  var tmp = genreCardsConfig[i]; genreCardsConfig[i] = genreCardsConfig[j]; genreCardsConfig[j] = tmp;
+  renderGenreCards();
+}
+
+function saveGenreCardsConfig() {
+  var bad = genreCardsConfig.filter(function(g) { return !(g.key || '').trim(); });
+  if (bad.length) { toast('Har bir janr uchun kalit (masalan: action) kiritilishi shart', 'error'); return; }
+  var vc = parseInt(document.getElementById('genres-visible-input').value, 10);
+  if (isNaN(vc) || vc < 1 || vc > 40) vc = 8;
+  var cfg = { items: genreCardsConfig, visibleCount: vc };
+  api('POST', '/admin/genre-cards', cfg)
+    .then(function(resp) {
+      var saved = (resp && resp.data) || cfg;
+      /* Shu brauzerdagi sayt cache'ini ham darhol yangilaymiz (js/api.js CPCache — 'cpc_genre_cards') */
+      try { localStorage.setItem('cpc_genre_cards', JSON.stringify({ t: Date.now(), v: saved })); } catch(_) {}
+      toast('Janr kartalari saqlandi ✓', 'success');
+    })
+    .catch(function(e) { toast('Saqlashda xato: ' + (e.message || ''), 'error'); });
+}
+
+function resetGenreCardsConfig() {
+  loadGenreCardsPage();
+  toast('Serverdagi holat qayta yuklandi', 'info');
 }
 </script>
 </body>

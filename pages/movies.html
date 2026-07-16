@@ -73,7 +73,7 @@
     }
 
     function applyFiltersAndSort() {
-      let list = currentGenre === 'all' ? allMovies : allMovies.filter(m => (m.genre || []).includes(currentGenre));
+      let list = currentGenre === 'all' ? allMovies : allMovies.filter(m => App.genreMatches(m, currentGenre));
       list = [...list].sort(SORTERS[currentSort] || SORTERS['rating-desc']);
       render(list);
     }

@@ -57,7 +57,7 @@
       }
       render(allSeries);
       App.buildGenreBar('genre-bar', allSeries, 'serial', genre => {
-        const filtered = genre === 'all' ? allSeries : allSeries.filter(m => (m.genre || []).includes(genre));
+        const filtered = genre === 'all' ? allSeries : allSeries.filter(m => App.genreMatches(m, genre));
         render(filtered);
         document.getElementById('catalog-grid').scrollIntoView({ behavior: 'smooth', block: 'start' });
       });

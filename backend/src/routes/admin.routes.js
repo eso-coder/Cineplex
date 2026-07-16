@@ -36,6 +36,9 @@ router.delete('/movies/:id', ctrl.deleteMovie);
 // Hero (bosh sahifa slideshow konfiguratsiyasi)
 router.post('/hero', settingsCtrl.saveHero);
 
+// Janr kartalari (filmlar/seriallar sahifasidagi kartalar konfiguratsiyasi)
+router.post('/genre-cards', settingsCtrl.saveGenreCards);
+
 // Comments (moderation)
 router.get('/comments', ctrl.getComments);
 router.delete('/comments/:id', ctrl.deleteComment);

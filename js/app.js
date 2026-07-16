@@ -432,18 +432,37 @@ const App = {
     });
   },
 
-  /* ── Spotify-uslubidagi rangli janr kartalari (filmlar/seriallar sahifasi tepasida) ── */
-  GENRE_ORDER: ['action', 'drama', 'comedy', 'scifi', 'fantasy', 'thriller', 'historical'],
-  GENRE_LABELS: { action: 'Jangovar', comedy: 'Komediya', drama: 'Drama', scifi: 'Fantastika', fantasy: 'Fantaziya', thriller: 'Triller', historical: 'Tarixiy', all: 'Barchasi' },
+  /* ── Spotify-uslubidagi rangli janr kartalari (filmlar/seriallar sahifasi tepasida) ──
+     Konfiguratsiya backend'dan olinadi (GET /settings/genre-cards, admin panel →
+     Janrlar). Quyidagi ro'yxat faqat API ishlamay qolganda zaxira sifatida ishlatiladi. */
+  GENRE_ORDER: ['action', 'drama', 'comedy', 'scifi', 'fantasy', 'thriller', 'historical',
+                'adventure', 'animation', 'biography', 'crime', 'documentary', 'horror',
+                'mystery', 'romance', 'western'],
+  GENRE_LABELS: {
+    action: 'Jangovar', comedy: 'Komediya', drama: 'Drama', scifi: 'Fantastika',
+    fantasy: 'Fantaziya', thriller: 'Triller', historical: 'Tarixiy',
+    adventure: 'Sarguzasht', animation: 'Animatsiya', biography: 'Biografik',
+    crime: 'Kriminal', documentary: 'Hujjatli', horror: "Qo'rqinchli",
+    mystery: 'Sirli', romance: 'Romantik', western: 'Vestern', all: 'Barchasi',
+  },
   GENRE_THEME: {
-    action:     { color: '#a8324a', tag: 'Mashhur' },
-    comedy:     { color: '#148a5f', tag: '' },
-    drama:      { color: '#477d95', tag: 'Trendda' },
-    scifi:      { color: '#7b2ff7', tag: '' },
-    fantasy:    { color: '#503aa8', tag: '' },
-    thriller:   { color: '#d9480f', tag: '' },
-    historical: { color: '#8a5a2b', tag: '' },
-    all:        { color: '#c2255c', tag: '' },
+    action:      { color: '#a8324a', tag: 'Mashhur' },
+    comedy:      { color: '#148a5f', tag: '' },
+    drama:       { color: '#477d95', tag: 'Trendda' },
+    scifi:       { color: '#7b2ff7', tag: '' },
+    fantasy:     { color: '#503aa8', tag: '' },
+    thriller:    { color: '#d9480f', tag: '' },
+    historical:  { color: '#8a5a2b', tag: '' },
+    adventure:   { color: '#1d7a3c', tag: '' },
+    animation:   { color: '#0e7490', tag: '' },
+    biography:   { color: '#6d4c2f', tag: '' },
+    crime:       { color: '#5f273d', tag: '' },
+    documentary: { color: '#3f5f3a', tag: '' },
+    horror:      { color: '#311b4f', tag: '' },
+    mystery:     { color: '#2c3a6e', tag: '' },
+    romance:     { color: '#b03a5b', tag: '' },
+    western:     { color: '#9c6b1f', tag: '' },
+    all:         { color: '#c2255c', tag: '' },
   },
   GENRE_FALLBACK: {
     action:'https://rwvfilm.com/uploads/media/image/0001/02/2288cbf53f90b29cd77e29cf1716fe93a730a5b3.jpg',
@@ -456,41 +475,138 @@ const App = {
     all:'https://rwvfilm.com/uploads/media/image/0001/03/thumb_2793_image_medium.jpg',
   },
 
+  /* Janr kaliti bilan filmdagi janr nomi mosligini tekshiradi —
+     'sci-fi'/'scifi' kabi turlicha yozilishlar bir xil hisoblanadi.
+     Sahifalardagi filtrlash ham xuddi shu qoida bilan ishlashi kerak. */
+  genreMatches(m, key) {
+    const norm = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    return (m.genre || []).some(g => norm(g) === norm(key));
+  },
+
+  /* Backend'dagi janr kartalari konfiguratsiyasini oladi (stale-while-revalidate):
+     avval cache'dan, keyin fonda yangilaydi. API bo'lmasa null qaytaradi. */
+  async loadGenreCardsConfig() {
+    if (typeof apiFetch === 'undefined') return null; /* api.js hali ulanmagan sahifa */
+    const valid = (v) => v && Array.isArray(v.items) && v.items.length;
+    const fetchFresh = async () => {
+      const resp = await apiFetch('/settings/genre-cards');
+      const d = (resp && resp.data) || {};
+      const cfg = {
+        items: Array.isArray(d.items) ? d.items : [],
+        visibleCount: parseInt(d.visibleCount, 10) || 8,
+      };
+      if (valid(cfg) && typeof CPCache !== 'undefined') CPCache.set('genre_cards', cfg);
+      return cfg;
+    };
+    let cached = null;
+    try { if (typeof CPCache !== 'undefined') cached = CPCache.get('genre_cards'); } catch (_) {}
+    if (cached && valid(cached.v)) {
+      fetchFresh().catch(() => {});
+      return cached.v;
+    }
+    try {
+      const cfg = await fetchFresh();
+      return valid(cfg) ? cfg : null;
+    } catch (_) { return null; }
+  },
+
   /* containerId — bo'sh div; movies — to'liq ro'yxat; unit — 'film'/'serial'; onSelect(genre) */
   buildGenreBar(containerId, movies, unit, onSelect) {
     const container = document.getElementById(containerId);
     if (!container) return;
-    const inGenre = (m, g) => (m.genre || []).includes(g);
-    const posterFor = (g) => {
-      const pool = g === 'all' ? movies : movies.filter(m => inGenre(m, g));
+    const E = this.esc;
+    const inGenre = (m, key) => this.genreMatches(m, key);
+    const posterFor = (item) => {
+      if (item.img) return item.img; /* admin panelda tanlangan rasm ustuvor */
+      const pool = item.key === 'all' ? movies : movies.filter(m => inGenre(m, item.key));
       const best = [...pool]
         .sort((a, b) => (parseFloat(b.rating) || 0) - (parseFloat(a.rating) || 0))
         .find(m => m.img);
-      return (best && best.img) || this.GENRE_FALLBACK[g] || '';
+      return (best && best.img) || this.GENRE_FALLBACK[item.key] || '';
     };
-    /* Barcha janrlar ko'rsatiladi (mavjud bo'lmaganlari ham) */
-    const order = ['all', ...this.GENRE_ORDER];
+    /* Zaxira ro'yxat — backend konfiguratsiyasi kelguncha/kelmasa ishlatiladi */
+    const fallbackItems = this.GENRE_ORDER.map(g => ({
+      key: g,
+      label: this.GENRE_LABELS[g] || g,
+      color: (this.GENRE_THEME[g] || {}).color || '#444',
+      tag: (this.GENRE_THEME[g] || {}).tag || '',
+      img: '',
+    }));
+    const state = { items: fallbackItems, visibleCount: 8, expanded: false, selected: 'all' };
 
-    container.innerHTML = order.map(g => {
-      const theme = this.GENRE_THEME[g] || { color: '#444', tag: '' };
-      const count = g === 'all' ? movies.length : movies.filter(m => inGenre(m, g)).length;
-      const poster = posterFor(g);
+    const cardHtml = (item) => {
+      const count = item.key === 'all' ? movies.length : movies.filter(m => inGenre(m, item.key)).length;
+      const poster = posterFor(item);
+      const color = String(item.color || '#444').replace(/[^#a-zA-Z0-9(),.%\s-]/g, '');
       return `
-        <a class="category-card${g === 'all' ? ' selected' : ''}" data-genre="${g}" href="#"
-           style="background:${theme.color}">
-          <div class="cat-name">${this.GENRE_LABELS[g] || g}</div>
+        <a class="category-card${state.selected === item.key ? ' selected' : ''}" data-genre="${E(item.key)}" href="#"
+           style="background:${color}">
+          <div class="cat-name">${E(item.label)}</div>
           <div class="cat-count">${count} ta ${unit || ''}</div>
-          ${theme.tag ? `<span class="cat-tag">${theme.tag}</span>` : ''}
-          ${poster ? `<img class="cat-poster" src="${poster}" alt="" loading="lazy" onerror="this.style.display='none'">` : ''}
+          ${item.tag ? `<span class="cat-tag">${E(item.tag)}</span>` : ''}
+          ${poster ? `<img class="cat-poster" src="${E(poster)}" alt="" loading="lazy" onerror="this.style.display='none'">` : ''}
         </a>`;
-    }).join('');
+    };
+
+    const render = () => {
+      const allCard = {
+        key: 'all',
+        label: this.GENRE_LABELS.all,
+        color: this.GENRE_THEME.all.color,
+        tag: '',
+        img: '',
+      };
+      const cards = [allCard, ...state.items];
+      const shown = state.expanded ? cards : cards.slice(0, state.visibleCount);
+      container.innerHTML = shown.map(cardHtml).join('');
+
+      /* "Barcha janrlar" tugmasi — kartalar tepasida */
+      let head = document.getElementById(containerId + '-head');
+      if (!head) {
+        head = document.createElement('div');
+        head.id = containerId + '-head';
+        head.className = 'genre-bar-head';
+        container.parentNode.insertBefore(head, container);
+      }
+      if (cards.length > state.visibleCount) {
+        head.style.display = '';
+        head.innerHTML =
+          `<span class="genre-bar-title">Janrlar</span>` +
+          `<button class="genre-seeall-btn" type="button">` +
+          (state.expanded
+            ? `Kamroq ko'rsatish`
+            : `Barcha janrlar <span class="genre-seeall-count">${cards.length}</span>`) +
+          `</button>`;
+        head.querySelector('.genre-seeall-btn').onclick = () => {
+          state.expanded = !state.expanded;
+          render();
+        };
+      } else {
+        head.style.display = 'none';
+      }
+    };
+
+    render();
+    /* Backend konfiguratsiyasi kelgach qayta chizamiz (tanlov saqlanadi) */
+    this.loadGenreCardsConfig().then(cfg => {
+      if (!cfg) return;
+      state.items = cfg.items
+        .filter(it => it && it.key)
+        .map(it => ({
+          key: String(it.key), label: it.label || it.key,
+          color: it.color || '#444', tag: it.tag || '', img: it.img || '',
+        }));
+      state.visibleCount = cfg.visibleCount || 8;
+      render();
+    });
 
     container.addEventListener('click', e => {
       const card = e.target.closest('.category-card');
       if (!card) return;
       e.preventDefault();
+      state.selected = card.dataset.genre || 'all';
       container.querySelectorAll('.category-card').forEach(c => c.classList.toggle('selected', c === card));
-      if (onSelect) onSelect(card.dataset.genre || 'all');
+      if (onSelect) onSelect(state.selected);
     });
   },
 
