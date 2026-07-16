@@ -1858,12 +1858,20 @@ main {
   display: flex;
   gap: 14px;
   overflow-x: auto;
-  /* Hover'da kartalar scale/glow bilan yoyiladi — bu qator sarlavha
-     bilan qo'shni bo'lgani uchun manfiy margin ishlatilmaydi (aks holda
-     hover'dagi karta sarlavha ustiga chiqib qoladi); shunchaki keng
-     padding bilan bo'sh joy beriladi, overflow-x scrollport chekkasi
-     bo'ylab kesilib qolmasin deb. */
-  padding: 48px 0;
+  /* Hover'da kartalar scale + blur-glow bilan yoyiladi. overflow-x
+     scrollport vertikal ham kesadi — glow avval scrollport chekkasida
+     qattiq gorizontal CHIZIQ bo'lib kesilardi. Yechim ikki qismli:
+     1) kattaroq vertikal padding glow'ga joy beradi (manfiy margin shu
+        qo'shimchani layout'dan qaytarib oladi — oraliqlar o'zgarmaydi);
+     2) mask-gradient chekkadagi oxirgi ~20px'da glow'ni yumshoq so'ndiradi,
+        shunda padding'dan baribir oshgan bloom chiziq hosil qilmaydi.
+     Kartaning o'zi (hover scale bilan ham) fade zonasiga yetmaydi. */
+  padding: 64px 0;
+  margin: -16px 0;
+  -webkit-mask-image: linear-gradient(to bottom,
+    transparent 0, #000 20px, #000 calc(100% - 20px), transparent 100%);
+  mask-image: linear-gradient(to bottom,
+    transparent 0, #000 20px, #000 calc(100% - 20px), transparent 100%);
   scroll-behavior: smooth;
 }
 
