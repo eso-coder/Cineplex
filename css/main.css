@@ -4258,7 +4258,8 @@ body.movie-page .navbar.scrolled {
 /* "Barcha janrlar" ochilganda — 3 qator ko'rinadi, qolgani ichki scroll bilan */
 .category-grid.genre-grid-scroll {
   overflow-y: auto;
-  overscroll-behavior: contain;
+  /* overscroll-behavior ataylab default (auto) — janrlar scroll'i tugagach
+     g'ildirak harakati sahifaga uzatilib, kinolarga silliq o'tib ketadi */
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
   padding-bottom: 6px;
