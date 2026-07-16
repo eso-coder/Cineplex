@@ -1147,18 +1147,29 @@
         initEpisodes(movie.episodeList);
       }
 
-      /* ── Related ── */
-      const related = relatedList.slice(0, 6);
+      /* ── Related — bosh sahifadagi "Yangi chiqmalar" bilan bir xil:
+         standart karta o'lchami, o'ngga drag-scroll, "Barchasini ko'rish" ── */
+      const related = relatedList.slice(0, 18);
       if (related.length) {
         document.getElementById('related-section').innerHTML = `
           <div class="section-header">
             <div class="section-title">Shunga o'xshash</div>
-            <div class="section-nav">
-              <button class="section-nav-btn" onclick="scrollRow('watch-related',-1)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m15 18-6-6 6-6"/></svg></button>
-              <button class="section-nav-btn" onclick="scrollRow('watch-related',1)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 18 6-6-6-6"/></svg></button>
-            </div>
+            <a href="#" class="section-link" id="watch-related-toggle">Barchasini ko'rish</a>
           </div>
           <div class="movies-row" id="watch-related">${related.map(m => App.buildCard(m, '../')).join('')}</div>`;
+        App.initDragScroll('watch-related');
+        (function () {
+          const toggle = document.getElementById('watch-related-toggle');
+          const row = document.getElementById('watch-related');
+          let expanded = false;
+          toggle.addEventListener('click', function (e) {
+            e.preventDefault();
+            expanded = !expanded;
+            row.classList.toggle('catalog-grid', expanded);
+            row.classList.toggle('movies-row', !expanded);
+            toggle.textContent = expanded ? 'Yopish' : "Barchasini ko'rish";
+          });
+        })();
       }
     }
 

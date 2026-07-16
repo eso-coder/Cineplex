@@ -1915,13 +1915,15 @@ main {
    14px oraliq to'liq kenglikni egallaydi (xuddi 6 ustunli grid kabi). */
 #new-row.movies-row .movie-card,
 #history-row.movies-row .movie-card,
-#related-row.movies-row .movie-card {
+#related-row.movies-row .movie-card,
+#watch-related.movies-row .movie-card {
   width: calc((100% - 70px) / 6);
 }
 @media (max-width: 900px) {
   #new-row.movies-row .movie-card,
   #history-row.movies-row .movie-card,
-  #related-row.movies-row .movie-card { width: var(--card-w); }
+  #related-row.movies-row .movie-card,
+  #watch-related.movies-row .movie-card { width: var(--card-w); }
 }
 
 /* ═══════════════════════════════════════════════════════
