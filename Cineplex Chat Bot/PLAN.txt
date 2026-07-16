@@ -1,0 +1,124 @@
+# Cineplex AI funksiyalari: AI Search, AI Recommendations, AI Admin
+
+## Context
+
+Foydalanuvchi Cineplex (kino-streaming sayti) uchun 3 ta AI funksiya qurmoqchi: (1) tabiiy tildagi AI qidiruv (RAG — faqat o'z kino bazasidan), (2) shaxsiylashtirilgan tavsiyalar ("X ni ko'rganingiz uchun"), (3) admin panelda "AI bilan to'ldirish" tugmasi (tavsif/SEO/janr/aktyorlarni 3 tilda avtomatik yaratish).
+
+**Tanlangan arxitektura (foydalanuvchi tasdiqlagan):** Gemini API (AI Studio API key, `GEMINI_API_KEY`) + MongoDB Atlas Vector Search. Vertex AI Search datastore ishlatilmaydi. Modellari: `gemini-2.5-flash` (generatsiya), `gemini-embedding-001` 768-dim (embeddings). Barcha AI chaqiruvlar oddiy `fetch` bilan `generativelanguage.googleapis.com` ga — yangi npm dependency YO'Q (codebase pattern: `translate.js` ham raw fetch ishlatadi, ESM/CJS muammolar tufayli).
+
+**Stack faktlari:** Frontend = static HTML + vanilla JS (`pages/`, `js/api.js`, `js/i18n.js` uz/ru/en). Backend = Express 4 CommonJS `backend/src/`, Vercel serverless (`api/index.js`), Mongoose 8, MongoDB Atlas (shared cluster — Vector Search M0'da ham ishlaydi, 3 ta search index limiti, hozir 0 ta ishlatilgan). Hozirgi qidiruv: in-memory fuzzy (`backend/src/utils/fuzzySearch.js`). Hozirgi related: janr kesishmasi (`movie.controller.js` `getMovie` ~135-148). Admin: `pages/admin.html` (bitta katta sahifa), `admin.routes.js` auth+admin middleware ortida.
+
+**Degradatsiya printsipi:** har bir AI funksiya o'chsa/xato bersa sayt avvalgidek ishlashi shart — AI search → fuzzy fallback, related → janr fallback, recs qatori → yashirin, admin tugma → 503 xabar.
+
+---
+
+## Phase 1 — AI Admin ("AI bilan to'ldirish") — eng oson, auth'ni isbotlaydi
+
+### Yangi fayllar
+- `backend/src/services/ai/geminiClient.js`:
+  - `generateJSON({ system, prompt, schema, maxOutputTokens })` — `POST https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key=...` bilan, `responseMimeType: 'application/json'` + `responseSchema`. Quota/5xx da typed xato tashlaydi (callerlar fallback qilishi uchun).
+  - `embedTexts(texts, { taskType })` — `:batchEmbedContents`, 768-dim (`outputDimensionality: 768`), `number[][]` qaytaradi.
+- `backend/src/services/ai/adminFill.js` — `aiFillMovie({ title, year, type })`:
+  - Bitta `generateJSON` chaqiruv. Schema maydonlari: `title_ru, title_en, description (uz-lotin), description_ru, description_en` (har biri 2–4 gap, spoilersiz, ≤1800 belgi), `director, cast (max 10), country, releaseYear, duration, ageRating, imdbRating, genres (string[]), seo {metaTitle, metaDescription}, confidence ('high'|'low')`.
+  - Post-processing: janr nomlarini mavjud `Genre` hujjatlariga fuzzy moslash (`utils/fuzzySearch.js` qayta ishlatiladi) → `{ matchedGenreIds, unmatchedGenreNames }`. Uzunliklarni `Movie.js` schema limitlariga (200/2000) qirqish.
+
+### O'zgartiriladigan fayllar
+- `backend/src/config/env.js` — `ai` bo'limi: `geminiApiKey (GEMINI_API_KEY)`, `genModel (default gemini-2.5-flash)`, `embedModel (default gemini-embedding-001)`, `embedDims: 768`, `enabled: !!GEMINI_API_KEY`.
+- `backend/.env.example` — yangi o'zgaruvchilarni hujjatlash.
+- `backend/src/routes/admin.routes.js` — `POST /movies/ai-fill` (mavjud auth+admin ortida) + shu route'ga `express-rate-limit` 20/10min.
+- `backend/src/controllers/admin.controller.js` — `aiFillMovie` handler, Joi validatsiya `{ title: required, year?, type? }`. AI o'chiq bo'lsa aniq xabarli 503.
+- `pages/admin.html` — kino formasida title yonida "AI bilan to'ldirish" tugmasi (title bo'sh bo'lsa disabled). Bosilganda: spinner → `POST /api/admin/movies/ai-fill` → **faqat bo'sh** maydonlarni to'ldirish (admin yozganini hech qachon ustidan yozmaslik), mos janrlarni belgilash, topilmagan janrlar ro'yxati toast'da, `confidence === 'low'` bo'lsa "tekshiring" ogohlantirishi. Tugma DB'ga yozmaydi — admin odatdagidek ko'rib saqlaydi. (admin.html inline fetch ishlatadimi yoki js/api.js — mavjud patternga ergashish.)
+
+## Phase 2 — Embeddings + AI Search (RAG)
+
+### 2a. Schema + embedding pipeline
+- `backend/src/models/Movie.js` — qo'shish: `embedding: { type: [Number], select: false }`, `embeddingHash: { type: String, default: '', select: false }`. **select:false muhim** — 768 float har bir list/detail javobiga tushmasligi uchun. Mongoose index kerak emas (vector index Atlas Search'da).
+- `backend/src/services/ai/embeddings.js`:
+  - `buildEmbeddingText(movie)` — deterministik: `V1| title(uz/ru/en) | year | type | genres | director | cast | country | description_en || description` (`V1|` prefiks — format o'zgarsa bump qilib qayta-embed).
+  - `embeddingHashOf(text)` — sha1.
+  - `ensureMovieEmbedding(movieId)` — hash o'zgarmagan bo'lsa skip; xatolar winston'ga log qilinadi va **yutiladi** (embedding xatosi admin save'ni yiqitmasligi shart).
+- `admin.controller.js` — `createMovie`/`updateMovie` oxirida `await ensureMovieEmbedding(movie._id)` **javob yuborishdan OLDIN** (Vercel'da fire-and-forget muzlab qoladi; ~0.5–1s kechikish adminda muammo emas).
+
+### 2b. Backfill skript
+- `backend/scripts/backfill-embeddings.js` — lokal ishga tushiriladi (`seed.js` kabi to'g'ridan-to'g'ri `mongoose.connect`): barcha kinolar bo'yicha cursor, 20 talik batch'da `embedTexts`, hash o'zgarmaganlarni skip, `bulkWrite`, progress log, `DRY_RUN=1` rejimi. Idempotent.
+
+### 2c. Atlas Vector Search index (bir martalik, Atlas UI'da)
+`movies` kolleksiyasida, nomi `movie_vector_index`:
+```json
+{ "fields": [
+  { "type": "vector", "path": "embedding", "numDimensions": 768, "similarity": "cosine" },
+  { "type": "filter", "path": "releaseYear" },
+  { "type": "filter", "path": "genres" },
+  { "type": "filter", "path": "type" },
+  { "type": "filter", "path": "_id" } ] }
+```
+
+### 2d. AI search endpoint
+- Yangi `backend/src/routes/ai.routes.js`, `backend/src/app.js` da `app.use('/api/ai', aiRoutes)`. Rate limit: `POST /search` 10/min IP boshiga; `GET /recommendations` 30/10min.
+- `backend/src/controllers/ai.controller.js` + `backend/src/services/ai/aiSearch.js`:
+
+**`POST /api/ai/search`** — `{ q: string (3–300), lang: 'uz'|'ru'|'en' }`, public. Pipeline (~2–4s):
+1. **Intent parse** (Gemini JSON): `{ semanticQuery (EN), yearMin?, yearMax?, genres?, person?, similarToTitle? }`. Masalan "2020-yildan keyingi psixologik triller" → `{semanticQuery:"psychological thriller", yearMin:2021}`; "Interstellar'ga o'xshash" → `{similarToTitle:"Interstellar"}`.
+2. **Query vektor**: `similarToTitle` bo'lsa — o'sha kinoni fuzzy topib uning saqlangan `embedding`ini ishlatish; aks holda `embedTexts([semanticQuery], {taskType:'RETRIEVAL_QUERY'})`.
+3. **Retrieve**: `$vectorSearch` (numCandidates 100, limit 20, filter: yil/janr/type; janr nomlari Genre ObjectId'ga fuzzy map). `person` bo'lsa kandidatlar ustida `cast`/`director` regex boost/filter. Projection'da `embedding` chiqarilmaydi.
+4. **Explain** (Gemini JSON): top 8 kandidat + so'rov → `[{id, reason}]`, `reason` **so'rov tilida** bitta gap; aloqasizlarni tashlab yuborishga ruxsat.
+
+Javob: `{ success, data: { results: [{movie, reason, score}], parsed, fallback: false } }`.
+
+**Fallback:** har qanday AI/vector xato yoki `enabled=false` → mavjud fuzzy search yo'li (movie.controller'dan shared helper'ga ajratish), `fallback: true`, HTTP 200. Qidiruv oynasiga hech qachon 500 chiqmaydi.
+
+**Kesh:** yangi `backend/src/models/AiCache.js` — `{ key: unique, value: Mixed, createdAt: { expires: 21600 } }` (6 soat TTL). Key = `sha1('search|'+lang+'|'+normalized q)`. Mongo-kesh, chunki Vercel instansiyalari xotira bo'lishmaydi. Keyin recs ham shu kolleksiyada (30 min).
+
+### 2e. Frontend
+- `js/api.js` — `MoviesAPI.aiSearch(q)` → `POST /ai/search` joriy til bilan.
+- `pages/search.html` — input ustida "Oddiy qidiruv" / "AI qidiruv" toggle. AI rejimda debounce YO'Q — faqat Enter/tugma bosilganda (narx+latency). "AI o'ylanmoqda…" loading, mavjud karta markup + har karta ostida kichik `reason` qatori, `fallback:true` da sekingina bildirishnoma, bo'sh AI tabda misol-so'rov chiplari.
+- `js/i18n.js` — 3 tilda yangi kalitlar: `search.ai_tab/ai_placeholder/ai_thinking/ai_fallback/ai_examples.*`, `admin.ai_fill/ai_fill_review`, `home.for_you`, `home.because_watched`.
+
+## Phase 3 — Tavsiyalar
+
+### 3a. Related-rail yaxshilash (yangi endpoint yo'q)
+- `movie.controller.js` `getMovie`: kino embedding'i bo'lsa janr-kesishma o'rniga o'z vektori bilan `$vectorSearch` (limit 13, o'zini chiqarib tashlash). Xato/embedding yo'q bo'lsa → mavjud janr-kesishma kodi aynan qoladi (catch/else tarmog'i). Gemini chaqiruvsiz — bepul.
+
+### 3b. Shaxsiy tavsiyalar
+**`GET /api/ai/recommendations`** (authMiddleware):
+- `watchHistory` (oxirgi 5 ta, progress >20%) + `favorites` (oxirgi 5), `+embedding` bilan.
+- 3 ta qator: (1) eng oxirgi ko'rilgan kino vektori, (2) eng oxirgi sevimli, (3) barcha seedlar centroid'i ("Siz uchun tanlangan"). Har biri uchun `$vectorSearch` limit 15, ko'rilgan/sevimli/watchlist id'larni `_id $nin` filter bilan chiqarib, 10 tadan.
+- Javob: `{ rows: [{ key: 'because_watched'|'because_favorite'|'for_you', seed: {id,title}|null, movies: [...] }] }`.
+- Kesh: `AiCache` `'recs|'+userId`, 30 min. Tarixi yo'q foydalanuvchi → `rows: []` (frontend bo'limni yashiradi). Gemini chaqiruvsiz — faqat vektor matematika.
+- Frontend: `index.html` bosh sahifa qatorlari (trending chaqirilgan joy atrofida) — login bo'lsa `MoviesAPI.recommendations()` va mavjud row-render funksiyasi bilan qatorlar qo'shish.
+
+---
+
+## Env o'zgaruvchilar (Vercel + lokal .env)
+| Var | Maqsad |
+|---|---|
+| `GEMINI_API_KEY` | AI Studio kaliti (aistudio.google.com) — asosiy transport |
+| `AI_GEN_MODEL` | default `gemini-2.5-flash` |
+| `AI_EMBED_MODEL` | default `gemini-embedding-001` |
+
+Hammasi ixtiyoriy — yo'q bo'lsa sayt avvalgidek ishlaydi.
+
+## Narx nazorati
+- Route rate-limitlar + 6h search kesh + 30min recs kesh + per-keystroke AI chaqiruv yo'q.
+- `maxOutputTokens` cheklovlari (admin fill ~2048, parse ~256, reasons ~1024).
+- Recs va related — umuman Gemini'siz (faqat vector search, bepul Atlas ichida).
+
+## Verifikatsiya
+1. **Phase 1:** lokal `npm run dev` (backend), `curl POST /api/admin/movies/ai-fill {"title":"Inception","year":2010}` → 3 tilda tavsif, janrlar real Genre id'larga moslangan, uzunliklar schema limitida. Admin panelda tugmani bosib formaning bo'sh maydonlari to'lishini ko'rish.
+2. **Embeddings:** `DRY_RUN=1 node scripts/backfill-embeddings.js` → sonlar to'g'ri; real run; Atlas'da 768-elementli `embedding` bor, lekin `GET /api/movies` javobida YO'Q (select:false). Qayta run → "0 updated" (idempotent). Admin orqali yangi kino → darhol embedding bor.
+3. **AI search:** 3 kanonik so'rov (uz yil-filtri, aktyor, o'xshash-kino) `curl` bilan → mantiqiy natijalar, `reason` so'rov tilida, `parsed` to'g'ri; takror so'rov → tez (kesh); noto'g'ri model nomi qo'yib → `fallback:true` + fuzzy natijalar, HTTP 200.
+4. **Recs:** tarixli test user → qatorlar ko'rilganlarni chiqarib tashlaydi; yangi user → bo'sh. Kino sahifasi → related rail o'zini o'z ichiga olmaydi.
+5. **Vercel:** preview deploy — cold start + AI search timeout ichida (3–5s; kerak bo'lsa `vercel.json`da `/api/ai/*` uchun `maxDuration` 30).
+6. **Regressiya:** oddiy `?search=` fuzzy, AI'siz admin kino qo'shish, `GEMINI_API_KEY` o'chirilgan holda barcha sahifalar — avvalgidek.
+
+## Qurish tartibi
+1. Phase 1 (geminiClient + admin fill) — schema o'zgarishsiz, API kalit + billing end-to-end isbotlanadi.
+2. Phase 2 (Movie maydonlari → backfill → Atlas index → /api/ai/search → search.html). Index endpoint'dan oldin yaratilishi kerak; backfill'dan keyin Atlas mavjud hujjatlarni avtomatik indekslaydi.
+3. Phase 3 (related-rail almashtirish → /api/ai/recommendations → bosh sahifa qatorlari).
+
+## Foydalanuvchi qiladigan qo'lda qadamlar
+1. aistudio.google.com'dan `GEMINI_API_KEY` olish, lokal `backend/.env` va Vercel env'ga qo'yish.
+2. Atlas UI'da `movie_vector_index` vector search indexini yaratish (2c'dagi JSON).
+3. Lokalda `node backend/scripts/backfill-embeddings.js` ishga tushirish.
+
+**Eslatma (kredit):** $1000 GenAI App Builder krediti bu arxitekturada ishlatilmaydi (u faqat Vertex AI Search SKU'lariga tegishli); Gemini API xarajati sizning hajmingizda oyiga bir necha dollar va AI Studio bepul tier'i ko'p qismini qoplaydi.
