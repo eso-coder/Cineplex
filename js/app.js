@@ -560,6 +560,20 @@ const App = {
       const shown = state.expanded ? cards : cards.slice(0, state.visibleCount);
       container.innerHTML = shown.map(cardHtml).join('');
 
+      /* Yoyilganda faqat 3 qator ko'rinadi — qolganlari ichki scroll bilan */
+      container.classList.toggle('genre-grid-scroll', state.expanded);
+      if (state.expanded) {
+        try {
+          const first = container.firstElementChild;
+          const gap = parseFloat(getComputedStyle(container).rowGap) || 16;
+          if (first) container.style.maxHeight =
+            Math.round(first.getBoundingClientRect().height * 3 + gap * 2) + 'px';
+        } catch (_) {}
+      } else {
+        container.style.maxHeight = '';
+        container.scrollTop = 0;
+      }
+
       /* "Barcha janrlar" tugmasi — kartalar tepasida */
       let head = document.getElementById(containerId + '-head');
       if (!head) {

@@ -7,7 +7,10 @@
 ═══════════════════════════════════════════════════════ */
 
 body.catalog-page {
-  background: var(--aurora), var(--bg-base);
+  /* Aurora gradienti foizlarda o'lchanadi — sahifa uzayganda (masalan "Barcha
+     janrlar" ochilganda) nur pastga cho'zilib kulrang band hosil qilardi.
+     100vh'ga mahkamlab, doim faqat tepada qoladigan qilamiz. */
+  background: var(--aurora) top center / 100% 100vh no-repeat, var(--bg-base);
 }
 body.catalog-page .ambient-bg {
   display: none;
