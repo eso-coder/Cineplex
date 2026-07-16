@@ -855,7 +855,7 @@ textarea.form-ctrl{resize:vertical;min-height:88px;line-height:1.6}
             <span>Logo o'lchami</span>
             <b id="mf-logo-scale-val" style="font-size: 13px">100%</b>
           </label>
-          <input type="range" id="mf-logo-scale" min="30" max="250" step="5" value="100" oninput="refreshLogoScalePreview(this.value)" style="width:100%;margin-top:6px;accent-color:#fff">
+          <input type="range" id="mf-logo-scale" min="30" max="350" step="5" value="100" oninput="refreshLogoScalePreview(this.value)" style="width:100%;margin-top:6px;accent-color:#fff">
           <div style="margin-top:8px;background:#080810;border:1px solid var(--border);border-radius:9px;padding:16px;min-height:120px;display:flex;align-items:center;justify-content:flex-start;overflow:hidden">
             <img id="mf-logo-scale-prev" alt="" style="display:none;width:auto;height:auto;object-fit:contain;filter:drop-shadow(0 2px 12px rgba(0,0,0,0.6))" onerror="this.style.display='none'">
             <span id="mf-logo-scale-empty" style="font-size: 12px;color:var(--muted2)">Logo tanlanganda misol shu yerda ko'rinadi</span>
@@ -2473,7 +2473,7 @@ function renderHeroItems() {
           (item.logoImg ?
           '<div class="form-group" style="margin-bottom:10px">' +
             '<label style="display:flex;justify-content:space-between"><span>Logo o\'lchami</span><b id="hero-logo-scale-val-' + i + '" style="font-size:13px">' + (parseInt(item.logoScale,10) || 100) + '%</b></label>' +
-            '<input type="range" min="30" max="250" step="5" value="' + (parseInt(item.logoScale,10) || 100) + '" oninput="setHeroLogoScale(' + i + ',this.value)" style="width:100%;margin-top:4px;accent-color:#fff">' +
+            '<input type="range" min="30" max="350" step="5" value="' + (parseInt(item.logoScale,10) || 100) + '" oninput="setHeroLogoScale(' + i + ',this.value)" style="width:100%;margin-top:4px;accent-color:#fff">' +
             '<div style="margin-top:6px;background:#080810;border:1px solid var(--border);border-radius:8px;padding:12px;min-height:80px;display:flex;align-items:center;overflow:hidden">' +
               '<img id="hero-logo-scale-prev-' + i + '" src="' + esc(item.logoImg) + '" style="width:auto;height:auto;object-fit:contain;max-height:' + Math.round(100 * (parseInt(item.logoScale,10) || 100) / 100) + 'px;max-width:' + Math.round(360 * (parseInt(item.logoScale,10) || 100) / 100) + 'px;filter:drop-shadow(0 3px 16px rgba(0,0,0,0.7))" onerror="this.style.display=\'none\'">' +
             '</div>' +
