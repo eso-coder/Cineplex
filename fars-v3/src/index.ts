@@ -4,6 +4,7 @@ import * as os from 'os';
 import * as dotenv from 'dotenv';
 dotenv.config({ path: path.join(__dirname, '..', '.env') });
 
+import { preventSleep } from './keepawake';
 import { parseFilename } from './parser';
 import { prepareMedia } from './converter';
 import { uploadToBunny } from './bunny';
@@ -68,6 +69,7 @@ async function main() {
 
   console.log('\n🎬 FARS v3 Pipeline (Bunny Stream)');
   console.log(HR);
+  preventSleep();
   log(`📁 Manba: ${filename}${isUrl ? ' (URL)' : ''}`);
   log(`🎯 Slug: ${slug}`);
   log(`📂 Work: ${workDir}`);

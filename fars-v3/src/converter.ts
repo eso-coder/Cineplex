@@ -103,14 +103,31 @@ function ffprobe(input: string): { streams: StreamInfo[] } {
 }
 
 // ─── FFmpeg progress bilan ishga tushirish ────────────────────────────────────
-function runFFmpeg(args: string[], label: string, stallSec = 300): Promise<void> {
+function runFFmpeg(args: string[], label: string, stallSec = 300, outPath?: string): Promise<void> {
   return new Promise((resolve, reject) => {
     const proc: ChildProcess = spawn('ffmpeg', ['-y', ...args]);
     let lastErr = '';
     let lastProgressAt = Date.now();
+    let lastTickAt = Date.now();
+    let lastSize = 0;
 
     const watchdog = setInterval(() => {
-      const idle = Math.floor((Date.now() - lastProgressAt) / 1000);
+      const now = Date.now();
+      // Uyqu (Modern Standby) aniqlash: interval ticklari orasida katta sakrash
+      // bo'lsa — tizim uxlagan, ffmpeg ham muzlatilgan edi. Bu qotish EMAS,
+      // taymerni tiklaymiz (aks holda uyg'onishda darhol noto'g'ri o'ldiradi).
+      if (now - lastTickAt > 30_000) lastProgressAt = now;
+      lastTickAt = now;
+
+      // Chiqish fayli o'sayotgan bo'lsa — bu ham progress (stderr kechiksa ham)
+      if (outPath) {
+        try {
+          const size = fs.statSync(outPath).size;
+          if (size > lastSize) { lastSize = size; lastProgressAt = now; }
+        } catch { /* fayl hali yaratilmagan */ }
+      }
+
+      const idle = Math.floor((now - lastProgressAt) / 1000);
       if (idle >= stallSec) {
         clearInterval(watchdog);
         proc.kill('SIGKILL');
@@ -291,7 +308,7 @@ export async function prepareMedia(input: string, outputDir: string): Promise<Pr
     mp4Path,
   ];
   try {
-    await runFFmpeg(remuxArgs, needsCfr ? 'CFR re-encode' : 'MP4 remux');
+    await runFFmpeg(remuxArgs, needsCfr ? 'CFR re-encode' : 'MP4 remux', 300, mp4Path);
   } catch (e) {
     // Ba'zi video kodeklar MP4 ga copy bo'lmaydi (masalan VP9/AV1) — fallback: faqat audio bilan to'liq remux ham urinib ko'rmaymiz, xato beramiz
     throw new Error(`MP4 remux xato: ${(e as Error).message.slice(0, 120)}`);
