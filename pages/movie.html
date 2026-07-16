@@ -1667,7 +1667,8 @@
 
         /* Title — logo mavjud bo'lsa rasm ko'rsatamiz */
         if (movie.logoUrl) {
-          document.getElementById('mob-title').innerHTML = `<img src="${movie.logoUrl}" alt="${movie.title}" class="mob-title-logo" onerror="this.outerHTML='<span>${movie.title}</span>'">`;
+          const mobLogoScale = (parseFloat(movie.logoScale) || 100) / 100;
+          document.getElementById('mob-title').innerHTML = `<img src="${movie.logoUrl}" alt="${movie.title}" class="mob-title-logo" style="--logo-scale:${mobLogoScale}" onerror="this.outerHTML='<span>${movie.title}</span>'">`;
         } else {
           document.getElementById('mob-title').textContent = movie.title;
         }
@@ -1888,7 +1889,7 @@
           <div class="dp-info-section">
             <div class="dp-info-header">
               ${movie.logoUrl
-                ? `<img class="dp-hero-logo-img" src="${movie.logoUrl}" alt="${movie.title}" onerror="this.style.display='none;this.nextElementSibling.style.display=\\'block\\''"><h1 class="dp-hero-title" style="display:none">${movie.title}</h1>`
+                ? `<img class="dp-hero-logo-img" src="${movie.logoUrl}" alt="${movie.title}" style="--logo-scale:${(parseFloat(movie.logoScale) || 100) / 100}" onerror="this.style.display='none;this.nextElementSibling.style.display=\\'block\\''"><h1 class="dp-hero-title" style="display:none">${movie.title}</h1>`
                 : `<h1 class="dp-hero-title">${movie.title}</h1>`
               }
               <div class="dp-hero-rating">

@@ -589,7 +589,8 @@
           /* Logo yoki matn — logo mavjud bo'lsa rasm ko'rinadi, aks holda matn */
           var heroLogoEl = document.getElementById('hero-film-logo');
           if (d.logoImg) {
-            heroLogoEl.innerHTML = '<img src="' + d.logoImg + '" class="hero-logo-img" alt="' + (d.logoMain || '') + '" onerror="this.style.display=\'none\'">';
+            var logoScale = (parseFloat(d.logoScale) || 100) / 100;
+            heroLogoEl.innerHTML = '<img src="' + d.logoImg + '" class="hero-logo-img" style="--logo-scale:' + logoScale + '" alt="' + (d.logoMain || '') + '" onerror="this.style.display=\'none\'">';
           } else {
             heroLogoEl.innerHTML = (d.logoMain ? '<span class="logo-main">' + d.logoMain + '</span>' : '')
               + (d.logoSub ? '<span class="logo-sub">' + d.logoSub + '</span>' : '');

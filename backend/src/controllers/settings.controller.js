@@ -22,6 +22,7 @@ const saveHero = asyncHandler(async (req, res) => {
     trailer:  String(it.trailer || ''),
     img:      String(it.img || ''),
     logoImg:  String(it.logoImg || ''),
+    logoScale: String(it.logoScale || '100'),
     logoMain: String(it.logoMain || ''),
     logoSub:  String(it.logoSub || ''),
     year:     String(it.year || ''),

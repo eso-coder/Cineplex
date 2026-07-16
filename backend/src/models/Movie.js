@@ -47,6 +47,8 @@ const movieSchema = new mongoose.Schema(
     imdbRating: { type: Number, default: 0, min: 0, max: 10 },
     bannerUrl:  { type: String, default: '' },
     logoUrl:    { type: String, default: '' },
+    // Logo o'lchami foizda (100 = asl o'lcham) — admin paneldan boshqariladi
+    logoScale:  { type: Number, default: 100, min: 30, max: 250 },
     gallery:    [{ type: String }],
     subtitles:  [{
       lang:  { type: String, trim: true, default: '' },  // 'uz', 'ru', 'en'

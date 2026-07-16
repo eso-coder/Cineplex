@@ -133,6 +133,7 @@ function normalizeMovieBody(data) {
   if (data.ageRating)  data.ageRating  = parseInt(data.ageRating,  10) || 0;
   if (data.seasons)    data.seasons    = parseInt(data.seasons,    10) || 0;
   if (data.episodes)   data.episodes   = parseInt(data.episodes,   10) || 0;
+  if (data.logoScale)  data.logoScale  = Math.min(250, Math.max(30, parseInt(data.logoScale, 10) || 100));
 
   return data;
 }

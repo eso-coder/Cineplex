@@ -848,6 +848,20 @@ textarea.form-ctrl{resize:vertical;min-height:88px;line-height:1.6}
         </div>
         <input type="url" class="form-ctrl" id="mf-logo" placeholder="https://... (logo URL, ixtiyoriy)" style="margin-top:9px" oninput="logoPreviewFromUrl(this.value)">
         <div class="form-note">Bosh sahifa hero bo'limida va film sahifasida film nomi o'rnida ko'rsatiladi. Oq/shaffof PNG yoki SVG tavsiya qilinadi.</div>
+
+        <!-- Logo o'lchami (masshtab) — jonli misol bilan -->
+        <div style="margin-top:14px">
+          <label style="display:flex;align-items:center;justify-content:space-between">
+            <span>Logo o'lchami</span>
+            <b id="mf-logo-scale-val" style="font-size: 13px">100%</b>
+          </label>
+          <input type="range" id="mf-logo-scale" min="30" max="250" step="5" value="100" oninput="refreshLogoScalePreview(this.value)" style="width:100%;margin-top:6px;accent-color:#fff">
+          <div style="margin-top:8px;background:#080810;border:1px solid var(--border);border-radius:9px;padding:16px;min-height:120px;display:flex;align-items:center;justify-content:flex-start;overflow:hidden">
+            <img id="mf-logo-scale-prev" alt="" style="display:none;width:auto;height:auto;object-fit:contain;filter:drop-shadow(0 2px 12px rgba(0,0,0,0.6))" onerror="this.style.display='none'">
+            <span id="mf-logo-scale-empty" style="font-size: 12px;color:var(--muted2)">Logo tanlanganda misol shu yerda ko'rinadi</span>
+          </div>
+          <div class="form-note">Misol — film sahifasidagi haqiqiy ko'rinish. 100% = asl o'lcham; slayder surilganda darhol o'zgaradi.</div>
+        </div>
       </div>
     </div>
 
@@ -1386,6 +1400,7 @@ async function editMovieFromAPI(id) {
     document.getElementById('mf-img').value       = m.poster?.url || '';
     document.getElementById('mf-banner').value    = m.bannerUrl || '';
     document.getElementById('mf-logo').value      = m.logoUrl   || '';
+    refreshLogoScalePreview(m.logoScale || 100);
     /* YouTube ID yoki S3 URL ni to'g'ri ko'rsatish */
     const ytId = extractYtId(m.trailerUrl || '');
     document.getElementById('mf-trailer-id').value = ytId || m.trailerUrl || '';
@@ -1498,6 +1513,7 @@ function resetDrawerForm() {
   document.getElementById('logo-overlay').style.display = 'none';
   document.getElementById('logo-zone').querySelectorAll('.pz-icon,.pz-text,.pz-sub').forEach(el => el.style.display = '');
   logoFileData = null;
+  refreshLogoScalePreview(100);
   toggleStates = { trending: false, new: false };
   document.getElementById('toggle-trending').classList.remove('on');
   document.getElementById('toggle-new').classList.remove('on');
@@ -1535,6 +1551,7 @@ function fillDrawerForm(m) {
     document.getElementById('logo-overlay').style.display = 'flex';
     document.getElementById('logo-zone').querySelectorAll('.pz-icon,.pz-text,.pz-sub').forEach(el => el.style.display = 'none');
   }
+  refreshLogoScalePreview(m.logoScale || 100);
   if (m.img) {
     const prev = document.getElementById('poster-preview');
     prev.src = m.img; prev.style.display = 'block';
@@ -1759,6 +1776,30 @@ let bannerTimer;
 
 /* ── Logo file & URL handlers ── */
 let logoFileData = null;
+
+/* Logo o'lchami slayderi — film sahifasidagi haqiqiy o'lcham (80px / 320px
+   asosida) misol sifatida jonli ko'rsatiladi */
+function refreshLogoScalePreview(val) {
+  const slider = document.getElementById('mf-logo-scale');
+  const pct = parseInt(val != null ? val : slider.value, 10) || 100;
+  if (val != null) slider.value = pct;
+  document.getElementById('mf-logo-scale-val').textContent = pct + '%';
+  const img   = document.getElementById('mf-logo-scale-prev');
+  const empty = document.getElementById('mf-logo-scale-empty');
+  const src   = logoFileData || document.getElementById('mf-logo').value.trim();
+  img.style.maxHeight = Math.round(80  * pct / 100) + 'px';
+  img.style.maxWidth  = Math.round(320 * pct / 100) + 'px';
+  if (src) {
+    if (img.getAttribute('src') !== src) img.src = src;
+    img.style.display = 'block';
+    empty.style.display = 'none';
+  } else {
+    img.removeAttribute('src');
+    img.style.display = 'none';
+    empty.style.display = '';
+  }
+}
+
 document.getElementById('logo-file').addEventListener('change', e => {
   if (e.target.files[0]) loadLogoFile(e.target.files[0]);
 });
@@ -1784,6 +1825,7 @@ function loadLogoFile(file) {
     document.getElementById('mf-logo').value = '';
     // pz elements yashirish
     document.getElementById('logo-zone').querySelectorAll('.pz-icon,.pz-text,.pz-sub').forEach(el => el.style.display = 'none');
+    refreshLogoScalePreview();
   };
   reader.readAsDataURL(file);
 }
@@ -1807,6 +1849,7 @@ function logoPreviewFromUrl(url) {
       lp.style.display = 'none'; lo.style.display = 'none';
       lz.querySelectorAll('.pz-icon,.pz-text,.pz-sub').forEach(el => el.style.display = '');
     }
+    refreshLogoScalePreview();
   }, 400);
 }
 function bannerPreviewFromUrl(url) {
@@ -2017,6 +2060,7 @@ async function saveMovie() {
   // Logo (base64 data URL yoki oddiy URL)
   const logoVal = logoFileData || document.getElementById('mf-logo').value.trim();
   if (logoVal) fd.append('logoUrl', logoVal);
+  fd.append('logoScale', document.getElementById('mf-logo-scale').value || '100');
 
   const dur = parseDuration(document.getElementById('mf-duration').value);
   if (dur) fd.append('duration', dur);
@@ -2424,6 +2468,16 @@ function renderHeroItems() {
               '<input type="url" class="form-ctrl" style="font-size: 13.5px;flex:1" value="' + esc(item.logoImg||'') + '" oninput="heroConfig[' + i + '].logoImg=this.value" placeholder="https://... (PNG logo URL)">' +
             '</div>' +
           '</div>' +
+          /* Logo o'lchami slayderi — bosh sahifa hero'dagi haqiqiy o'lcham
+             (100px / 360px asosida) jonli misol sifatida ko'rsatiladi */
+          (item.logoImg ?
+          '<div class="form-group" style="margin-bottom:10px">' +
+            '<label style="display:flex;justify-content:space-between"><span>Logo o\'lchami</span><b id="hero-logo-scale-val-' + i + '" style="font-size:13px">' + (parseInt(item.logoScale,10) || 100) + '%</b></label>' +
+            '<input type="range" min="30" max="250" step="5" value="' + (parseInt(item.logoScale,10) || 100) + '" oninput="setHeroLogoScale(' + i + ',this.value)" style="width:100%;margin-top:4px;accent-color:#fff">' +
+            '<div style="margin-top:6px;background:#080810;border:1px solid var(--border);border-radius:8px;padding:12px;min-height:80px;display:flex;align-items:center;overflow:hidden">' +
+              '<img id="hero-logo-scale-prev-' + i + '" src="' + esc(item.logoImg) + '" style="width:auto;height:auto;object-fit:contain;max-height:' + Math.round(100 * (parseInt(item.logoScale,10) || 100) / 100) + 'px;max-width:' + Math.round(360 * (parseInt(item.logoScale,10) || 100) / 100) + 'px;filter:drop-shadow(0 3px 16px rgba(0,0,0,0.7))" onerror="this.style.display=\'none\'">' +
+            '</div>' +
+          '</div>' : '') +
           '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">' +
           '</div>' +
           '<div class="form-group" style="margin-bottom:10px"><label>Trailer URL (YouTube ID yoki S3)</label><input type="text" class="form-ctrl" style="font-size: 13.5px" value="' + esc(item.trailer||'') + '" oninput="heroConfig[' + i + '].trailer=this.value" placeholder="YouTube ID yoki https://...mp4"></div>' +
@@ -2473,6 +2527,7 @@ function heroItemFromMovie(m) {
     trailer:  trailer,
     img:      m.bannerUrl || (m.gallery && m.gallery[0]) || (m.poster && m.poster.url) || '',
     logoImg:  m.logoUrl || '',
+    logoScale: m.logoScale || 100,
     logoMain: (m.title || '').toUpperCase(),
     logoSub:  '',
     year:     String(m.releaseYear || ''),
@@ -2575,6 +2630,19 @@ function heroPickerSelect(i) {
 function removeHeroItem(i) {
   heroConfig.splice(i, 1);
   renderHeroItems();
+}
+
+function setHeroLogoScale(i, v) {
+  /* Slayder surilganda saqlab, jonli misolni darhol yangilaymiz */
+  var pct = parseInt(v, 10) || 100;
+  heroConfig[i].logoScale = pct;
+  var lbl = document.getElementById('hero-logo-scale-val-' + i);
+  if (lbl) lbl.textContent = pct + '%';
+  var img = document.getElementById('hero-logo-scale-prev-' + i);
+  if (img) {
+    img.style.maxHeight = Math.round(100 * pct / 100) + 'px';
+    img.style.maxWidth  = Math.round(360 * pct / 100) + 'px';
+  }
 }
 
 function setHeroItemPos(i, pos) {

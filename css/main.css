@@ -1459,10 +1459,12 @@ main {
   padding-left: 4px;
 }
 
-/* Hero logo image (logo rasm mavjud bo'lsa matn o'rnida ko'rinadi) */
+/* Hero logo image (logo rasm mavjud bo'lsa matn o'rnida ko'rinadi).
+   --logo-scale (default 1) admin paneldan boshqariladi — logoni
+   kattalashtirish/kichiklashtirish uchun. */
 .hero-logo-img {
-  max-height: 100px;
-  max-width: 360px;
+  max-height: calc(100px * var(--logo-scale, 1));
+  max-width: calc(360px * var(--logo-scale, 1));
   width: auto;
   height: auto;
   object-fit: contain;
@@ -1472,8 +1474,8 @@ main {
 
 /* Movie detail page — desktop logo */
 .dp-hero-logo-img {
-  max-height: 80px;
-  max-width: 320px;
+  max-height: calc(80px * var(--logo-scale, 1));
+  max-width: calc(320px * var(--logo-scale, 1));
   width: auto;
   height: auto;
   object-fit: contain;
@@ -1484,8 +1486,8 @@ main {
 
 /* Movie detail page — mobile logo */
 .mob-title-logo {
-  max-height: 52px;
-  max-width: 220px;
+  max-height: calc(52px * var(--logo-scale, 1));
+  max-width: calc(220px * var(--logo-scale, 1));
   width: auto;
   height: auto;
   object-fit: contain;
@@ -4887,8 +4889,8 @@ video.hero-bg-iframe {
     max-width: 100%;
   }
   .hero-logo-img {
-    max-height: 62px;
-    max-width: 220px;
+    max-height: calc(62px * var(--logo-scale, 1));
+    max-width: calc(220px * var(--logo-scale, 1));
   }
   .logo-main {
     font-size: 38.5px;
