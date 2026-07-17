@@ -26,14 +26,18 @@ import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.m
 const FilmReel = (() => {
   'use strict';
 
-  /* ── O'lchamlar (world birlikda) ── */
+  /* ── O'lchamlar (world birlikda) — KATTA kartalar, gap nol:
+     oyna katakni deyarli to'liq egallaydi (faqat pastda label bar),
+     kenglik halqalari oralig'i aynan CELL_H ga teng — qatorlar tegib
+     turadi, gorizontalda slot kengligi tile'ga teng ── */
   const R       = 10;     /* sfera radiusi (kamera markazda) */
-  const CELL_W  = 3.6;    /* karta katagi eni (slot) */
-  const CELL_H  = 2.42;   /* karta balandligi */
-  const WIN_W   = 3.44;   /* media oynasi (katakdan ozgina kichik — kam gap) */
-  const WIN_H   = 1.94;   /* ~16:9 */
-  const WIN_OFF = 0.10;   /* oyna markazdan tepaga siljigan (pastda label) */
-  const CORNER  = 0.14;   /* oyna burchak radiusi (world) — "ozroq oval" */
+  const CELL_W  = 4.4;    /* karta katagi eni (slot) */
+  const WIN_W   = 4.36;   /* media oynasi — katakni to'liq egallaydi */
+  const WIN_H   = 2.45;   /* 16:9 */
+  const LABELBAR = 0.36;  /* pastdagi yozuv bar'i */
+  const CELL_H  = WIN_H + LABELBAR; /* 2.81 */
+  const WIN_OFF = LABELBAR / 2;     /* oyna tepaga surilgan */
+  const CORNER  = 0.13;   /* oyna burchak radiusi (world) — yumaloq */
   const SEGS    = 24;
 
   /* ── Tile overlay texturasi: qora katak + yumaloqlangan shaffof oyna.
@@ -56,12 +60,6 @@ const FilmReel = (() => {
     x.roundRect(wx, wy, winW, winH, r);
     x.fill();
     x.restore();
-    /* Oyna atrofi juda nozik chiziq */
-    x.strokeStyle = 'rgba(255, 255, 255, 0.10)';
-    x.lineWidth = 2;
-    x.beginPath();
-    x.roundRect(wx + 1, wy + 1, winW - 2, winH - 2, r);
-    x.stroke();
     const tex = new THREE.CanvasTexture(c);
     tex.colorSpace = THREE.SRGBColorSpace;
     tex.anisotropy = 4;
@@ -174,12 +172,12 @@ const FilmReel = (() => {
     const tileTex = makeTileTexture();
 
     /* ── GLOBUS: kenglik halqalari ── */
-    /* Qutblarga juda yaqin halqalarda kataklar siyraklashib ketadi —
-       ±63° gacha qoplanadi, qutblar qorong'i qoladi (fog bilan uyg'un) */
-    const LATS = (isMobile
-      ? [0, 26, -26, 52, -52]
-      : [0, 21, -21, 42, -42, 63, -63]
-    ).map(d => d * Math.PI / 180);
+    /* Halqalar oralig'i AYNAN karta balandligi (arc) — qatorlar orasida
+       masofa nol. ±4 halqa ≈ ±64°; qutblar qorong'i qoladi. */
+    const dLat = CELL_H / R;
+    const K = isMobile ? 3 : 4;
+    const LATS = [];
+    for (let k = -K; k <= K; k++) LATS.push(k * dLat);
 
     const globe = new THREE.Group();
     scene.add(globe);
@@ -367,12 +365,14 @@ const FilmReel = (() => {
        - mobil: vertikal svayp sahifani scroll qiladi (pan-y),
          gorizontal svayp globusni buraydi. */
     el.style.touchAction = isMobile ? 'pan-y' : 'none';
+    /* G'ildirak ikkala o'qda ham globusni buraydi (foydalanuvchi so'rovi).
+       Sahifaning qolgan qismiga scrollbar/klaviatura yoki galereya
+       tashqarisidan scroll bilan o'tiladi. */
     el.addEventListener('wheel', (e) => {
-      if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
-        e.preventDefault();
-        yawVel += e.deltaX * 0.00009;
-        lastInput = performance.now();
-      }
+      e.preventDefault();
+      yawVel += e.deltaX * 0.00009;
+      pitchVel -= e.deltaY * 0.00009; /* wheel-down → kontent yuqoriga */
+      lastInput = performance.now();
     }, { passive: false });
 
     let dragging = false, dragX = 0, dragY = 0, dragDist = 0;
