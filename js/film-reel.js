@@ -174,10 +174,15 @@ const FilmReel = (() => {
     wrapEl.appendChild(renderer.domElement);
 
     const scene = new THREE.Scene();
-    scene.fog = new THREE.Fog(0x0a0a0a, 9, 22); /* chuqurlik hissi (DOF o'rnida) */
+    scene.fog = new THREE.Fog(0x0a0a0a, 10, 21); /* yon/orqa kadrlar asta so'nadi */
 
+    /* POV — silindr ICHIDA: drum o'qi z=0 da, kamera markazdan old
+       devorga surilgan (z=+5.2, R=13 dan kichik). Old kataklar yaqin va
+       katta, yon kataklar tomoshabinni o'rab oladi — ichidan qarash. */
     const camera = new THREE.PerspectiveCamera(62, 1, 0.1, 60);
-    camera.position.set(0, 0, 6.6);
+    camera.position.set(0, 0, 5.2);
+    const CAM_Z = 5.2;
+    const LOOK = new THREE.Vector3(0, 0, 12);
 
     const celluloidTex = makeCelluloidTexture();
     const glowTex = makeGlowTexture();
@@ -192,13 +197,13 @@ const FilmReel = (() => {
     const ROW_H = CELL_H + 0.62; /* katak + label + grid oralig'i */
     const ROWS = isMobile
       ? [
-          { y:  ROW_H / 2, tx: -0.10, z: 0.5, dim: 1.0 },
-          { y: -ROW_H / 2, tx:  0.10, z: 0.5, dim: 1.0 },
+          { y:  ROW_H / 2, tx: -0.10, dim: 1.0 },
+          { y: -ROW_H / 2, tx:  0.10, dim: 1.0 },
         ]
       : [
-          { y:  ROW_H, tx: -0.17, z: 0.15, dim: 0.88 },
-          { y:  0,     tx:  0.00, z: 0.55, dim: 1.0 },
-          { y: -ROW_H, tx:  0.17, z: 0.15, dim: 0.88 },
+          { y:  ROW_H, tx: -0.15, dim: 0.88 },
+          { y:  0,     tx:  0.00, dim: 1.0 },
+          { y: -ROW_H, tx:  0.15, dim: 0.88 },
         ];
 
     const frames = [];   /* barcha kadrlar (video boshqaruvi uchun) */
@@ -245,8 +250,9 @@ const FilmReel = (() => {
     const span = 2 * Math.PI;
 
     ROWS.forEach((cfg, ri) => {
+      /* Drum o'qi z=0 — kamera shu silindr ichida turadi */
       const group = new THREE.Group();
-      group.position.set(0, cfg.y, cfg.z - R);
+      group.position.set(0, cfg.y, 0);
       group.rotation.x = cfg.tx;
       scene.add(group);
 
@@ -444,16 +450,19 @@ const FilmReel = (() => {
       if (!target) return;
       zooming = true;
       const start = performance.now(), DUR = 520;
-      const camZ0 = camera.position.z;
+      /* Kamera hozirgi joyidan kadr tomon uchadi — kadr old yuzasidan
+         2 birlik berida to'xtaydigan nuqtaga (ichki POV'da har qanday
+         burchakdagi kadr uchun to'g'ri ishlaydi) */
+      const cam0 = camera.position.clone();
       const wp = new THREE.Vector3();
       target.media.getWorldPosition(wp);
+      const dest3 = wp.clone().add(cam0.clone().sub(wp).normalize().multiplyScalar(2.0));
       if (fadeEl) fadeEl.classList.add('on');
       const tick = (now) => {
         const t = Math.min(1, (now - start) / DUR);
         const e = 1 - Math.pow(1 - t, 3); /* ease-out cubic */
-        camera.position.z = camZ0 + (wp.z + 2.1 - camZ0) * e;
-        camera.position.x = wp.x * e * 0.9;
-        camera.position.y = wp.y * e * 0.9;
+        camera.position.lerpVectors(cam0, dest3, e);
+        camera.lookAt(wp);
         target.targetScale = 1.12 + e * 0.5;
         if (t < 1) requestAnimationFrame(tick);
         else {
@@ -509,14 +518,17 @@ const FilmReel = (() => {
       if (!zooming) {
         camera.position.x += ((mouseX * 0.55) - camera.position.x) * 0.05;
         camera.position.y += ((mouseY * 0.35) - camera.position.y) * 0.05;
-        camera.lookAt(0, 0, -2);
+        camera.position.z += (CAM_Z - camera.position.z) * 0.05;
+        camera.lookAt(LOOK);
       }
 
       /* Kadrlar joylashuvi */
       for (let i = 0; i < frames.length; i++) {
         const f = frames[i];
         f.angle = wrap(f.base + scroll * f.speed * (12 / f.R), f.span);
-        f.pivot.rotation.y = -f.angle;
+        /* +angle: kamera endi +z tomonga qaraydi (gorizontal ko'zgu) —
+           drag yo'nalishi tabiiy qolishi uchun ishora ham teskarilanadi */
+        f.pivot.rotation.y = f.angle;
         f.scale += (f.targetScale - f.scale) * 0.14;
         if (Math.abs(f.scale - 1) > 0.001) f.pivot.scale.setScalar(f.scale);
       }
