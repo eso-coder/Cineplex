@@ -4440,9 +4440,10 @@ body.movie-page .navbar.scrolled {
   outline-offset: -2px;
 }
 
+/* MUHIM: .cat-tag bu ro'yxatga kirmaydi — u absolute joylashadi,
+   position:relative uni oqimga qaytarib, count ostiga tushirib qo'yardi */
 .category-card > .cat-name,
-.category-card > .cat-count,
-.category-card > .cat-tag {
+.category-card > .cat-count {
   position: relative;
   z-index: 2;
 }
@@ -4474,10 +4475,13 @@ body.movie-page .navbar.scrolled {
   color: rgba(255, 255, 255, 0.78);
 }
 
+/* Teg (MASHHUR/TRENDDA) — kartaning pastki chap burchagida, poster
+   pastki o'ngda bo'lgani uchun bir-biriga xalaqit bermaydi */
 .cat-tag {
   position: absolute;
-  top: 16px;
-  right: 16px;
+  left: 16px;
+  bottom: 14px;
+  z-index: 2;
   font-size: 11.5px;
   font-weight: 800;
   letter-spacing: 0.8px;
@@ -5324,8 +5328,6 @@ video.hero-bg-iframe {
     font-size: 13.5px;
   }
   .cat-tag {
-    top: auto;
-    right: auto;
     bottom: 11px;
     left: 14px;
     font-size: 11.5px;
