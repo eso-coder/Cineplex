@@ -1546,6 +1546,9 @@ main {
 .hero-film-logo {
   display: flex;
   flex-direction: column;
+  /* flex-start — column flex'da img stretch bo'lib, object-fit:contain
+     logoni quti markazida chizardi (chap chetdan surilib ko'rinardi) */
+  align-items: flex-start;
   gap: var(--space-2);
   margin-bottom: 22px;
   max-width: 420px;
@@ -1583,6 +1586,8 @@ main {
   width: auto;
   height: auto;
   object-fit: contain;
+  /* Rasm qutisi kengaysa ham logo doim chap-pastki burchakda chizilsin */
+  object-position: left bottom;
   filter: drop-shadow(0 3px 16px rgba(0, 0, 0, 0.7));
   display: block;
   transform: scale(var(--logo-scale, 1));
@@ -1596,6 +1601,7 @@ main {
   width: auto;
   height: auto;
   object-fit: contain;
+  object-position: left bottom;
   filter: drop-shadow(0 2px 12px rgba(0, 0, 0, 0.6));
   display: block;
   margin-bottom: var(--space-3);
@@ -1612,6 +1618,7 @@ main {
   width: auto;
   height: auto;
   object-fit: contain;
+  object-position: left bottom;
   filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.5));
   display: block;
 }
