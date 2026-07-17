@@ -147,6 +147,93 @@ async function uploadCaption(c: BunnyCfg, guid: string, srclang: string, label: 
   );
 }
 
+// ─── Mavjud Bunny videosi bilan ishlash (from-bunny.ts uchun) ────────────────
+
+export interface BunnyVideoInfo {
+  guid:            string;
+  title:           string;
+  status:          number;
+  encodeProgress:  number;
+  length:          number;                                  // sekund
+  width:           number;
+  height:          number;
+  availableResolutions: string;
+  captions:        Array<{ srclang: string; label: string }>;
+  transcodingMessages: Array<{ level?: number; issueCode?: number; message?: string }>;
+  playlistUrl:     string;
+  thumbnailUrl:    string;
+}
+
+// Bunny kodini istalgan ko'rinishdan ajratib olish:
+//   https://player.mediadelivery.net/play/703419/<guid>
+//   https://iframe.mediadelivery.net/embed/703419/<guid>?...
+//   https://vz-xxx.b-cdn.net/<guid>/playlist.m3u8
+//   yoki toza <guid>
+export function parseBunnyRef(input: string): { guid: string; libraryId?: string } {
+  const raw = input.trim();
+  const GUID_RE = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
+  const guidMatch = raw.match(GUID_RE);
+  if (!guidMatch) throw new Error(`Bunny GUID topilmadi: "${raw.slice(0, 80)}"`);
+  const libMatch = raw.match(/\/(?:play|embed)\/(\d+)\//i);
+  return { guid: guidMatch[0].toLowerCase(), libraryId: libMatch?.[1] };
+}
+
+export async function getVideoInfo(guid: string): Promise<BunnyVideoInfo> {
+  const c = cfg();
+  const r = await axios.get(
+    `${API_BASE}/library/${c.libraryId}/videos/${guid}`,
+    { headers: headers(c.apiKey) },
+  );
+  const d = r.data;
+  return {
+    guid:           d.guid,
+    title:          d.title || '',
+    status:         d.status,
+    encodeProgress: d.encodeProgress ?? 0,
+    length:         d.length ?? 0,
+    width:          d.width ?? 0,
+    height:         d.height ?? 0,
+    availableResolutions: d.availableResolutions || '',
+    captions:       (d.captions || []).map((x: any) => ({ srclang: x.srclang, label: x.label })),
+    transcodingMessages: d.transcodingMessages || [],
+    playlistUrl:    `https://${c.cdn}/${d.guid}/playlist.m3u8`,
+    thumbnailUrl:   d.thumbnailUrl || '',
+  };
+}
+
+// Mavjud videoning encode tugashini kutish (tashqi ishlatish uchun)
+export async function waitForBunnyEncoding(guid: string): Promise<void> {
+  await waitForEncoding(cfg(), guid);
+}
+
+// Tayyor .vtt fayllarni mavjud Bunny videosiga caption qilib yuklash.
+// Bunny'da o'sha til allaqachon bo'lsa — ustiga yozadi (POST = upsert).
+export async function uploadCaptionsToVideo(
+  guid: string,
+  subs: Array<{ lang: string; label: string; vttPath: string }>,
+): Promise<Array<{ lang: string; label: string; url: string }>> {
+  const c = cfg();
+  const out: Array<{ lang: string; label: string; url: string }> = [];
+  for (const s of subs) {
+    try {
+      await uploadCaption(c, guid, s.lang, s.label, s.vttPath);
+      out.push({ lang: s.lang, label: s.label, url: `https://${c.cdn}/${guid}/captions/${s.lang}.vtt` });
+      console.log(`  ✅ Caption Bunny'ga yuklandi: ${s.lang}`);
+    } catch (e) {
+      console.log(`  ⚠️  Caption ${s.lang} yuklash xato: ${(e as Error).message.slice(0, 80)}`);
+    }
+  }
+  return out;
+}
+
+export function bunnyCaptionUrl(guid: string, lang: string): string {
+  return `https://${cfg().cdn}/${guid}/captions/${lang}.vtt`;
+}
+
+export function bunnyLibraryId(): string {
+  return cfg().libraryId;
+}
+
 // ─── ASOSIY: tayyorlangan media'ni Bunny'ga joylash ───────────────────────────
 export async function uploadToBunny(title: string, prep: PreparedMedia): Promise<BunnyResult> {
   const c = cfg();

@@ -204,6 +204,58 @@ function extractSubtitle(input: string, subIdx: number, outPath: string): Promis
   });
 }
 
+// ─── Faqat subtitlelarni ajratib olish (video tegilmaydi) ─────────────────────
+// Manba (lokal fayl yoki URL) ichidagi matnli subtitle treklarini .vtt qilib
+// beradi. prepareMedia ham, from-bunny.ts ham shu funksiyani ishlatadi.
+export async function extractSubtitles(input: string, outputDir: string, subStreams: StreamInfo[]): Promise<PreparedSubtitle[]> {
+  fs.mkdirSync(outputDir, { recursive: true });
+  const subtitles: PreparedSubtitle[] = [];
+  let subIdx = 0;
+  for (const s of subStreams) {
+    if (isTextSubtitle(s.codec_name)) {
+      const raw = s.tags?.language || `sub${subIdx}`;
+      const lang = shortLang(raw);
+      const vttPath = path.join(outputDir, `sub_${lang}_${subIdx}.vtt`);
+      try {
+        await extractSubtitle(input, subIdx, vttPath);
+        if (fs.existsSync(vttPath) && fs.statSync(vttPath).size > 0) {
+          subtitles.push({ lang, label: getLangLabel(raw, s.tags?.title), vttPath });
+          console.log(`  ✅ Subtitle: ${raw} → ${lang}`);
+        }
+      } catch (e) {
+        console.log(`  ⚠️  Subtitle ${raw} skip (${(e as Error).message.slice(0, 50)})`);
+      }
+    } else {
+      console.log(`  ⚠️  Subtitle ${s.tags?.language || '?'} skip (${s.codec_name} — rasm formatida)`);
+    }
+    subIdx++;
+  }
+  return subtitles;
+}
+
+// Manbadagi subtitle treklarini probe qilib, .vtt ga ajratadi (tashqi ishlatish uchun)
+export async function probeAndExtractSubtitles(input: string, outputDir: string): Promise<PreparedSubtitle[]> {
+  const probe = ffprobe(input);
+  const subStreams = probe.streams.filter(s => s.codec_type === 'subtitle');
+  console.log(`  ℹ️  Manbada ${subStreams.length} ta subtitle treki topildi`);
+  return extractSubtitles(input, outputDir, subStreams);
+}
+
+// Tashqi .srt/.ass/.vtt faylni .vtt ga o'girish (yonidagi subtitle fayllar uchun)
+export async function convertSubtitleFile(file: string, outputDir: string, lang: string, label?: string): Promise<PreparedSubtitle> {
+  fs.mkdirSync(outputDir, { recursive: true });
+  const short = shortLang(lang);
+  const vttPath = path.join(outputDir, `sub_${short}_ext.vtt`);
+  if (path.extname(file).toLowerCase() === '.vtt') {
+    fs.copyFileSync(file, vttPath);
+  } else {
+    const r = spawnSync('ffmpeg', ['-y', '-i', file, vttPath], { encoding: 'utf8', timeout: 120_000 });
+    if (r.status !== 0) throw new Error(r.stderr?.slice(-160) || 'subtitle konversiya xato');
+  }
+  if (!fs.existsSync(vttPath) || fs.statSync(vttPath).size === 0) throw new Error('bo\'sh .vtt');
+  return { lang: short, label: label || getLangLabel(lang), vttPath };
+}
+
 // ─── ASOSIY: manbani Bunny uchun tayyorlash ────────────────────────────────────
 // Lokal fayl  → MP4 remux (video copy, audio AAC — ENCODE YO'Q) + subtitle .vtt
 // URL         → Bunny fetch (video bulutda), subtitle URL'dan best-effort
@@ -237,27 +289,7 @@ export async function prepareMedia(input: string, outputDir: string): Promise<Pr
   console.log(`  ℹ️  Subtitle: ${subStreams.length} ta (matn: ${textSubs.length}, rasm: ${subStreams.length - textSubs.length})`);
 
   // ── 1. Subtitlelarni .vtt ga ajratish ──────────────────────────────────────
-  const subtitles: PreparedSubtitle[] = [];
-  let subIdx = 0;
-  for (const s of subStreams) {
-    if (isTextSubtitle(s.codec_name)) {
-      const raw = s.tags?.language || `sub${subIdx}`;
-      const lang = shortLang(raw);
-      const vttPath = path.join(outputDir, `sub_${lang}_${subIdx}.vtt`);
-      try {
-        await extractSubtitle(input, subIdx, vttPath);
-        if (fs.existsSync(vttPath) && fs.statSync(vttPath).size > 0) {
-          subtitles.push({ lang, label: getLangLabel(raw, s.tags?.title), vttPath });
-          console.log(`  ✅ Subtitle: ${raw} → ${lang}`);
-        }
-      } catch (e) {
-        console.log(`  ⚠️  Subtitle ${raw} skip (${(e as Error).message.slice(0, 50)})`);
-      }
-    } else {
-      console.log(`  ⚠️  Subtitle ${s.tags?.language || '?'} skip (${s.codec_name} — rasm formatida)`);
-    }
-    subIdx++;
-  }
+  const subtitles = await extractSubtitles(input, outputDir, subStreams);
 
   // URL bo'lsa: subtitle ajratdik (agar ffprobe o'tgan bo'lsa), videoni Bunny fetch qiladi
   if (isUrl) {
