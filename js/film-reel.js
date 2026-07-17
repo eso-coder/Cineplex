@@ -129,15 +129,18 @@ const FilmReel = (() => {
     tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping;
   }
 
-  /* Silindr yoyi bo'ylab egilgan plane geometriyasi.
-     Lokal x → drum burchagi; markaz pivotdan R masofada (z=+R). */
+  /* Silindr yoyi bo'ylab egilgan plane geometriyasi — ICHKI sirt.
+     Lokal x → drum burchagi; markaz pivotdan R masofada (z=+R).
+     x MANFIY sin bilan akslantiriladi: bu winding'ni teskarilab old
+     yuzni silindr ichiga qaratadi (kamera ichkarida) va ichkaridan
+     qaraganda tekstura to'g'ri (ko'zgusiz) o'qiladi. */
   function curvedPlane(w, h, R, segs) {
     const geo = new THREE.PlaneGeometry(w, h, segs, 1);
     const pos = geo.attributes.position;
     for (let i = 0; i < pos.count; i++) {
       const px = pos.getX(i);
       const a = px / R;
-      pos.setX(i, Math.sin(a) * R);
+      pos.setX(i, -Math.sin(a) * R);
       pos.setZ(i, Math.cos(a) * R);
     }
     pos.needsUpdate = true;
@@ -210,11 +213,11 @@ const FilmReel = (() => {
     const rayCells = []; /* raycast nishonlari (oldindan yig'ilgan) */
     const videoEls = [];
 
-    /* Radiuslar: media R+0.02, seluloid R+0.04 — kamera ichkarida
-       bo'lgani uchun KATTAROQ radius kameraga YAQINROQ sirt degani,
-       yaʼni overlay har doim media ustida ko'rinadi */
-    const winGeo = curvedPlane(WIN_W, WIN_H, R + 0.02, SEGS);
-    const cellGeo = curvedPlane(CELL_W - 0.16, CELL_H, R + 0.04, SEGS);
+    /* Radiuslar: kamera silindr ICHIDA — KICHIKROQ radius kameraga
+       yaqinroq. Seluloid overlay (R) media oynasidan (R+0.03) oldinda
+       turadi va uni hoshiyalab ko'rsatadi. */
+    const winGeo = curvedPlane(WIN_W, WIN_H, R + 0.03, SEGS);
+    const cellGeo = curvedPlane(CELL_W - 0.16, CELL_H, R, SEGS);
     const glowGeo = new THREE.PlaneGeometry(CELL_W * 1.6, CELL_H * 1.45);
     const labelGeo = new THREE.PlaneGeometry(CELL_W * 0.92, 0.21);
 
@@ -269,7 +272,10 @@ const FilmReel = (() => {
             depthWrite: false, opacity: 0.38 * cfg.dim,
           })
         );
-        glow.position.z = R - 0.24;
+        /* Kadr ORTIda (ichki POV'da kattaroq z = uzoqroq); kamera tomonga
+           qaraydigan qilib 180° buriladi (aks holda backface culling) */
+        glow.position.z = R + 0.25;
+        glow.rotation.y = Math.PI;
         pivot.add(glow);
 
         /* Media (poster / video) */
@@ -296,7 +302,10 @@ const FilmReel = (() => {
             opacity: cfg.dim,
           })
         );
-        label.position.set(0, -(CELL_H / 2 + 0.19), R + 0.01);
+        /* Flat plane +z ga qaragan — ichki POV uchun 180° buriladi
+           (rotation ko'zgu emas, matn to'g'ri o'qiladi) */
+        label.position.set(0, -(CELL_H / 2 + 0.19), R);
+        label.rotation.y = Math.PI;
         pivot.add(label);
 
         const frame = {
