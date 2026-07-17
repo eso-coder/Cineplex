@@ -43,6 +43,71 @@
     }
     .new-play-mini:hover { background: rgba(255,255,255,0.25); transform: scale(1.08); }
     .new-play-mini svg { color: #ffffff; margin-left: 2px; }
+
+    /* ── 3D FILM REEL (immersiv galereya) ── */
+    .reel3d-section {
+      position: relative;
+      height: min(68vh, 620px);
+      min-height: 380px;
+      margin: 0 0 26px;
+      background: #0a0a0a;
+      overflow: hidden;
+      /* Sahifa fonidan ajralib turadigan kinoteatr zali hissi */
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .reel3d-section canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+    .reel3d-tooltip {
+      position: absolute;
+      top: 0; left: 0;
+      z-index: 3;
+      pointer-events: none;
+      background: rgba(16, 16, 20, 0.86);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 10px;
+      padding: 7px 12px;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: #ffffff;
+      white-space: nowrap;
+      opacity: 0;
+      transition: opacity 0.16s ease;
+      will-change: transform;
+    }
+    .reel3d-tooltip.on { opacity: 1; }
+    .reel3d-hint {
+      position: absolute;
+      bottom: 14px; left: 50%;
+      transform: translateX(-50%);
+      z-index: 3;
+      pointer-events: none;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.35);
+      transition: opacity 0.6s ease;
+    }
+    .reel3d-fade {
+      position: absolute;
+      inset: 0;
+      z-index: 4;
+      background: #000000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.5s ease;
+    }
+    .reel3d-fade.on { opacity: 1; }
+    /* Sahifa yon gutter'idan chiqib, to'liq enni egallaydi */
+    @media (min-width: 641px) {
+      .reel3d-section { margin-top: -6px; }
+    }
   </style>
   <link rel="stylesheet" href="../css/design-system.css">
   <link rel="stylesheet" href="../css/aurora-catalog.css">
@@ -59,7 +124,15 @@
       </div>
     </div>
 
-    <!-- Featured band (top 3 new) -->
+    <!-- 3D film reel — immersiv galereya (WebGL bo'lmasa/perf-lite'da
+         yashirin qoladi, pastdagi featured band fallback bo'lib ishlaydi) -->
+    <section class="reel3d-section" id="reel3d-section" hidden>
+      <div class="reel3d-tooltip" id="reel3d-tooltip"></div>
+      <div class="reel3d-hint">Aylantiring yoki suring — kadr ustiga bosing</div>
+      <div class="reel3d-fade" id="reel3d-fade"></div>
+    </section>
+
+    <!-- Featured band (top 3 new) — 3D reel ishlamasa ko'rinadi -->
     <div class="new-hero-band animate-in" id="new-hero-band" style="transition-delay:0.06s"></div>
 
     <!-- Genre filter -->
@@ -81,6 +154,7 @@
   <script src="../js/i18n.js"></script>
   <script src="../js/app.js"></script>
   <script src="../js/api.js"></script>
+  <script type="module" src="../js/film-reel.js"></script>
   <script>
     App.initNavbar('new', '../');
     App.initAnimations();
@@ -122,6 +196,30 @@
         const filtered = genre === 'all' ? newList : newList.filter(m => (m.genre || []).includes(genre));
         render(filtered);
       });
+
+      /* ── 3D film reel — muvaffaqiyatli ishga tushsa featured band
+         yashiriladi (u fallback), aks holda hammasi eskicha qoladi ── */
+      const startReel = () => {
+        const sec = document.getElementById('reel3d-section');
+        if (!sec || !newList.length) return;
+        try {
+          sec.hidden = false; /* init'dan OLDIN — o'lcham 0 bo'lmasligi uchun */
+          const ok = window.FilmReel && FilmReel.init(
+            sec,
+            document.getElementById('reel3d-tooltip'),
+            document.getElementById('reel3d-fade'),
+            newList.slice(0, 20),
+            { root: '../' }
+          );
+          if (ok) document.getElementById('new-hero-band').style.display = 'none';
+          else sec.hidden = true;
+        } catch (e) {
+          sec.hidden = true;
+          console.warn('[FilmReel] ishga tushmadi:', e);
+        }
+      };
+      if (window.FilmReel) startReel();
+      else document.addEventListener('filmreel:ready', startReel, { once: true });
     })();
   </script>
 </body>
