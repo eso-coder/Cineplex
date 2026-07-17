@@ -29,17 +29,20 @@ const FilmReel = (() => {
   /* ── O'lchamlar (world birlikda) ── */
   const R        = 12;    /* drum radiusi */
   const CAM_Z    = 6.0;   /* kamera drum ichida, old devorga surilgan */
-  const CELL_W   = 4.1;   /* karta nominal eni (slot shunga moslanadi) */
-  const LABELBAR = 0.36;  /* pastdagi yozuv bar'i */
+  const CELL_W   = 3.8;   /* karta nominal eni (slot shunga moslanadi) */
+  const MARGIN   = 0.34;  /* oyna atrofidagi qora hoshiya — kartalar
+                             bir-biriga xalaqit qilmasligi uchun */
   const CORNER   = 0.13;  /* oyna burchak radiusi — yumaloq */
   const SEGS     = 24;
   const N_ROWS   = 6;     /* vertikal wrap halqasidagi qatorlar soni */
 
   /* Slotga bog'liq o'lchamlar init'da hisoblanadi (step butun bo'lishi
      uchun); bu modul-darajali o'zgaruvchilar texture chizishda kerak */
-  let SLOT_W = CELL_W, WIN_W = CELL_W - 0.05, WIN_H = 2.28, CELL_H = 2.64;
+  let SLOT_W = CELL_W, WIN_W = CELL_W - MARGIN, WIN_H = 1.95, CELL_H = 2.25;
 
-  /* ── Tile overlay: qora katak + yumaloqlangan shaffof oyna ── */
+  /* ── Tile overlay: qora katak + markazda yumaloqlangan shaffof oyna.
+     Oyna slotdan aniq kichik — har tomonda qora hoshiya, hech narsa
+     qo'shni katakka chiqmaydi. ── */
   function makeTileTexture() {
     const W = 512, H = Math.round(512 * CELL_H / SLOT_W);
     const c = document.createElement('canvas');
@@ -49,7 +52,7 @@ const FilmReel = (() => {
     x.fillRect(0, 0, W, H);
     const winW = W * WIN_W / SLOT_W, winH = H * WIN_H / CELL_H;
     const wx = (W - winW) / 2;
-    const wy = H * (0.5 - (LABELBAR / 2) / CELL_H) - winH / 2;
+    const wy = (H - winH) / 2;
     const r = W * CORNER / SLOT_W;
     x.save();
     x.globalCompositeOperation = 'destination-out';
@@ -169,9 +172,9 @@ const FilmReel = (() => {
     const count = Math.round((2 * Math.PI * R) / CELL_W);
     const step = (2 * Math.PI) / count;
     SLOT_W = step * R;
-    WIN_W = SLOT_W - 0.05;
+    WIN_W = SLOT_W - MARGIN;
     WIN_H = WIN_W * 9 / 16;
-    CELL_H = WIN_H + LABELBAR;
+    CELL_H = WIN_H + MARGIN; /* vertikal ham xuddi shunday hoshiya */
     const ROW_H = CELL_H;
     const TOTAL_H = N_ROWS * ROW_H; /* vertikal wrap davri */
 
@@ -182,35 +185,16 @@ const FilmReel = (() => {
 
     const winGeo = curvedPlane(WIN_W + 0.06, WIN_H + 0.06, R + 0.03, SEGS);
     const cellGeo = curvedPlane(SLOT_W, CELL_H, R, SEGS);
-    const labelGeo = new THREE.PlaneGeometry(WIN_W * 0.94, 0.2);
 
-    const phCache = {}, labelCache = {};
+    const phCache = {};
     const placeholderFor = (m) =>
       phCache[m.id] || (phCache[m.id] = makePlaceholderTexture(m.title));
-    function labelFor(m) {
-      if (labelCache[m.id]) return labelCache[m.id];
-      const c = document.createElement('canvas');
-      c.width = 1024; c.height = 76;
-      const x = c.getContext('2d');
-      x.font = '600 30px Outfit, sans-serif';
-      x.textBaseline = 'middle';
-      x.fillStyle = 'rgba(255,255,255,0.5)';
-      const t = String(m.title || '').toUpperCase();
-      x.fillText(t.length > 30 ? t.slice(0, 29) + '…' : t, 8, 40);
-      x.textAlign = 'right';
-      x.fillStyle = 'rgba(255,255,255,0.34)';
-      x.fillText([m.year, m.rating ? '★ ' + m.rating : ''].filter(Boolean).join('   '), 1016, 40);
-      const tex = new THREE.CanvasTexture(c);
-      tex.colorSpace = THREE.SRGBColorSpace;
-      return (labelCache[m.id] = tex);
-    }
-
-    let movieIdx = 0;
-    const nextMovie = () => movies[movieIdx++ % movies.length];
 
     for (let ri = 0; ri < N_ROWS; ri++) {
       for (let i = 0; i < count; i++) {
-        const m = nextMovie();
+        /* Qator boshiga 7 qadam siljish — bir xil film vertikal/diagonal
+           qo'shni kataklarga tushib "ulanib ketgan"day ko'rinmasin */
+        const m = movies[(i + ri * 7) % movies.length];
         const pivot = new THREE.Object3D();
         scene.add(pivot);
 
@@ -219,7 +203,6 @@ const FilmReel = (() => {
           fog: true,
         });
         const media = new THREE.Mesh(winGeo, mediaMat);
-        media.position.y = LABELBAR / 2;
         pivot.add(media);
 
         const cell = new THREE.Mesh(
@@ -227,14 +210,6 @@ const FilmReel = (() => {
           new THREE.MeshBasicMaterial({ map: tileTex, transparent: true, fog: true })
         );
         pivot.add(cell);
-
-        const label = new THREE.Mesh(
-          labelGeo,
-          new THREE.MeshBasicMaterial({ map: labelFor(m), transparent: true, fog: true })
-        );
-        label.position.set(0, -(CELL_H / 2 - 0.17), R - 0.02);
-        label.rotation.y = Math.PI;
-        pivot.add(label);
 
         const frame = {
           movie: m, pivot, media, mediaMat, cell,
@@ -375,7 +350,7 @@ const FilmReel = (() => {
       if (hovered) hovered.targetScale = 1;
       hovered = frame;
       if (frame) {
-        frame.targetScale = 1.1;
+        frame.targetScale = 1.06;
         el.style.cursor = 'pointer';
         if (tooltipEl) {
           const m = frame.movie;
@@ -412,7 +387,7 @@ const FilmReel = (() => {
         const ease = 1 - Math.pow(1 - t, 3);
         camera.position.lerpVectors(cam0, dest3, ease);
         camera.lookAt(wp);
-        target.targetScale = 1.1 + ease * 0.4;
+        target.targetScale = 1.06 + ease * 0.4;
         if (t < 1) requestAnimationFrame(tick);
         else {
           const root = opts.root || '../';
