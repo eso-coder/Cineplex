@@ -131,6 +131,38 @@
       overflow: hidden;
     }
 
+    /* ══ MULTI-WINDOW — Document Picture-in-Picture ══
+       Pleyer alohida OS oynasiga ko'chganda butun oynani egallaydi.
+       O'lchamni foydalanuvchi oynaning o'z chetlaridan cho'zib boshqaradi —
+       shuning uchun bu yerda hech qanday qat'iy o'lcham/nisbat yo'q. */
+    body.pip-body {
+      margin: 0;
+      background: #000;
+      overflow: hidden;
+    }
+    .player-wrapper.pip-mode {
+      position: static;
+      width: 100vw;
+      height: 100vh;
+      max-height: none;
+      aspect-ratio: unset;
+      border: none;
+      border-radius: 0;
+      box-shadow: none;
+      cursor: auto;
+      touch-action: auto;
+    }
+    /* PiP oynasida OS'ning o'z boshqaruvlari bor — sahifa ichidagi mini
+       oynaga tegishli elementlar keraksiz */
+    .player-wrapper.pip-mode .watch-top-bar,
+    .player-wrapper.pip-mode .mini-actions,
+    .player-wrapper.pip-mode .mini-resize-handle,
+    .player-wrapper.pip-mode .player-mini-btn,
+    .player-wrapper.pip-mode .player-fs-btn,
+    .player-wrapper.pip-mode .player-rotate-btn {
+      display: none;
+    }
+
     /* ══ MINI PLAYER (multi-screen) ══
        Pleyer sahifadan "uzilib" chiqib, pastki-o'ng burchakda suzuvchi
        kichik oynaga aylanadi — foydalanuvchi film ijro etilayotganda
@@ -1185,9 +1217,9 @@
 
           </div>
 
-          <!-- Mini pleyer (multi-screen): pleyerni kichik suzuvchi oynaga o'tkazadi -->
+          <!-- Multi-window: pleyerni alohida, doim ustida turuvchi oynaga o'tkazadi -->
           <button class="player-ctrl-btn player-mini-btn" id="mini-btn" onclick="toggleMiniPlayer()"
-            title="Mini pleyer (i)">
+            title="Alohida oynada ochish (i)">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="2" y="4" width="20" height="16" rx="2.5" />
               <rect x="12" y="12" width="8" height="6" rx="1.5" fill="currentColor" stroke="none" />
@@ -1216,9 +1248,9 @@
           <rect x="2" y="4" width="20" height="16" rx="2.5" />
           <rect x="12" y="12" width="8" height="6" rx="1.5" fill="currentColor" stroke="none" />
         </svg>
-        <div>Mini pleyerda ijro etilmoqda</div>
+        <div>Alohida oynada ijro etilmoqda</div>
         <button class="btn-secondary" style="padding:7px 14px;font-size:13.5px" onclick="toggleMiniPlayer()">
-          Kattalashtirish
+          Sahifaga qaytarish
         </button>
       </div>
     </div>
@@ -1898,7 +1930,7 @@
         updatePlayIcons();
         clearTimeout(hideTimer);
         // Always show controls when paused
-        const _pw = document.getElementById('player-wrapper');
+        const _pw = getPW();
         if (_pw) _pw.classList.add('show-ui');
       });
 
@@ -1906,7 +1938,7 @@
         playing = false;
         updatePlayIcons();
         clearTimeout(hideTimer);
-        const _pw = document.getElementById('player-wrapper');
+        const _pw = getPW();
         if (_pw) _pw.classList.add('show-ui');
       });
     }
@@ -1927,7 +1959,7 @@
           cancelAnimationFrame(raf);
           clearTimeout(hideTimer);
           // Show controls permanently when paused
-          const _pw = document.getElementById('player-wrapper');
+          const _pw = getPW();
           if (_pw) _pw.classList.add('show-ui');
         }
       }
@@ -2186,12 +2218,21 @@
 
     /* ══════════════════════════════════════════
        MINI PLAYER (multi-screen)
-       Pleyerni pastki-o'ng burchakdagi suzuvchi kichik oynaga o'tkazadi —
-       video to'xtamaydi, sifat/subtitr/audio holati saqlanib qoladi
-       (video elementi DOM'da ko'chirilmaydi, faqat CSS o'zgaradi).
+       Pleyerni kichik oynaga o'tkazadi — video to'xtamaydi, sifat/subtitr/
+       audio holati saqlanib qoladi.
     ══════════════════════════════════════════ */
+
+    /* PiP oynasi ochiq bo'lsa, pleyer BOSHQA hujjatda turadi va asosiy
+       document.getElementById(...) uni TOPA OLMAYDI. Shu sabab hamma joyda
+       shu yordamchi ishlatiladi. */
+    let pipWin = null;
+    function getPW() {
+      return document.getElementById('player-wrapper') ||
+             (pipWin && pipWin.document.getElementById('player-wrapper')) || null;
+    }
+
     window.isMiniMode = function () {
-      return document.getElementById('player-wrapper')?.classList.contains('mini-mode') || false;
+      return getPW()?.classList.contains('mini-mode') || false;
     };
 
     /* Mini oyna o'lchami/joylashuvi chegaralari */
@@ -2240,53 +2281,192 @@
       ['left', 'top', 'width', 'right', 'bottom', 'maxWidth'].forEach(p => { el.style[p] = ''; });
     }
 
-    window.toggleMiniPlayer = function () {
-      const el = document.getElementById('player-wrapper');
-      if (!el) return;
-      const on = !el.classList.contains('mini-mode');
+    /* ── Sahifa ichidagi mini oyna (zaxira yo'l) ── */
+    function enterInlineMini(el) {
+      // Fullscreen va mini rejim birga ishlamaydi — avval fullscreen'dan chiqamiz
+      if (document.fullscreenElement || document.webkitFullscreenElement) {
+        (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+      }
+      el.classList.remove('pseudo-fs');
+      document.body.classList.remove('player-fs-lock');
+      el.classList.add('mini-mode');
+      document.body.classList.add('mini-active');
+      miniApplyRect(el, _miniSaved);   // oldingi joy/o'lcham bo'lsa — tiklaymiz
+      // Kirish animatsiyasi — bir marta o'ynab, klass olib tashlanadi
+      el.classList.add('mini-enter');
+      el.addEventListener('animationend', function onEnd(ev) {
+        if (ev.animationName !== 'miniIn') return;
+        el.classList.remove('mini-enter');
+        el.removeEventListener('animationend', onEnd);
+      });
+    }
 
-      if (on) {
-        // Fullscreen va mini rejim birga ishlamaydi — avval fullscreen'dan chiqamiz
-        if (document.fullscreenElement || document.webkitFullscreenElement) {
-          (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+    function exitInlineMini(el) {
+      // Joriy holatni eslab qolamiz, so'ng inline stillarni tozalaymiz
+      if (el.style.left) {
+        _miniSaved = {
+          left:  parseFloat(el.style.left),
+          top:   parseFloat(el.style.top),
+          width: parseFloat(el.style.width),
+        };
+      }
+      miniClearInline(el);
+      el.classList.remove('mini-mode', 'mini-enter', 'is-dragging', 'is-resizing');
+      document.body.classList.remove('mini-active');
+    }
+
+    /* ══════════════════════════════════════════
+       MULTI-WINDOW — Document Picture-in-Picture
+       Haqiqiy alohida OS oynasi: brauzerdan chiqilsa yoki u yig'ilsa ham
+       ekranda "pin" bo'lib, boshqa dasturlar USTIDA qoladi; chetlaridan
+       istalgancha cho'ziladi. Sahifa ichidagi div buni QILA OLMAYDI —
+       u brauzer oynasidan chiqa olmaydi.
+       Chrome/Edge 116+. Qo'llab-quvvatlanmasa (Safari/Firefox) — yuqoridagi
+       sahifa ichidagi mini oynaga qaytamiz.
+    ══════════════════════════════════════════ */
+    const PIP_SUPPORTED = 'documentPictureInPicture' in window;
+
+    /* Inline onclick="..." lar element hujjatining GLOBAL obyektida qidiriladi.
+       PiP — boshqa hujjat, shuning uchun kerakli funksiyalarni unga ulaymiz,
+       aks holda PiP ichidagi barcha tugmalar ishlamay qoladi. */
+    const PIP_BRIDGE_FNS = [
+      'togglePlay', 'seekTo', 'skipBackHud', 'skipFwdHud', 'toggleMute', 'setVol',
+      'togglePsd', 'selectPsd', 'setHlsQuality', 'setHlsAudio', 'setSubtitle',
+      'setHlsSubtitle', 'toggleFullscreen', 'toggleMiniPlayer', 'closeMiniPlayer',
+    ];
+
+    /* Pleyerni boshqa hujjatga ko'chirish (yoki qaytarish).
+       HTML spetsifikatsiyasiga ko'ra media element boshqa hujjatga
+       "adopt" qilinganda to'xtab qolishi mumkin. Chrome'ning PiP oynasi
+       odatda ijroni saqlaydi, lekin BUNGA TAYANMAYMIZ — ko'chirishdan
+       oldingi holatni o'lchab, kerak bo'lsa qaytaramiz. */
+    function moveKeepingPlayback(insert) {
+      const wasPlaying = videoEl && !videoEl.paused;
+      const t = videoEl ? videoEl.currentTime : 0;
+      insert();
+      if (!videoEl || !wasPlaying || !videoEl.paused) return;
+      if (t > 0 && Math.abs(videoEl.currentTime - t) > 0.5) {
+        try { videoEl.currentTime = t; } catch (e) { /* seek imkonsiz — davom etamiz */ }
+      }
+      videoEl.play().catch(() => {});
+    }
+
+    /* PiP hujjatida CSS yo'q — barcha stillarni ko'chiramiz */
+    function pipCopyStyles(win) {
+      [...document.styleSheets].forEach(sheet => {
+        try {
+          const css = [...sheet.cssRules].map(r => r.cssText).join('');
+          const style = win.document.createElement('style');
+          style.textContent = css;
+          win.document.head.appendChild(style);
+        } catch (e) {
+          /* CORS bilan yopiq tashqi fayl (masalan Google Fonts) — <link> orqali */
+          if (!sheet.href) return;
+          const link = win.document.createElement('link');
+          link.rel = 'stylesheet';
+          link.href = sheet.href;
+          win.document.head.appendChild(link);
         }
-        el.classList.remove('pseudo-fs');
-        document.body.classList.remove('player-fs-lock');
-        el.classList.add('mini-mode');
-        document.body.classList.add('mini-active');
-        miniApplyRect(el, _miniSaved);   // oldingi joy/o'lcham bo'lsa — tiklaymiz
-        // Kirish animatsiyasi — bir marta o'ynab, klass olib tashlanadi
-        el.classList.add('mini-enter');
-        el.addEventListener('animationend', function onEnd(ev) {
-          if (ev.animationName !== 'miniIn') return;
-          el.classList.remove('mini-enter');
-          el.removeEventListener('animationend', onEnd);
-        });
-      } else {
-        // Joriy holatni eslab qolamiz, so'ng inline stillarni tozalaymiz
-        if (el.style.left) {
-          _miniSaved = {
-            left:  parseFloat(el.style.left),
-            top:   parseFloat(el.style.top),
-            width: parseFloat(el.style.width),
-          };
-        }
-        miniClearInline(el);
-        el.classList.remove('mini-mode', 'mini-enter', 'is-dragging', 'is-resizing');
-        document.body.classList.remove('mini-active');
+      });
+    }
+
+    async function openPipWindow(el) {
+      const w = Math.round(_miniSaved?.width || 480);
+      pipWin = await documentPictureInPicture.requestWindow({
+        width:  w,
+        height: Math.round(w * 9 / 16),
+      });
+
+      pipCopyStyles(pipWin);
+      PIP_BRIDGE_FNS.forEach(n => {
+        if (typeof window[n] === 'function') pipWin[n] = window[n];
+      });
+
+      pipWin.document.body.classList.add('watch-page', 'pip-body');
+      // Pleyerni butunligicha ko'chiramiz — video, boshqaruvlar, subtitr
+      // overlay'i va sozlama menyulari birga ketadi (native PiP'da bular yo'q).
+      // Ko'chirish ijroni to'xtatib qo'ysa — moveKeepingPlayback qaytaradi.
+      moveKeepingPlayback(() => pipWin.document.body.append(el));
+      el.classList.add('pip-mode');
+      document.body.classList.add('mini-active');   // sahifada placeholder chiqsin
+
+      /* Sozlama menyulari PiP ichida ham tashqariga bosilganda yopilsin
+         (asosiy hujjatdagi listener bu yerda ishlamaydi) */
+      pipWin.document.addEventListener('click', e => {
+        if (!e.target.closest('.psd-btn-wrap'))
+          pipWin.document.querySelectorAll('.player-settings-dd').forEach(dd => dd.classList.remove('open'));
+      });
+      /* Klaviatura yorliqlari PiP oynasi fokusda bo'lganda ham ishlasin */
+      pipWin.document.addEventListener('keydown', onPlayerKeydown);
+
+      /* Oyna yopilganda (foydalanuvchi X bosdi yoki "orqaga qaytish") —
+         pleyerni sahifadagi asl joyiga qaytaramiz. */
+      pipWin.addEventListener('pagehide', () => { restoreFromPip(); });
+
+      showControls();
+    }
+
+    /* Pleyerni PiP oynasidan sahifaga qaytarish. Placeholder DOM'da aynan
+       pleyerdan keyin turadi — shuning uchun before() asl joyni tiklaydi. */
+    function restoreFromPip() {
+      const el = getPW();
+      if (el) {
+        el.classList.remove('pip-mode');
+        moveKeepingPlayback(() => document.getElementById('player-placeholder').before(el));
+      }
+      document.body.classList.remove('mini-active');
+      document.getElementById('mini-btn')?.classList.remove('active-ctrl');
+      pipWin = null;
+      showControls();
+    }
+
+    window.isPipOpen = function () { return !!pipWin; };
+
+    /* Tugma/'i' → PiP oynasini ochadi; imkoni bo'lmasa sahifa ichidagi mini. */
+    window.toggleMiniPlayer = async function () {
+      const el = getPW();
+      if (!el) return;
+
+      // 1) PiP oynasi ochiq bo'lsa — yopamiz (pagehide o'zi qaytaradi)
+      if (pipWin) { pipWin.close(); return; }
+
+      // 2) Sahifa ichidagi mini ochiq bo'lsa — chiqamiz
+      if (el.classList.contains('mini-mode')) {
+        exitInlineMini(el);
+        document.getElementById('mini-btn')?.classList.remove('active-ctrl');
+        showControls();
+        return;
       }
 
-      document.getElementById('mini-btn')?.classList.toggle('active-ctrl', on);
-      // Ochiq sozlama menyulari mini oynaga sig'maydi
+      // 3) Yangi oyna ochamiz
       document.querySelectorAll('.player-settings-dd').forEach(dd => dd.classList.remove('open'));
+      if (PIP_SUPPORTED) {
+        try {
+          await openPipWindow(el);
+          document.getElementById('mini-btn')?.classList.add('active-ctrl');
+          return;
+        } catch (e) {
+          /* Foydalanuvchi rad etdi yoki oyna ochilmadi — zaxira yo'l bilan
+             davom etamiz (pleyer sahifada qolgan bo'lishi kerak). */
+          pipWin = null;
+          if (el.classList.contains('pip-mode')) restoreFromPip();
+        }
+      }
+      enterInlineMini(el);
+      document.getElementById('mini-btn')?.classList.add('active-ctrl');
       showControls();
     };
 
-    /* Yopish: mini oynadan chiqadi va videoni to'xtatadi */
+    /* Yopish: oynadan chiqadi va videoni to'xtatadi */
     window.closeMiniPlayer = function () {
       if (hasRealVideo()) videoEl.pause();
       else { playing = false; updatePlayIcons(); }
-      if (window.isMiniMode()) toggleMiniPlayer();
+      const el = getPW();
+      if (pipWin) { pipWin.close(); return; }
+      if (el && el.classList.contains('mini-mode')) {
+        exitInlineMini(el);
+        document.getElementById('mini-btn')?.classList.remove('active-ctrl');
+      }
     };
 
     /* ══ Mini oynani SURISH va O'LCHAMINI o'zgartirish ══
@@ -2385,7 +2565,7 @@
     })();
 
     window.toggleFullscreen = async function () {
-      const el = document.getElementById('player-wrapper');
+      const el = getPW();
       // Mini rejimda fullscreen'ga o'tishdan oldin pleyerni sahifaga qaytaramiz
       if (el && el.classList.contains('mini-mode')) toggleMiniPlayer();
       const reqFs = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen;
@@ -2474,7 +2654,7 @@
     /* ── Auto-hide controls (show-ui class on wrapper) ── */
     let hideTimer;
     function showControls() {
-      const pw = document.getElementById('player-wrapper');
+      const pw = getPW();
       if (!pw) return;
       pw.classList.add('show-ui');
       clearTimeout(hideTimer);
@@ -2489,7 +2669,7 @@
 
     function hideControls() {
       if (!playing) return; // never hide when paused
-      const pw = document.getElementById('player-wrapper');
+      const pw = getPW();
       if (pw) pw.classList.remove('show-ui');
     }
 
@@ -2551,8 +2731,10 @@
       });
     }
 
-    /* ── Keyboard shortcuts ── */
-    document.addEventListener('keydown', e => {
+    /* ── Keyboard shortcuts ──
+       Nomlangan funksiya: PiP oynasi o'z hujjatiga ega, unga ham shu
+       listener ulanadi (openPipWindow ichida). */
+    function onPlayerKeydown(e) {
       const tag = e.target.tagName;
       // Faqat matn kiritish maydonlarida bloklaymiz — vol-slider (range) bunga kirmaydi,
       // aks holda u fokusda bo'lganda Up/Down HUD ishlamay qolardi.
@@ -2568,7 +2750,8 @@
         else if (e.code === 'KeyF')       { toggleFullscreen(); }
         else if (e.code === 'KeyI')       { toggleMiniPlayer(); }
       } catch (err) { console.error('Player keyboard shortcut xato:', err); }
-    });
+    }
+    document.addEventListener('keydown', onPlayerKeydown);
 
     /* ── Favorite toggle (local) ── */
     window.toggleFav = function () {
