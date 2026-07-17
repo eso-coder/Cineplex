@@ -8,10 +8,10 @@
    - Three.js (CDN, ES module). Har lenta — silindr yoyi (drum) bo'ylab
      joylashgan kadr-slotlar. Slot burchagi wrap qilinadi (modulo) —
      choksiz cheksiz aylanish. Lentalar turli chuqurlik/og'ish/tezlikda.
-   - Har kadr 3 qatlam: (1) orqada iliq "backlit" glow (additive),
-     (2) media (treyler video-texture yoki poster), (3) old tomonda
-     seluloid overlay (qora hoshiya + perforatsiya teshiklari) —
-     hammasi bitta umumiy canvas-texturadan.
+   - Har kadr qatlamlari: media (treyler video-texture yoki poster),
+     old tomonda tile overlay (qora katak + nozik grid chizig'i + kichik
+     sprocket teshiklari — umumiy canvas-textura) va katak ichidagi
+     pastki barda mayda sarlavha/reyting yozuvi.
    - Video: faqat to'g'ridan-to'g'ri fayl (mp4/webm) treylerlar
      (YouTube'ni WebGL texturaga olib bo'lmaydi). Bir vaqtda maksimum
      6-8 ta video o'ynaydi — ko'rinmaydiganlari pauza qilinadi.
@@ -29,66 +29,59 @@ import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.m
 const FilmReel = (() => {
   'use strict';
 
-  /* ── O'lchamlar (world birlikda) ── */
-  const CELL_W = 3.05;   /* bitta kadr katagi (oraliq bilan) */
-  const CELL_H = 2.35;   /* seluloid balandligi */
-  const WIN_W  = 2.78;   /* media oynasi */
-  const WIN_H  = 1.56;   /* ~16:9 */
-  const SEGS   = 24;     /* egri sirt silliqligi */
+  /* ── O'lchamlar (world birlikda) — phantom.land'dagidek zich grid:
+     kataklar bir-biriga tegib turadi (gap yo'q), media katak ichida,
+     pastda yozuv bar'i, tepada/pastda kichik sprocket teshiklari ── */
+  const CELL_W  = 3.6;    /* katak eni (slot bilan bir xil) */
+  const CELL_H  = 2.6;    /* katak balandligi */
+  const WIN_W   = 3.26;   /* media oynasi */
+  const WIN_H   = 1.83;   /* ~16:9 */
+  const WIN_OFF = 0.12;   /* oyna markazdan tepaga siljigan (pastda label joyi) */
+  const SEGS    = 24;     /* egri sirt silliqligi */
 
-  /* ── Seluloid overlay texturasi (umumiy, bir marta chiziladi) ── */
+  /* ── Katak (tile) overlay texturasi (umumiy, bir marta chiziladi):
+     qora fon, chekkada nozik grid chizig'i, media oynasi shaffof teshik,
+     oyna tepa/pastida KICHIK sprocket teshiklari — plyonka identiteti
+     saqlangan, lekin phantom'dagi kabi minimal ── */
   function makeCelluloidTexture() {
     const W = 512, H = Math.round(512 * CELL_H / CELL_W);
     const c = document.createElement('canvas');
     c.width = W; c.height = H;
     const x = c.getContext('2d');
-    /* To'liq qoraytirilgan plyonka asosi */
-    x.fillStyle = '#100e0c';
+    /* Qora tile asosi */
+    x.fillStyle = '#0b0b0d';
     x.fillRect(0, 0, W, H);
-    /* Media oynasi — shaffof teshik */
+    /* Kataklararo nozik ajratuvchi chiziq (grid) */
+    x.strokeStyle = 'rgba(255, 255, 255, 0.09)';
+    x.lineWidth = 2;
+    x.strokeRect(1, 1, W - 2, H - 2);
+    /* Media oynasi — markazdan biroz tepada (pastda label joyi) */
     const winW = W * WIN_W / CELL_W, winH = H * WIN_H / CELL_H;
-    const wx = (W - winW) / 2, wy = (H - winH) / 2;
+    const wx = (W - winW) / 2;
+    const wy = H * (0.5 - WIN_OFF / CELL_H) - winH / 2;
     x.clearRect(wx, wy, winW, winH);
-    /* Oyna atrofida ingichka iliq kant (backlit his) */
-    x.strokeStyle = 'rgba(255, 186, 110, 0.28)';
-    x.lineWidth = 3;
-    x.strokeRect(wx + 1.5, wy + 1.5, winW - 3, winH - 3);
-    /* Perforatsiya (sprocket) teshiklari — tepa va pastki hoshiyada.
-       Teshiklar orqadan yoritilgandek iliq rangda. */
-    const holeW = W / 16, holeH = wy * 0.44, r = 3;
+    /* Oyna atrofida juda nozik iliq kant (backlit plyonka hissi) */
+    x.strokeStyle = 'rgba(255, 180, 105, 0.16)';
+    x.lineWidth = 2;
+    x.strokeRect(wx + 1, wy + 1, winW - 2, winH - 2);
+    /* KICHIK sprocket teshiklari — oynaning bevosita tepa va pastida,
+       bilinar-bilinmas iliq tusda */
+    const holeW = 13, holeH = 9, r = 2, n = 12;
     const drawHoles = (cy) => {
-      for (let i = 0; i < 8; i++) {
-        const hx = (i + 0.5) * (W / 8) - holeW / 2;
+      for (let i = 0; i < n; i++) {
+        const hx = wx + (i + 0.5) * (winW / n) - holeW / 2;
         x.beginPath();
         x.roundRect(hx, cy - holeH / 2, holeW, holeH, r);
-        x.fillStyle = 'rgba(255, 190, 120, 0.30)';
+        x.fillStyle = 'rgba(255, 185, 115, 0.20)';
         x.fill();
-        x.strokeStyle = 'rgba(0,0,0,0.55)';
-        x.lineWidth = 1.5;
-        x.stroke();
       }
     };
-    drawHoles(wy / 2);
-    drawHoles(H - wy / 2);
+    drawHoles(wy - 10);
+    drawHoles(wy + winH + 10);
     const tex = new THREE.CanvasTexture(c);
     tex.colorSpace = THREE.SRGBColorSpace;
     tex.anisotropy = 4;
     return tex;
-  }
-
-  /* ── Iliq glow texturasi (kadr ortidagi nur) ── */
-  function makeGlowTexture() {
-    const S = 256;
-    const c = document.createElement('canvas');
-    c.width = S; c.height = S;
-    const x = c.getContext('2d');
-    const g = x.createRadialGradient(S / 2, S / 2, S * 0.05, S / 2, S / 2, S * 0.5);
-    g.addColorStop(0, 'rgba(255, 196, 130, 0.55)');
-    g.addColorStop(0.5, 'rgba(255, 160, 90, 0.18)');
-    g.addColorStop(1, 'rgba(255, 140, 70, 0)');
-    x.fillStyle = g;
-    x.fillRect(0, 0, S, S);
-    return new THREE.CanvasTexture(c);
   }
 
   /* ── Poster yo'q/yuklanmasa — sarlavhali placeholder ── */
@@ -183,43 +176,47 @@ const FilmReel = (() => {
        devorga surilgan (z=+5.2, R=13 dan kichik). Old kataklar yaqin va
        katta, yon kataklar tomoshabinni o'rab oladi — ichidan qarash. */
     const camera = new THREE.PerspectiveCamera(62, 1, 0.1, 60);
-    camera.position.set(0, 0, 5.2);
-    const CAM_Z = 5.2;
+    camera.position.set(0, 0, 6.4);
+    const CAM_Z = 6.4;
     const LOOK = new THREE.Vector3(0, 0, 12);
 
     const celluloidTex = makeCelluloidTexture();
-    const glowTex = makeGlowTexture();
 
     /* ── EGILGAN DEVOR (phantom.land uslubi) ──
-       Kadrlar silindrning ICHKI sirtida, kamera markazda: to'liq 360°
-       drum — chok yo'q, shunchaki aylanaveradi. 3 qator (mobil 2) bitta
-       qattiq devor bo'lib harakatlanadi, qo'shni qatorlar yarim katak
-       shaxmat tartibida surilgan. Tepa/pastki qatorlar yengil ichkariga
-       og'ib "barrel" (sferik) taassurot beradi. */
+       Kadrlar silindrning ICHKI sirtida, to'liq 360° drum — chok yo'q.
+       Kataklar bir-biriga TEGIB turadi (gap yo'q, faqat teksturadagi
+       nozik grid chizig'i), qatorlar tekis (vertikal og'ish yo'q) —
+       zich devor, gorizontal curve esa to'liq saqlangan. */
     const R = 13;
-    const ROW_H = CELL_H + 0.62; /* katak + label + grid oralig'i */
+    const ROW_H = CELL_H + 0.01; /* qatorlar ham deyarli tegib turadi */
     const ROWS = isMobile
       ? [
-          { y:  ROW_H / 2, tx: -0.10, dim: 1.0 },
-          { y: -ROW_H / 2, tx:  0.10, dim: 1.0 },
+          { y:  ROW_H / 2, dim: 1.0 },
+          { y: -ROW_H / 2, dim: 1.0 },
         ]
       : [
-          { y:  ROW_H, tx: -0.15, dim: 0.88 },
-          { y:  0,     tx:  0.00, dim: 1.0 },
-          { y: -ROW_H, tx:  0.15, dim: 0.88 },
+          { y:  ROW_H, dim: 0.9 },
+          { y:  0,     dim: 1.0 },
+          { y: -ROW_H, dim: 0.9 },
         ];
 
     const frames = [];   /* barcha kadrlar (video boshqaruvi uchun) */
     const rayCells = []; /* raycast nishonlari (oldindan yig'ilgan) */
     const videoEls = [];
 
+    /* To'liq aylana: qadam soni butun bo'lishi uchun step moslanadi,
+       katak geometriyasi esa aynan slot kengligida — qo'shni kataklar
+       chok-choka tegib turadi */
+    const count = Math.round((2 * Math.PI) / (CELL_W / R));
+    const step = (2 * Math.PI) / count;
+    const span = 2 * Math.PI;
+    const slotW = step * R;
+
     /* Radiuslar: kamera silindr ICHIDA — KICHIKROQ radius kameraga
-       yaqinroq. Seluloid overlay (R) media oynasidan (R+0.03) oldinda
-       turadi va uni hoshiyalab ko'rsatadi. */
+       yaqinroq. Katak (R) media oynasidan (R+0.03) oldinda turadi. */
     const winGeo = curvedPlane(WIN_W, WIN_H, R + 0.03, SEGS);
-    const cellGeo = curvedPlane(CELL_W - 0.16, CELL_H, R, SEGS);
-    const glowGeo = new THREE.PlaneGeometry(CELL_W * 1.6, CELL_H * 1.45);
-    const labelGeo = new THREE.PlaneGeometry(CELL_W * 0.92, 0.21);
+    const cellGeo = curvedPlane(slotW, CELL_H, R, SEGS);
+    const labelGeo = new THREE.PlaneGeometry(CELL_W * 0.88, 0.2);
 
     /* Har film uchun placeholder/label texturalari keshlanadi
        (bir film devorda bir necha marta takrorlanadi) */
@@ -247,16 +244,10 @@ const FilmReel = (() => {
     let movieIdx = 0;
     const nextMovie = () => movies[movieIdx++ % movies.length];
 
-    /* To'liq aylana: qadam soni butun bo'lishi uchun step moslanadi */
-    const count = Math.round((2 * Math.PI) / (CELL_W / R));
-    const step = (2 * Math.PI) / count;
-    const span = 2 * Math.PI;
-
     ROWS.forEach((cfg, ri) => {
       /* Drum o'qi z=0 — kamera shu silindr ichida turadi */
       const group = new THREE.Group();
       group.position.set(0, cfg.y, 0);
-      group.rotation.x = cfg.tx;
       scene.add(group);
 
       for (let i = 0; i < count; i++) {
@@ -264,27 +255,14 @@ const FilmReel = (() => {
         const pivot = new THREE.Object3D();
         group.add(pivot);
 
-        /* Glow — kadr ortida, additive (backlit plyonka nuri) */
-        const glow = new THREE.Mesh(
-          glowGeo,
-          new THREE.MeshBasicMaterial({
-            map: glowTex, transparent: true, blending: THREE.AdditiveBlending,
-            depthWrite: false, opacity: 0.38 * cfg.dim,
-          })
-        );
-        /* Kadr ORTIda (ichki POV'da kattaroq z = uzoqroq); kamera tomonga
-           qaraydigan qilib 180° buriladi (aks holda backface culling) */
-        glow.position.z = R + 0.25;
-        glow.rotation.y = Math.PI;
-        pivot.add(glow);
-
-        /* Media (poster / video) */
+        /* Media (poster / video) — oyna markazdan biroz tepada */
         const mediaMat = new THREE.MeshBasicMaterial({
           map: placeholderFor(m),
           fog: true,
         });
         mediaMat.color.setScalar(cfg.dim);
         const media = new THREE.Mesh(winGeo, mediaMat);
+        media.position.y = WIN_OFF;
         pivot.add(media);
 
         /* Seluloid overlay — old tomonda */
@@ -294,7 +272,7 @@ const FilmReel = (() => {
         );
         pivot.add(cell);
 
-        /* Mayda yozuv — katak ostida (phantom'dagi grid-teglar kabi) */
+        /* Mayda yozuv — katak ICHIDA, pastki barda (phantom'dagi kabi) */
         const label = new THREE.Mesh(
           labelGeo,
           new THREE.MeshBasicMaterial({
@@ -304,12 +282,12 @@ const FilmReel = (() => {
         );
         /* Flat plane +z ga qaragan — ichki POV uchun 180° buriladi
            (rotation ko'zgu emas, matn to'g'ri o'qiladi) */
-        label.position.set(0, -(CELL_H / 2 + 0.19), R);
+        label.position.set(0, -(CELL_H / 2 - 0.19), R - 0.02);
         label.rotation.y = Math.PI;
         pivot.add(label);
 
         const frame = {
-          movie: m, pivot, media, mediaMat, cell, glow,
+          movie: m, pivot, media, mediaMat, cell,
           /* qo'shni qatorlar yarim katak surilgan (shaxmat) */
           base: (i + (ri % 2) * 0.5) * step,
           span, step, R, speed: 1, dim: cfg.dim,
@@ -539,7 +517,18 @@ const FilmReel = (() => {
            drag yo'nalishi tabiiy qolishi uchun ishora ham teskarilanadi */
         f.pivot.rotation.y = f.angle;
         f.scale += (f.targetScale - f.scale) * 0.14;
-        if (Math.abs(f.scale - 1) > 0.001) f.pivot.scale.setScalar(f.scale);
+        if (Math.abs(f.scale - 1) > 0.001) {
+          /* Pivot masshtabi radiusni ham kattartirardi (ichki POV'da bu
+             kadrni UZOQlashtiradi) — markaz joyida qolishi uchun pivot
+             drum o'qi bo'ylab kompensatsiya qilinadi; katta kadr endi
+             qo'shnilar USTIDA, kameraga yaqinroq chiqadi */
+          const off = (1 - f.scale) * (f.R + 4); /* +4 — hover'da kameraga yaqinlashish */
+          f.pivot.scale.setScalar(f.scale);
+          f.pivot.position.set(Math.sin(f.angle) * off, 0, Math.cos(f.angle) * off);
+        } else if (f.pivot.position.z !== 0) {
+          f.pivot.scale.setScalar(1);
+          f.pivot.position.set(0, 0, 0);
+        }
       }
 
       /* Hover raycast (faqat pointer canvas ustida) */
