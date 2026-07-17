@@ -1,59 +1,56 @@
 /* ═══════════════════════════════════════════════════════════════════
-   CINEPLEX — 3D FILM GLOBE (Yangi chiqmalar)
-   phantom.land uslubidagi immersiv galereya — endi TO'LIQ SFERA:
-   tomoshabin (kamera) yadroda, kartalar yer po'stlog'idek atrofni
-   qoplaydi. Istalgan tomonga (gorizontal + vertikal) trackball kabi
-   aylantiriladi — sfera yopiq bo'lgani uchun har yo'nalishda cheksiz.
+   CINEPLEX — 3D FILM WALL (Yangi chiqmalar)
+   phantom.land uslubidagi immersiv galereya.
 
-   Tuzilish:
-   - Kenglik (latitude) halqalari: har halqada aylana uzunligiga qarab
-     kartalar soni (qutbga yaqin kamroq). Hammasi bitta qattiq `globe`
-     guruhida — kirish (drag/wheel) guruhni world-o'qlar atrofida
-     buradi (rotateOnWorldAxis) → chin globus his.
-   - Karta: qora tile, YUMALOQLANGAN burchakli media oynasi (treyler
-     video-texture yoki poster), pastki barda mayda sarlavha/reyting.
-     Kartalar orasida juda kichik masofa (tile chetidagi qora hoshiya).
-   - Video: to'g'ridan-to'g'ri mp4/webm HAMDA HLS (.m3u8 — hls.js
-     CDN'dan kerak bo'lganda yuklanadi; Safari'da native). YouTube'ni
-     WebGL texturaga olib bo'lmaydi — ularda poster. Bir vaqtda maks
-     6-8 video, markazdan uzoqlari pauza.
-   - Hover: kattalashish + tooltip; klik/tap: kamera kadr tomon zoom +
-     fade → watch sahifasi. CP_LITE/WebGL yo'q — init false, sahifada
-     oddiy band fallback qoladi.
+   Geometriya: vertikal o'qli silindr (drum) ichidan qaraladi — kamera
+   QO'ZG'ALMAS, kartalar hamisha TIK (qiyshaymaydi).
+   - GORIZONTAL: kartalar drum bo'ylab aylanadi — to'liq 360°, choksiz.
+   - VERTIKAL: qatorlar yuqoriga/pastga siljiydi va modulo bilan
+     O'RAB KELADI — ekrandan chiqqan qator narigi tomondan qaytib
+     kiradi (wrap nuqtasi ko'rinish maydonidan tashqarida). Natija:
+     har ikki o'qda cheksiz "devor", kamera POV o'zgarmaydi.
+
+   Karta: qora tile, yumaloqlangan burchakli media oynasi (treyler
+   video-texture yoki poster), pastki barda mayda sarlavha/reyting.
+   Kartalar orasida masofa yo'q (qator balandligi = karta balandligi,
+   slot kengligi = tile kengligi).
+
+   Video: to'g'ridan-to'g'ri mp4/webm hamda HLS (.m3u8 — hls.js CDN'dan
+   kerak bo'lganda; Safari'da native). YouTube WebGL texturaga olinmaydi
+   — ularda poster. Bir vaqtda maks 6-8 video, markazdan uzoqlari pauza.
+
+   CP_LITE / WebGL yo'q — init false, sahifadagi band fallback qoladi.
    ═══════════════════════════════════════════════════════════════════ */
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
 
 const FilmReel = (() => {
   'use strict';
 
-  /* ── O'lchamlar (world birlikda) — KATTA kartalar, gap nol:
-     oyna katakni deyarli to'liq egallaydi (faqat pastda label bar),
-     kenglik halqalari oralig'i aynan CELL_H ga teng — qatorlar tegib
-     turadi, gorizontalda slot kengligi tile'ga teng ── */
-  const R       = 10;     /* sfera radiusi (kamera markazda) */
-  const CELL_W  = 4.4;    /* karta katagi eni (slot) */
-  const WIN_W   = 4.36;   /* media oynasi — katakni to'liq egallaydi */
-  const WIN_H   = 2.45;   /* 16:9 */
+  /* ── O'lchamlar (world birlikda) ── */
+  const R        = 12;    /* drum radiusi */
+  const CAM_Z    = 6.0;   /* kamera drum ichida, old devorga surilgan */
+  const CELL_W   = 4.1;   /* karta nominal eni (slot shunga moslanadi) */
   const LABELBAR = 0.36;  /* pastdagi yozuv bar'i */
-  const CELL_H  = WIN_H + LABELBAR; /* 2.81 */
-  const WIN_OFF = LABELBAR / 2;     /* oyna tepaga surilgan */
-  const CORNER  = 0.13;   /* oyna burchak radiusi (world) — yumaloq */
-  const SEGS    = 24;
+  const CORNER   = 0.13;  /* oyna burchak radiusi — yumaloq */
+  const SEGS     = 24;
+  const N_ROWS   = 6;     /* vertikal wrap halqasidagi qatorlar soni */
 
-  /* ── Tile overlay texturasi: qora katak + yumaloqlangan shaffof oyna.
-     Sprocket/plyonka elementlari YO'Q — minimal phantom estetikasi. ── */
+  /* Slotga bog'liq o'lchamlar init'da hisoblanadi (step butun bo'lishi
+     uchun); bu modul-darajali o'zgaruvchilar texture chizishda kerak */
+  let SLOT_W = CELL_W, WIN_W = CELL_W - 0.05, WIN_H = 2.28, CELL_H = 2.64;
+
+  /* ── Tile overlay: qora katak + yumaloqlangan shaffof oyna ── */
   function makeTileTexture() {
-    const W = 512, H = Math.round(512 * CELL_H / CELL_W);
+    const W = 512, H = Math.round(512 * CELL_H / SLOT_W);
     const c = document.createElement('canvas');
     c.width = W; c.height = H;
     const x = c.getContext('2d');
     x.fillStyle = '#0a0a0c';
     x.fillRect(0, 0, W, H);
-    /* Yumaloqlangan media oynasi — shaffof teshik */
-    const winW = W * WIN_W / CELL_W, winH = H * WIN_H / CELL_H;
+    const winW = W * WIN_W / SLOT_W, winH = H * WIN_H / CELL_H;
     const wx = (W - winW) / 2;
-    const wy = H * (0.5 - WIN_OFF / CELL_H) - winH / 2;
-    const r = W * CORNER / CELL_W;
+    const wy = H * (0.5 - (LABELBAR / 2) / CELL_H) - winH / 2;
+    const r = W * CORNER / SLOT_W;
     x.save();
     x.globalCompositeOperation = 'destination-out';
     x.beginPath();
@@ -87,7 +84,7 @@ const FilmReel = (() => {
     return tex;
   }
 
-  /* Teksturani oynaga "cover" qilib kesish (poster 2:3 bo'lsa ham) */
+  /* Teksturani oynaga "cover" qilib kesish */
   function coverCrop(tex, mediaW, mediaH) {
     if (!mediaW || !mediaH) return;
     const winA = WIN_W / WIN_H, mediaA = mediaW / mediaH;
@@ -104,8 +101,8 @@ const FilmReel = (() => {
   }
 
   /* Silindr yoyi bo'ylab egilgan plane — ICHKI sirt (kamera ichkarida).
-     x manfiy sin bilan: winding teskarilanadi (old yuz ichkariga) va
-     tekstura ichkaridan to'g'ri (ko'zgusiz) o'qiladi. */
+     x manfiy sin: winding teskarilanadi (old yuz ichkariga qaraydi),
+     tekstura ichkaridan to'g'ri o'qiladi. */
   function curvedPlane(w, h, radius, segs) {
     const geo = new THREE.PlaneGeometry(w, h, segs, 1);
     const pos = geo.attributes.position;
@@ -124,7 +121,6 @@ const FilmReel = (() => {
     /\.(mp4|webm|mov|m3u8)(\?|#|$)/i.test(String(url || ''));
   const isHls = (url) => /\.m3u8(\?|#|$)/i.test(String(url || ''));
 
-  /* hls.js — faqat kerak bo'lganda, bir marta yuklanadi */
   let hlsLoader = null;
   function loadHlsLib() {
     if (window.Hls) return Promise.resolve();
@@ -162,34 +158,32 @@ const FilmReel = (() => {
     wrapEl.appendChild(renderer.domElement);
 
     const scene = new THREE.Scene();
-    scene.fog = new THREE.Fog(0x0a0a0a, R + 1.5, R + 9); /* chetlar asta so'nadi */
+    scene.fog = new THREE.Fog(0x0a0a0a, 7.5, 19);
 
-    /* Kamera — sfera YADROsida */
+    /* Kamera QO'ZG'ALMAS — drum o'qi z=0, kamera ichkarida */
     const camera = new THREE.PerspectiveCamera(62, 1, 0.1, 60);
-    camera.position.set(0, 0, 0);
+    camera.position.set(0, 0, CAM_Z);
     const LOOK = new THREE.Vector3(0, 0, R);
 
+    /* ── Slot hisoblari: to'liq aylanaga butun son katak ── */
+    const count = Math.round((2 * Math.PI * R) / CELL_W);
+    const step = (2 * Math.PI) / count;
+    SLOT_W = step * R;
+    WIN_W = SLOT_W - 0.05;
+    WIN_H = WIN_W * 9 / 16;
+    CELL_H = WIN_H + LABELBAR;
+    const ROW_H = CELL_H;
+    const TOTAL_H = N_ROWS * ROW_H; /* vertikal wrap davri */
+
     const tileTex = makeTileTexture();
-
-    /* ── GLOBUS: kenglik halqalari ── */
-    /* Halqalar oralig'i AYNAN karta balandligi (arc) — qatorlar orasida
-       masofa nol. ±4 halqa ≈ ±64°; qutblar qorong'i qoladi. */
-    const dLat = CELL_H / R;
-    const K = isMobile ? 3 : 4;
-    const LATS = [];
-    for (let k = -K; k <= K; k++) LATS.push(k * dLat);
-
-    const globe = new THREE.Group();
-    scene.add(globe);
 
     const frames = [];
     const rayCells = [];
 
-    /* Media tile teshigidan ozgina kattaroq — chetlarda yoriq qolmasin */
     const winGeo = curvedPlane(WIN_W + 0.06, WIN_H + 0.06, R + 0.03, SEGS);
-    const labelGeo = new THREE.PlaneGeometry(CELL_W * 0.88, 0.2);
+    const cellGeo = curvedPlane(SLOT_W, CELL_H, R, SEGS);
+    const labelGeo = new THREE.PlaneGeometry(WIN_W * 0.94, 0.2);
 
-    /* Har film uchun placeholder/label texturalari keshlanadi */
     const phCache = {}, labelCache = {};
     const placeholderFor = (m) =>
       phCache[m.id] || (phCache[m.id] = makePlaceholderTexture(m.title));
@@ -214,65 +208,41 @@ const FilmReel = (() => {
     let movieIdx = 0;
     const nextMovie = () => movies[movieIdx++ % movies.length];
 
-    /* Halqadagi katak geometriyalari keshlanadi (halqa radiusiga qarab) */
-    const cellGeoCache = {};
-
-    LATS.forEach((lat, ri) => {
-      const ringR = R * Math.cos(lat);
-      const count = Math.max(3, Math.round((2 * Math.PI * ringR) / CELL_W));
-      const step = (2 * Math.PI) / count;
-      const slotW = Math.min(step * ringR, CELL_W + 0.6);
-      const geoKey = Math.round(slotW * 100);
-      const cellGeo = cellGeoCache[geoKey]
-        || (cellGeoCache[geoKey] = curvedPlane(slotW, CELL_H, R, SEGS));
-
+    for (let ri = 0; ri < N_ROWS; ri++) {
       for (let i = 0; i < count; i++) {
         const m = nextMovie();
-        const lon = (i + (ri % 2) * 0.5) * step;
-        const dim = 1 - Math.abs(lat) / (Math.PI / 2) * 0.3;
-
-        /* pivot(lon, Y-o'q) → latP(lat, X-o'q) → meshlar z=+R da:
-           natijada karta sferaning (lat, lon) nuqtasida, markazga qaragan */
         const pivot = new THREE.Object3D();
-        pivot.rotation.y = lon;
-        const latP = new THREE.Object3D();
-        latP.rotation.x = -lat;
-        pivot.add(latP);
-        globe.add(pivot);
+        scene.add(pivot);
 
-        /* Yumaloq burchaklar tile overlay orqali: media to'rtburchak,
-           lekin tile'ning yumaloqlangan teshigi tashqarisi opaq qora —
-           burchaklar shu bilan yashiriladi (alphaMap kerak emas, u
-           coverCrop uv-transformi bilan to'qnashardi) */
         const mediaMat = new THREE.MeshBasicMaterial({
           map: placeholderFor(m),
           fog: true,
         });
-        mediaMat.color.setScalar(dim);
         const media = new THREE.Mesh(winGeo, mediaMat);
-        media.position.y = WIN_OFF;
-        latP.add(media);
+        media.position.y = LABELBAR / 2;
+        pivot.add(media);
 
         const cell = new THREE.Mesh(
           cellGeo,
           new THREE.MeshBasicMaterial({ map: tileTex, transparent: true, fog: true })
         );
-        latP.add(cell);
+        pivot.add(cell);
 
         const label = new THREE.Mesh(
           labelGeo,
-          new THREE.MeshBasicMaterial({
-            map: labelFor(m), transparent: true, fog: true, opacity: dim,
-          })
+          new THREE.MeshBasicMaterial({ map: labelFor(m), transparent: true, fog: true })
         );
-        label.position.set(0, -(CELL_H / 2 - 0.19), R - 0.02);
+        label.position.set(0, -(CELL_H / 2 - 0.17), R - 0.02);
         label.rotation.y = Math.PI;
-        latP.add(label);
+        pivot.add(label);
 
         const frame = {
-          movie: m, pivot, latP, media, mediaMat, cell,
+          movie: m, pivot, media, mediaMat, cell,
+          /* qo'shni qatorlar yarim slot shaxmat surilgan */
+          baseA: (i + (ri % 2) * 0.5) * step,
+          baseY: (ri - (N_ROWS - 1) / 2) * ROW_H,
           cosA: -1, scale: 1, targetScale: 1,
-          video: null, videoTex: null, hls: null,
+          video: null, videoTex: null,
         };
         media.userData.frame = frame;
         cell.userData.frame = frame;
@@ -296,9 +266,9 @@ const FilmReel = (() => {
         const tUrl = m.trailerS3Url || '';
         if (isPlayableVideo(tUrl)) frame.trailerUrl = tUrl;
       }
-    });
+    }
 
-    /* ── Video hayot sikli — markazga eng yaqin treylerli kadrlar ── */
+    /* ── Video hayot sikli ── */
     function ensureVideo(frame) {
       if (frame.video || frame.videoFailed) return;
       const v = document.createElement('video');
@@ -306,13 +276,12 @@ const FilmReel = (() => {
       v.crossOrigin = 'anonymous';
       v.preload = 'metadata';
       frame.video = v;
-      const onReady = () => {
+      v.addEventListener('loadeddata', () => {
         const tex = new THREE.VideoTexture(v);
         tex.colorSpace = THREE.SRGBColorSpace;
         coverCrop(tex, v.videoWidth, v.videoHeight);
         frame.videoTex = tex;
-      };
-      v.addEventListener('loadeddata', onReady);
+      });
       v.addEventListener('error', () => { frame.videoFailed = true; frame.trailerUrl = null; });
       if (isHls(frame.trailerUrl)) {
         if (v.canPlayType('application/vnd.apple.mpegurl')) {
@@ -330,7 +299,7 @@ const FilmReel = (() => {
         v.src = frame.trailerUrl;
       }
     }
-    const COS_PLAY = Math.cos(0.85); /* markazdan ~49° ichida o'ynaydi */
+    const COS_PLAY = Math.cos(0.85);
     function updateVideos() {
       const withT = frames.filter(f => f.trailerUrl);
       withT.sort((a, b) => b.cosA - a.cosA);
@@ -351,27 +320,18 @@ const FilmReel = (() => {
       });
     }
 
-    /* ── Trackball kirish: gorizontal + vertikal aylantirish ── */
-    const AX_X = new THREE.Vector3(1, 0, 0);
-    const AX_Y = new THREE.Vector3(0, 1, 0);
-    let yawVel = 0, pitchVel = 0, lastInput = 0;
-    const DRIFT = reduced ? 0 : 0.00055;
+    /* ── Kirish: gorizontal = drum aylanishi, vertikal = qatorlar
+       siljishi (wrap). Kamera hech qachon qo'zg'almaydi. ── */
+    let scrollA = 0, scrollY = 0;     /* joriy holat */
+    let velA = 0, velY = 0, lastInput = 0;
+    const DRIFT = reduced ? 0 : 0.00045;
 
     const el = renderer.domElement;
-    /* Seksiya to'liq ekran — sahifa "qamalib" qolmasligi kerak:
-       - desktop: drag to'liq 2D trackball; g'ildirakning GORIZONTAL
-         harakati globusni buraydi, VERTIKAL g'ildirak esa sahifani
-         odatdagidek scroll qiladi (chiqish yo'li).
-       - mobil: vertikal svayp sahifani scroll qiladi (pan-y),
-         gorizontal svayp globusni buraydi. */
     el.style.touchAction = isMobile ? 'pan-y' : 'none';
-    /* G'ildirak ikkala o'qda ham globusni buraydi (foydalanuvchi so'rovi).
-       Sahifaning qolgan qismiga scrollbar/klaviatura yoki galereya
-       tashqarisidan scroll bilan o'tiladi. */
     el.addEventListener('wheel', (e) => {
       e.preventDefault();
-      yawVel += e.deltaX * 0.00009;
-      pitchVel -= e.deltaY * 0.00009; /* wheel-down → kontent yuqoriga */
+      velA += e.deltaX * 0.00008;
+      velY += e.deltaY * 0.0008;  /* wheel-down → devor yuqoriga (hujjat kabi) */
       lastInput = performance.now();
     }, { passive: false });
 
@@ -387,10 +347,10 @@ const FilmReel = (() => {
       dragX = e.clientX; dragY = e.clientY;
       dragDist += Math.abs(dx) + Math.abs(dy);
       /* kontent barmoqqa ergashadi */
-      yawVel = -dx * 0.00030;
-      pitchVel = dy * 0.00030;
-      globe.rotateOnWorldAxis(AX_Y, -dx * 0.0022);
-      globe.rotateOnWorldAxis(AX_X, dy * 0.0022);
+      scrollA += -dx * 0.0018;
+      scrollY += -dy * 0.012;
+      velA = -dx * 0.00028;
+      velY = -dy * 0.0020 * 60 * 0.016; /* sekundiga moslashgan inersiya */
       lastInput = performance.now();
     });
     el.addEventListener('pointerup', () => { dragging = false; });
@@ -428,7 +388,7 @@ const FilmReel = (() => {
       }
     }
 
-    /* ── Klik/tap → zoom → watch sahifasi ── */
+    /* ── Klik/tap → zoom → watch ── */
     let zooming = false;
     el.addEventListener('click', (e) => {
       if (zooming || dragDist > 6) return;
@@ -488,45 +448,56 @@ const FilmReel = (() => {
       else { io.unobserve(wrapEl); io.observe(wrapEl); }
     });
 
+    const wrapC = (a, span) => a - Math.round(a / span) * span; /* [-span/2, span/2] */
     const tmpV = new THREE.Vector3();
 
     function loop(now) {
       if (!running) { cancelAnimationFrame(rafId); return; }
       rafId = requestAnimationFrame(loop);
 
-      /* Inersiya + avto-drift */
       if (!dragging) {
-        yawVel *= 0.93; pitchVel *= 0.93;
-        if (Math.abs(yawVel) + Math.abs(pitchVel) < 0.0004 && now - lastInput > 1600) {
-          globe.rotateOnWorldAxis(AX_Y, DRIFT);
+        velA *= 0.93; velY *= 0.93;
+        if (Math.abs(velA) + Math.abs(velY) * 0.01 < 0.0004 && now - lastInput > 1600) {
+          scrollA += DRIFT;
         }
-        if (yawVel) globe.rotateOnWorldAxis(AX_Y, yawVel);
-        if (pitchVel) globe.rotateOnWorldAxis(AX_X, pitchVel);
+        scrollA += velA;
+        scrollY += velY;
       }
 
-      /* Parallaks — kamera yadro atrofida yengil siljiydi */
+      /* Parallaks — juda yengil, kamera pozitsiyasi deyarli qotgan */
       if (!zooming) {
-        camera.position.x += ((mouseX * 0.35) - camera.position.x) * 0.05;
-        camera.position.y += ((mouseY * 0.25) - camera.position.y) * 0.05;
-        camera.position.z += (0 - camera.position.z) * 0.05;
+        camera.position.x += ((mouseX * 0.3) - camera.position.x) * 0.05;
+        camera.position.y += ((mouseY * 0.2) - camera.position.y) * 0.05;
+        camera.position.z += (CAM_Z - camera.position.z) * 0.05;
         camera.lookAt(LOOK);
       }
 
-      /* Kadr holati: markazga yaqinlik (cosA) + hover masshtabi */
+      /* Kadr holati: gorizontal burchak + vertikal siljish, ikkalasi wrap */
       for (let i = 0; i < frames.length; i++) {
         const f = frames[i];
+        const ang = wrapC(f.baseA + scrollA, 2 * Math.PI);
+        const y = wrapC(f.baseY + scrollY, TOTAL_H);
+        f.pivot.rotation.y = ang;
+        f.pivot.position.y = y;
+
+        /* markazga yaqinlik (video reytingi uchun) */
         f.media.getWorldPosition(tmpV);
-        f.cosA = tmpV.z / tmpV.length(); /* +z (qarash yo'nalishi) bilan cos */
+        f.cosA = tmpV.z / tmpV.length();
+
         f.scale += (f.targetScale - f.scale) * 0.14;
         if (Math.abs(f.scale - 1) > 0.001) {
-          /* latP masshtabi radiusni kattartiradi (uzoqlashtiradi) —
-             kompensatsiya + kameraga yengil yaqinlashish */
           const s = f.scale;
-          f.latP.scale.setScalar(s);
-          f.latP.position.z = (1 - s) * (R + 3);
-        } else if (f.latP.position.z !== 0) {
-          f.latP.scale.setScalar(1);
-          f.latP.position.z = 0;
+          f.pivot.scale.setScalar(s);
+          /* masshtab radiusni kattartiradi (uzoqlashtiradi) — markaz
+             joyida qolib kameraga yengil yaqinlashishi uchun pivot
+             radial yo'nalishda kompensatsiya qilinadi */
+          const off = (1 - s) * (R + 3);
+          f.pivot.position.x = Math.sin(ang) * off;
+          f.pivot.position.z = Math.cos(ang) * off;
+        } else if (f.pivot.scale.x !== 1) {
+          f.pivot.scale.setScalar(1);
+          f.pivot.position.x = 0;
+          f.pivot.position.z = 0;
         }
       }
 
