@@ -548,6 +548,24 @@ const App = {
         </a>`;
     };
 
+    /* Yoyilgan holatda 3 qator sig'adigan balandlik. Alohida funksiya —
+       ekran o'lchami o'zgarganda (telefon burilganda, ustunlar soni
+       o'zgarganda) qayta hisoblanadi. */
+    const applyMaxHeight = () => {
+      try {
+        const first = container.firstElementChild;
+        const gap = parseFloat(getComputedStyle(container).rowGap) || 16;
+        if (first) container.style.maxHeight =
+          Math.round(first.getBoundingClientRect().height * 3 + gap * 2) + 'px';
+      } catch (_) {}
+    };
+    let resizeTimer = null;
+    window.addEventListener('resize', () => {
+      if (!state.expanded) return;
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(applyMaxHeight, 120);
+    });
+
     const render = () => {
       const allCard = {
         key: 'all',
@@ -563,12 +581,7 @@ const App = {
       /* Yoyilganda faqat 3 qator ko'rinadi — qolganlari ichki scroll bilan */
       container.classList.toggle('genre-grid-scroll', state.expanded);
       if (state.expanded) {
-        try {
-          const first = container.firstElementChild;
-          const gap = parseFloat(getComputedStyle(container).rowGap) || 16;
-          if (first) container.style.maxHeight =
-            Math.round(first.getBoundingClientRect().height * 3 + gap * 2) + 'px';
-        } catch (_) {}
+        applyMaxHeight();
       } else {
         container.style.maxHeight = '';
         container.scrollTop = 0;
@@ -639,7 +652,7 @@ const App = {
     const titleAttr = E(m.title);
     return `<div class="movie-card" data-id="${E(m.id)}" data-genre="${E((m.genre||[]).join(' '))}"
 onclick="App.go('${href}')">
-  ${m.img ? `<img class="movie-glow" src="${E(m.img)}" alt="" aria-hidden="true" loading="lazy" width="300" height="450">` : ''}
+  ${m.img && !window.CP_LITE ? `<img class="movie-glow" src="${E(m.img)}" alt="" aria-hidden="true" loading="lazy" width="300" height="450">` : ''}
   <div class="movie-poster">
     <img src="${E(m.img || '')}" alt="${titleAttr}" loading="lazy" width="300" height="450" ${!m.img ? 'style="display:none"' : ''}>
     ${badge}

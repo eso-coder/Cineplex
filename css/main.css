@@ -1896,6 +1896,29 @@ main {
   scroll-behavior: smooth;
 }
 
+/* Mobil/planshet (≤768px): hover-glow bu o'lchamda umuman o'chirilgan
+   (.movie-glow display:none), shuning uchun glow uchun berilgan ulkan
+   padding ham, mask-gradient ham keraksiz — har qatorda ~96px vertikal
+   joy tejaladi, scroll qatlami yengillashadi. Gorizontal bleed gutter
+   (--px) bilan cheklanadi: kartalar scroll paytida ekran chetigacha
+   boradi, lekin viewport'dan tashqariga ortiqcha qatlam cho'zilmaydi. */
+@media (max-width: 768px) {
+  .movies-row {
+    padding: 28px var(--px);
+    margin: -16px calc(-1 * var(--px));
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+
+  /* Ekrandan pastdagi seksiyalar birinchi renderda chizilmaydi —
+     telefonda bosh sahifa ancha tez ochiladi. Balandlik taxmini
+     (intrinsic-size) scroll pozitsiyasi sakramasligi uchun. */
+  .content-section {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 380px;
+  }
+}
+
 .movies-row.drag-scroll {
   cursor: grab;
 }
@@ -2727,7 +2750,9 @@ main {
 /* Section ichida gutter'ni section'ning o'zi beradi (masalan, bosh
    sahifadagi "Barchasini ko'rish" bilan grid'ga aylangan #new-row) —
    ikki qavat padding bo'lib qolmasin. */
-.content-section .catalog-grid {
+.content-section .catalog-grid,
+.related-section .catalog-grid,
+.dp-related-section .catalog-grid {
   padding-left: 0;
   padding-right: 0;
 }
@@ -4992,6 +5017,14 @@ video.hero-bg-iframe {
     max-height: 62px;
     max-width: 220px;
   }
+  /* Admin panelda logo 400% gacha kattalashtirilishi mumkin — desktopda
+     joy bor, lekin telefonda ekrandan chiqib ketadi. Mobilda vizual
+     masshtab 1.4x bilan chegaralanadi (220px × 1.4 ≈ 308px — eng tor
+     ekranlarga ham sig'adi). */
+  .hero-logo-img,
+  .mob-title-logo {
+    transform: scale(min(var(--logo-scale, 1), 1.4));
+  }
   .logo-main {
     font-size: 38.5px;
     letter-spacing: 0;
@@ -5301,4 +5334,83 @@ video.hero-bg-iframe {
 /* GPU layer promotion + scroll uzilishlarini kamaytirish */
 body {
   -webkit-overflow-scrolling: touch;
+}
+
+/* ════════════════════════════════════════════════════════════════
+   PERF-LITE — kuchsiz qurilmalar (Smart TV, kam RAM) uchun yengil rejim
+   ----------------------------------------------------------------
+   js/perf-lite.js qurilmani kuchsiz deb topsa <html class="perf-lite">
+   qo'yadi. Bu blok saytdagi ENG OG'IR effektlarni o'chiradi:
+   backdrop-filter (asosiy qotish sababi), glow-rasmlar, cheksiz
+   animatsiyalar va og'ir soyalar. Dizayn saqlanadi — shisha (glass)
+   panellar blur o'rniga quyuqroq yarim-shaffof fon oladi.
+   ════════════════════════════════════════════════════════════════ */
+html.perf-lite *,
+html.perf-lite *::before,
+html.perf-lite *::after {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Blur yo'qolgani uchun shisha panellar quyuqroq fon bilan o'qilishli qoladi */
+html.perf-lite .navbar {
+  background: rgba(8, 8, 12, 0.92) !important;
+}
+
+/* Har kartada poster IKKINCHI marta yuklanib blur qilinadigan glow — o'chadi */
+html.perf-lite .movie-glow {
+  display: none !important;
+}
+
+/* Hero pastidagi 220px blur qatlami — eng qimmat paint zonalaridan biri */
+html.perf-lite .hero-bottom-blur {
+  display: none !important;
+}
+
+/* Cheksiz animatsiyalar: skeleton shimmer va studio marquee to'xtaydi */
+html.perf-lite #hero-card,
+html.perf-lite #mob-hero-img, html.perf-lite .mob-hero-img,
+html.perf-lite .dp-hero-img,
+html.perf-lite #mob-info-poster-img {
+  animation: none !important;
+  background-image: none !important;
+}
+html.perf-lite .studios-inner {
+  animation: none !important;
+}
+
+/* Kartalarning kirish animatsiyasi — birinchi render tezlashadi */
+html.perf-lite .movie-card {
+  animation: none !important;
+}
+
+/* Hover ko'tarilish/scale transformlari va uzun transitionlar qisqaradi */
+html.perf-lite .movie-card,
+html.perf-lite .movie-card:hover,
+html.perf-lite .movie-poster,
+html.perf-lite .movie-poster img {
+  transition: none !important;
+  transform: none !important;
+}
+
+/* Og'ir ko'p qatlamli soyalar — bitta yengil soya bilan almashadi */
+html.perf-lite .movie-card:hover .movie-poster {
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Lite'da treyler o'ynatilmaydi — ovoz tugmasi ham keraksiz */
+html.perf-lite .hero-volume-btn {
+  display: none !important;
+}
+
+/* Intro overlay effektlari (aurora + blur) lite'da ko'rsatilmaydi */
+html.perf-lite #intro-overlay .intro-aurora {
+  display: none !important;
+}
+
+/* Sahifa panellari revealsiz — darhol ko'rinadi */
+html.perf-lite .animate-in {
+  opacity: 1 !important;
+  transform: none !important;
+  transition: none !important;
 }
