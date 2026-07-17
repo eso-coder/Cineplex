@@ -176,86 +176,128 @@ const FilmReel = (() => {
     const scene = new THREE.Scene();
     scene.fog = new THREE.Fog(0x0a0a0a, 9, 22); /* chuqurlik hissi (DOF o'rnida) */
 
-    const camera = new THREE.PerspectiveCamera(55, 1, 0.1, 60);
-    camera.position.set(0, 0, 7.2);
+    const camera = new THREE.PerspectiveCamera(62, 1, 0.1, 60);
+    camera.position.set(0, 0, 6.6);
 
     const celluloidTex = makeCelluloidTexture();
     const glowTex = makeGlowTexture();
 
-    /* ── Lenta konfiguratsiyasi — spiral/tunel kompozitsiya ── */
-    const STRIPS = isMobile
+    /* ── EGILGAN DEVOR (phantom.land uslubi) ──
+       Kadrlar silindrning ICHKI sirtida, kamera markazda: to'liq 360°
+       drum — chok yo'q, shunchaki aylanaveradi. 3 qator (mobil 2) bitta
+       qattiq devor bo'lib harakatlanadi, qo'shni qatorlar yarim katak
+       shaxmat tartibida surilgan. Tepa/pastki qatorlar yengil ichkariga
+       og'ib "barrel" (sferik) taassurot beradi. */
+    const R = 13;
+    const ROW_H = CELL_H + 0.62; /* katak + label + grid oralig'i */
+    const ROWS = isMobile
       ? [
-          { y:  1.35, R: 11, z:  0.2, tz: -0.07, tx: 0.04, speed: 1.0,  dim: 1.0 },
-          { y: -1.35, R: 12, z: -1.6, tz:  0.09, tx: -0.03, speed: 0.72, dim: 0.72 },
+          { y:  ROW_H / 2, tx: -0.10, z: 0.5, dim: 1.0 },
+          { y: -ROW_H / 2, tx:  0.10, z: 0.5, dim: 1.0 },
         ]
       : [
-          { y:  2.75, R: 12.5, z: -1.2, tz: -0.11, tx:  0.06, speed: 1.18, dim: 0.88 },
-          { y:  0.0,  R: 12.0, z:  0.3, tz:  0.05, tx:  0.00, speed: 1.0,  dim: 1.0 },
-          { y: -2.75, R: 13.0, z: -2.2, tz: -0.07, tx: -0.05, speed: 0.78, dim: 0.72 },
-          { y:  0.35, R: 15.5, z: -6.5, tz:  0.14, tx:  0.10, speed: 0.55, dim: 0.42 },
+          { y:  ROW_H, tx: -0.17, z: 0.15, dim: 0.88 },
+          { y:  0,     tx:  0.00, z: 0.55, dim: 1.0 },
+          { y: -ROW_H, tx:  0.17, z: 0.15, dim: 0.88 },
         ];
 
     const frames = [];   /* barcha kadrlar (video boshqaruvi uchun) */
     const rayCells = []; /* raycast nishonlari (oldindan yig'ilgan) */
     const videoEls = [];
 
-    const cellGeoCache = {}, winGeoCache = {};
-    const geoFor = (cache, w, h) => (R) =>
-      cache[R] || (cache[R] = curvedPlane(w, h, R, SEGS));
-    const cellGeo = geoFor(cellGeoCache, CELL_W - 0.14, CELL_H);
-    const winGeo = geoFor(winGeoCache, WIN_W, WIN_H);
-    const glowGeo = new THREE.PlaneGeometry(CELL_W * 1.65, CELL_H * 1.5);
+    /* Radiuslar: media R+0.02, seluloid R+0.04 — kamera ichkarida
+       bo'lgani uchun KATTAROQ radius kameraga YAQINROQ sirt degani,
+       yaʼni overlay har doim media ustida ko'rinadi */
+    const winGeo = curvedPlane(WIN_W, WIN_H, R + 0.02, SEGS);
+    const cellGeo = curvedPlane(CELL_W - 0.16, CELL_H, R + 0.04, SEGS);
+    const glowGeo = new THREE.PlaneGeometry(CELL_W * 1.6, CELL_H * 1.45);
+    const labelGeo = new THREE.PlaneGeometry(CELL_W * 0.92, 0.21);
+
+    /* Har film uchun placeholder/label texturalari keshlanadi
+       (bir film devorda bir necha marta takrorlanadi) */
+    const phCache = {}, labelCache = {};
+    const placeholderFor = (m) =>
+      phCache[m.id] || (phCache[m.id] = makePlaceholderTexture(m.title));
+    function labelFor(m) {
+      if (labelCache[m.id]) return labelCache[m.id];
+      const c = document.createElement('canvas');
+      c.width = 1024; c.height = 76;
+      const x = c.getContext('2d');
+      x.font = '600 30px Outfit, sans-serif';
+      x.textBaseline = 'middle';
+      x.fillStyle = 'rgba(255,255,255,0.5)';
+      const t = String(m.title || '').toUpperCase();
+      x.fillText(t.length > 30 ? t.slice(0, 29) + '…' : t, 8, 40);
+      x.textAlign = 'right';
+      x.fillStyle = 'rgba(255,255,255,0.34)';
+      x.fillText([m.year, m.rating ? '★ ' + m.rating : ''].filter(Boolean).join('   '), 1016, 40);
+      const tex = new THREE.CanvasTexture(c);
+      tex.colorSpace = THREE.SRGBColorSpace;
+      return (labelCache[m.id] = tex);
+    }
 
     let movieIdx = 0;
     const nextMovie = () => movies[movieIdx++ % movies.length];
 
-    STRIPS.forEach((cfg, si) => {
-      const group = new THREE.Group();
-      group.position.set(0, cfg.y, cfg.z - cfg.R);
-      group.rotation.z = cfg.tz;
-      group.rotation.x = cfg.tx || 0;
-      scene.add(group);
+    /* To'liq aylana: qadam soni butun bo'lishi uchun step moslanadi */
+    const count = Math.round((2 * Math.PI) / (CELL_W / R));
+    const step = (2 * Math.PI) / count;
+    const span = 2 * Math.PI;
 
-      const step = CELL_W / cfg.R; /* burchak qadam shu R uchun */
-      const count = Math.max(11, Math.ceil((Math.PI * 0.95) / step)); /* span ≥ ~170° */
-      const span = count * step;
+    ROWS.forEach((cfg, ri) => {
+      const group = new THREE.Group();
+      group.position.set(0, cfg.y, cfg.z - R);
+      group.rotation.x = cfg.tx;
+      scene.add(group);
 
       for (let i = 0; i < count; i++) {
         const m = nextMovie();
         const pivot = new THREE.Object3D();
         group.add(pivot);
 
-        /* Glow — kadr ortida, additive */
+        /* Glow — kadr ortida, additive (backlit plyonka nuri) */
         const glow = new THREE.Mesh(
           glowGeo,
           new THREE.MeshBasicMaterial({
             map: glowTex, transparent: true, blending: THREE.AdditiveBlending,
-            depthWrite: false, opacity: 0.5 * cfg.dim,
+            depthWrite: false, opacity: 0.38 * cfg.dim,
           })
         );
-        glow.position.z = cfg.R - 0.22;
+        glow.position.z = R - 0.24;
         pivot.add(glow);
 
         /* Media (poster / video) */
         const mediaMat = new THREE.MeshBasicMaterial({
-          map: makePlaceholderTexture(m.title),
+          map: placeholderFor(m),
           fog: true,
         });
         mediaMat.color.setScalar(cfg.dim);
-        const media = new THREE.Mesh(winGeo(cfg.R + 0.02), mediaMat);
+        const media = new THREE.Mesh(winGeo, mediaMat);
         pivot.add(media);
 
         /* Seluloid overlay — old tomonda */
         const cell = new THREE.Mesh(
-          cellGeo(cfg.R + 0.04),
+          cellGeo,
           new THREE.MeshBasicMaterial({ map: celluloidTex, transparent: true, fog: true })
         );
         pivot.add(cell);
 
+        /* Mayda yozuv — katak ostida (phantom'dagi grid-teglar kabi) */
+        const label = new THREE.Mesh(
+          labelGeo,
+          new THREE.MeshBasicMaterial({
+            map: labelFor(m), transparent: true, fog: true,
+            opacity: cfg.dim,
+          })
+        );
+        label.position.set(0, -(CELL_H / 2 + 0.19), R + 0.01);
+        pivot.add(label);
+
         const frame = {
           movie: m, pivot, media, mediaMat, cell, glow,
-          strip: si, base: (i - count / 2 + 0.5) * step,
-          span, step, R: cfg.R, speed: cfg.speed, dim: cfg.dim,
+          /* qo'shni qatorlar yarim katak surilgan (shaxmat) */
+          base: (i + (ri % 2) * 0.5) * step,
+          span, step, R, speed: 1, dim: cfg.dim,
           angle: 0, scale: 1, targetScale: 1,
           video: null, videoTex: null, posterLoaded: false,
         };
@@ -281,9 +323,7 @@ const FilmReel = (() => {
 
         /* Treyler video (faqat to'g'ridan-to'g'ri fayl URL) */
         const tUrl = m.trailerS3Url || '';
-        if (isDirectVideo(tUrl) && videoEls.length < MAX_VIDEOS * 2) {
-          frame.trailerUrl = tUrl;
-        }
+        if (isDirectVideo(tUrl)) frame.trailerUrl = tUrl;
       }
     });
 
