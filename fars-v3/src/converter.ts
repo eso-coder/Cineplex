@@ -204,6 +204,51 @@ function extractSubtitle(input: string, subIdx: number, outPath: string): Promis
   });
 }
 
+// ─── Subtitle tilini MAZMUNIDAN aniqlash ──────────────────────────────────────
+// Manba fayllardagi til teglari ko'pincha yolg'on bo'ladi (test bilan ko'rilgan:
+// "ru" deb belgilangan trek aslida inglizcha, teglar "#1"/"no"/"su" kabi axlat
+// ham bo'ladi). Shuning uchun tilni matnning o'zidan aniqlaymiz — teg faqat
+// zaxira. Aks holda tomoshabin "Русский" tugmasini bosib inglizcha subtitr ko'radi.
+const UZ_WORDS = /\b(bo'l|bo‘l|yo'q|yo‘q|emas|uchun|qanday|bilan|kerak|nima|meni|seni|sizni|mumkin|qildi|bo'ladi|hech|juda|ham|lekin|shunday|qilib|men|sen|biz|ular)\b/gi;
+const EN_WORDS = /\b(the|and|you|that|this|with|have|what|there|would|about|know|your|just|don't|it's|i'm|they|from|been|will)\b/gi;
+const RU_WORDS = /\b(что|это|как|так|для|его|она|они|мне|тебя|вас|нет|да|был|была|чтобы|если|когда|уже|очень|можно|надо)\b/gi;
+
+function vttPlainText(vttPath: string): string {
+  const raw = fs.readFileSync(vttPath, 'utf8');
+  return raw
+    .replace(/^WEBVTT.*$/m, '')
+    .replace(/^\d{1,2}:\d{2}(:\d{2})?[.,]\d{3}\s*-->.*$/gm, '')  // vaqt qatorlari
+    .replace(/<[^>]+>/g, '')                                      // <i>, <b> teglari
+    .replace(/^\d+$/gm, '')                                       // raqamli indekslar
+    .slice(0, 200_000);                                           // yetarli namuna
+}
+
+export function detectSubtitleLanguage(vttPath: string): { lang: string; confident: boolean } {
+  let text: string;
+  try { text = vttPlainText(vttPath); } catch { return { lang: '', confident: false }; }
+
+  const cyr = (text.match(/[а-яёА-ЯЁ]/g) || []).length;
+  const lat = (text.match(/[a-zA-Z]/g) || []).length;
+  if (cyr + lat < 200) return { lang: '', confident: false };   // matn juda kam
+
+  // Kirill ustun → ruscha (o'zbek kirilli amalda uchramaydi)
+  if (cyr > lat * 2) {
+    const ruHits = (text.match(RU_WORDS) || []).length;
+    return { lang: 'ru', confident: ruHits >= 5 || cyr > 2_000 };
+  }
+
+  // Lotin ustun → o'zbekcha yoki inglizcha (so'z chastotasi bilan)
+  if (lat > cyr * 2) {
+    const uz = (text.match(UZ_WORDS) || []).length;
+    const en = (text.match(EN_WORDS) || []).length;
+    if (uz > en) return { lang: 'uz', confident: uz >= 5 };
+    if (en > uz) return { lang: 'en', confident: en >= 5 };
+    return { lang: '', confident: false };
+  }
+
+  return { lang: '', confident: false };   // aralash — tegga ishonamiz
+}
+
 // ─── Faqat subtitlelarni ajratib olish (video tegilmaydi) ─────────────────────
 // Manba (lokal fayl yoki URL) ichidagi matnli subtitle treklarini .vtt qilib
 // beradi. prepareMedia ham, from-bunny.ts ham shu funksiyani ishlatadi.
@@ -214,12 +259,22 @@ export async function extractSubtitles(input: string, outputDir: string, subStre
   for (const s of subStreams) {
     if (isTextSubtitle(s.codec_name)) {
       const raw = s.tags?.language || `sub${subIdx}`;
-      const lang = shortLang(raw);
-      const vttPath = path.join(outputDir, `sub_${lang}_${subIdx}.vtt`);
+      const tagLang = shortLang(raw);
+      const tmpPath = path.join(outputDir, `sub_tmp_${subIdx}.vtt`);
       try {
-        await extractSubtitle(input, subIdx, vttPath);
-        if (fs.existsSync(vttPath) && fs.statSync(vttPath).size > 0) {
-          subtitles.push({ lang, label: getLangLabel(raw, s.tags?.title), vttPath });
+        await extractSubtitle(input, subIdx, tmpPath);
+        if (fs.existsSync(tmpPath) && fs.statSync(tmpPath).size > 0) {
+          // Tilni matndan aniqlaymiz — teg yolg'on bo'lishi mumkin
+          const det = detectSubtitleLanguage(tmpPath);
+          const lang = det.confident ? det.lang : tagLang;
+          if (det.confident && det.lang !== tagLang) {
+            console.log(`  🔎 Til tegi noto'g'ri: teg "${raw}" → mazmuni bo'yicha "${lang}" (tuzatildi)`);
+          } else if (!det.confident) {
+            console.log(`  ⚠️  Til mazmundan aniqlanmadi — teg ishlatiladi: "${raw}" → ${tagLang}`);
+          }
+          const vttPath = path.join(outputDir, `sub_${lang}_${subIdx}.vtt`);
+          fs.renameSync(tmpPath, vttPath);
+          subtitles.push({ lang, label: getLangLabel(lang), vttPath });
           console.log(`  ✅ Subtitle: ${raw} → ${lang}`);
         }
       } catch (e) {
@@ -230,7 +285,19 @@ export async function extractSubtitles(input: string, outputDir: string, subStre
     }
     subIdx++;
   }
-  return subtitles;
+
+  // Bir til ikki marta chiqsa (masalan ikkita ruscha trek) — birinchisini qoldiramiz,
+  // Bunny'da bir tilga bitta caption bo'ladi (ikkinchisi birinchisini o'chirib yuborardi)
+  const seen = new Set<string>();
+  const unique = subtitles.filter(s => {
+    if (seen.has(s.lang)) {
+      console.log(`  ℹ️  Takroriy "${s.lang}" subtitle o'tkazib yuborildi (bir tilga bitta caption)`);
+      return false;
+    }
+    seen.add(s.lang);
+    return true;
+  });
+  return unique;
 }
 
 // Manbadagi subtitle treklarini probe qilib, .vtt ga ajratadi (tashqi ishlatish uchun)
@@ -253,6 +320,12 @@ export async function convertSubtitleFile(file: string, outputDir: string, lang:
     if (r.status !== 0) throw new Error(r.stderr?.slice(-160) || 'subtitle konversiya xato');
   }
   if (!fs.existsSync(vttPath) || fs.statSync(vttPath).size === 0) throw new Error('bo\'sh .vtt');
+
+  // Berilgan til mazmunga mos kelmasa ogohlantiramiz (noto'g'ri yorliq qo'yilmasin)
+  const det = detectSubtitleLanguage(vttPath);
+  if (det.confident && det.lang !== short) {
+    console.log(`  ⚠️  "${path.basename(file)}" uchun "${short}" berildi, lekin mazmuni "${det.lang}" ga o'xshaydi — tekshiring`);
+  }
   return { lang: short, label: label || getLangLabel(lang), vttPath };
 }
 

@@ -63,6 +63,44 @@ async function switchTab(page: Page, tabIndex: number) {
   await page.waitForTimeout(400);
 }
 
+// ─── Mavjud filmni qidirib, tahrirlash drawer'ini ochish ──────────────────────
+// Topilsa true (drawer editingMovieId bilan ochiladi → saqlash PATCH qiladi),
+// topilmasa false (chaqiruvchi yangi film qo'shadi).
+async function findAndOpenExisting(page: Page, title: string, year: string): Promise<boolean> {
+  try {
+    await page.fill('#movies-search', title);
+    await page.waitForTimeout(1_200);   // debounce (350ms) + API
+    await page.waitForFunction(
+      'document.querySelector("#movies-body") && !/Yuklanmoqda/.test(document.querySelector("#movies-body").textContent)',
+      { timeout: 8_000 },
+    ).catch(() => {});
+
+    const opened = await page.evaluate(`(function(){
+      var want = ${JSON.stringify(title.trim().toLowerCase())};
+      var wantYear = ${JSON.stringify(String(year).trim())};
+      var rows = Array.prototype.slice.call(document.querySelectorAll('#movies-body tr'));
+      for (var i = 0; i < rows.length; i++) {
+        var titleEl = rows[i].querySelector('.cell-title');
+        if (!titleEl) continue;
+        var name = (titleEl.textContent || '').trim().toLowerCase();
+        var tds  = rows[i].querySelectorAll('td');
+        var yr   = tds[2] ? (tds[2].textContent || '').trim() : '';
+        if (name === want && yr === wantYear) {
+          var btn = rows[i].querySelector('td:last-child button');
+          if (btn) { btn.click(); return true; }
+        }
+      }
+      return false;
+    })()`);
+
+    await page.fill('#movies-search', '').catch(() => {});
+    return !!opened;
+  } catch (e) {
+    console.log(`  ⚠️  Mavjud film qidirish xato: ${(e as Error).message.slice(0, 60)} — yangi qo'shiladi`);
+    return false;
+  }
+}
+
 // ─── ASOSIY ───────────────────────────────────────────────────────────────────
 export async function addMovieToAdmin(payload: AdminPayload): Promise<void> {
   // ADMIN_URL to'liq sahifa URL bo'lishi mumkin (https://cineplex.uz/pages/admin.html)
@@ -111,14 +149,22 @@ export async function addMovieToAdmin(payload: AdminPayload): Promise<void> {
     await page.click('[data-page="movies"]');
     await page.waitForTimeout(600);
 
-    // ── 2. "Film qo'shish" ────────────────────────────────────────────────────
-    await page.click('#add-movie-btn');
+    const { metadata: m, s3Url, trailerId, subtitles } = payload;
+
+    // ── 2. Mavjud film bormi? Bor bo'lsa tahrirlaymiz, yo'q bo'lsa qo'shamiz ──
+    // (bir xil kino ikki marta qo'shilib qolmasligi uchun — takroriy ishga
+    //  tushirishda subtitr/metadata yangilanadi, dublikat yaratilmaydi)
+    const isUpdate = await findAndOpenExisting(page, m.title, m.year);
+    if (isUpdate) {
+      console.log(`  ♻️  Mavjud film topildi: "${m.title}" (${m.year}) — YANGILANADI (dublikat yaratilmaydi)`);
+    } else {
+      await page.click('#add-movie-btn');
+    }
     await page.waitForSelector('.drawer.open, #movie-drawer.open', { timeout: 8_000 });
     await page.waitForTimeout(500);
-    console.log('  ✅ Drawer ochildi');
+    console.log(`  ✅ Drawer ochildi (${isUpdate ? 'tahrirlash' : 'yangi film'})`);
 
     // ── TAB 0: Asosiy Ma'lumot ────────────────────────────────────────────────
-    const { metadata: m, s3Url, trailerId, subtitles } = payload;
 
     // Poster URL
     if (m.posterUrl) {
@@ -216,7 +262,14 @@ export async function addMovieToAdmin(payload: AdminPayload): Promise<void> {
     };
     const ADMIN_LANGS = new Set(['uz', 'ru', 'en', 'fr', 'de']);
 
-    // Subtitlelar
+    // Subtitlelar — tahrirlash rejimida mavjud qatorlar bo'ladi. Bizdagi ro'yxat
+    // Bunny'dagi captionlardan yig'iladi (to'liq manba), shuning uchun eskisini
+    // tozalab qayta yozamiz — aks holda qatorlar ikkilanadi.
+    if (subtitles.length) {
+      await page.evaluate('var el = document.getElementById("subtitle-rows"); if (el) el.innerHTML = "";');
+      await page.waitForTimeout(200);
+    }
+
     for (const sub of subtitles) {
       // Lang kodni mapping qilish
       const mappedLang = LANG_MAP[sub.lang] ?? (ADMIN_LANGS.has(sub.lang) ? sub.lang : '');
@@ -305,8 +358,9 @@ export async function addMovieToAdmin(payload: AdminPayload): Promise<void> {
             actorsAdded++;
             await page.waitForTimeout(300);
           } else {
-            // Barcha kartalar orasidan qidirish
-            const allCards = await page.$$('#actor-picker-grid .actor-card');
+            // Barcha kartalar orasidan qidirish — allaqachon tanlanganini bosmaymiz
+            // (tahrirlash rejimida bosish aktyorni yechib yuboradi)
+            const allCards = await page.$$('#actor-picker-grid .actor-card:not(.selected)');
             for (const card of allCards) {
               const t = await card.innerText();
               if (t.toLowerCase().includes(actor.name.split(' ')[0].toLowerCase())) {
