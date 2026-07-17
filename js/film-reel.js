@@ -373,7 +373,8 @@ const FilmReel = (() => {
       }
       if (!target) return;
       zooming = true;
-      const start = performance.now(), DUR = 520;
+      /* Sekin, bosiqroq kirish — 1s davomida kadr ichiga suzib boradi */
+      const start = performance.now(), DUR = 1050;
       const cam0 = camera.position.clone();
       const wp = new THREE.Vector3();
       target.media.getWorldPosition(wp);
