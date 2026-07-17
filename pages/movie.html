@@ -748,6 +748,12 @@
         padding: 0 18px;
       }
 
+      /* Yig'ilgan holat — faqat birinchi 2 karta ko'rinadi,
+         "See All" bosilganda klass olib tashlanib to'liq yoyiladi */
+      .mob-related-grid.collapsed .mob-related-card:nth-child(n + 3) {
+        display: none;
+      }
+
       .mob-related-card {
         border-radius: 10px;
         overflow: hidden;
@@ -1241,9 +1247,13 @@
 
     <!-- More Like This -->
     <div class="mob-section" id="mob-related-section" style="display:none">
-      <div class="mob-section-title">More Like This</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <div class="mob-section-title" style="margin-bottom:0">More Like This</div>
+        <button class="mob-view-all-btn" id="mob-related-toggle" onclick="toggleMobRelated()">See All</button>
+      </div>
     </div>
-    <div class="mob-related-grid" id="mob-related-grid" style="display:none"></div>
+    <!-- Default: yig'ilgan (collapsed) — faqat birinchi 2 karta ko'rinadi -->
+    <div class="mob-related-grid collapsed" id="mob-related-grid" style="display:none"></div>
 
     <div class="mob-divider" id="mob-related-divider" style="display:none"></div>
 
@@ -1285,6 +1295,16 @@
     window._cpHeroTrailer = null;
     window._cpHeroMuted = true;
 
+    /* ─── "More Like This" — See All ⇄ Close (default: faqat 2 karta) ─── */
+    function toggleMobRelated() {
+      const grid = document.getElementById('mob-related-grid');
+      const btn  = document.getElementById('mob-related-toggle');
+      if (!grid || !btn) return;
+      const expanded = !grid.classList.contains('collapsed');
+      grid.classList.toggle('collapsed', expanded);
+      btn.textContent = expanded ? 'See All' : 'Close';
+    }
+
     /* ─── Tavsiya (related) filmlarni KECH render qilish ───
        Sahifa CPCache'dan darhol chizilganda related hali API'dan kelmagan
        bo'ladi — fon so'rovi javob bergach shu funksiya bo'limni to'ldiradi. */
@@ -1307,6 +1327,8 @@
             </div>
           </div>`
         ).join('');
+        const mToggle = document.getElementById('mob-related-toggle');
+        if (mToggle) mToggle.style.display = related.length > 2 ? '' : 'none';
         return;
       }
       /* Desktop layout */
@@ -1761,6 +1783,8 @@
               </div>
             </div>`
           ).join('');
+          const relToggle = document.getElementById('mob-related-toggle');
+          if (relToggle) relToggle.style.display = related.length > 2 ? '' : 'none';
         }
 
         /* Reviews write area */
