@@ -460,22 +460,40 @@ ul {
   transform: translateY(-7px) rotate(-45deg);
 }
 
+/* ── Mobil menyu — suzuvchi "liquid glass" panel ──
+   Navbar ostidan biroz masofada, yon tomondan bo'shliq bilan suzib
+   turadigan yaxlit shisha varaq: dumaloq burchak, hairline chegara,
+   chuqur soya. Ochilishda panel ease-out bilan tushadi, ichidagi
+   elementlar esa kichik pog'onali (stagger) ketma-ketlikda paydo
+   bo'ladi — yopilishda kechikishsiz, darhol yig'iladi. */
 .mobile-menu {
   position: fixed;
-  top: var(--navbar-h);
-  left: 0;
-  right: 0;
+  top: calc(var(--navbar-h) + 8px);
+  /* Telefonda deyarli to'liq en; planshetda (burger 860px gacha ko'rinadi)
+     burger tomonga — o'ngga bog'langan ixcham popover */
+  right: 10px;
+  left: auto;
+  width: min(420px, calc(100vw - 20px));
   z-index: 499;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  padding: 16px 16px 22px;
+  max-height: calc(100dvh - var(--navbar-h) - 24px);
+  /* Scroll butun panelga emas, faqat .mobile-links'ga beriladi — aks holda
+     ::before shisha qatlami scroll'da pastki qismni qoplamay qoladi */
+  overflow: hidden;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow:
+    0 24px 70px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  padding: 14px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  transform: translateY(-12px);
+  gap: 12px;
+  transform: translateY(-10px) scale(0.98);
+  transform-origin: top right;
   opacity: 0;
   pointer-events: none;
   transition:
-    transform 0.26s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.3s var(--ease-out),
     opacity 0.22s ease;
 }
 /* Orqa fon xiralashtirish (blur) alohida ::before qatlamida — navbar kabi
@@ -483,29 +501,68 @@ ul {
    .mobile-menu'ning o'zidan ajratish backdrop-filter'ni opacity/transform
    transitioni bilan bir xil qatlamda animatsiya qilinganda ba'zi
    brauzerlarda (ayniqsa iOS Safari) noto'g'ri/umuman render bo'lmay
-   qolish muammosini oldini oladi. */
+   qolish muammosini oldini oladi. Tepadagi radial yorug'lik — shishaga
+   tushgan nur taassuroti. */
 .mobile-menu::before {
   content: '';
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: var(--glass-solid);
+  border-radius: inherit;
+  background:
+    radial-gradient(130% 70% at 50% 0%, rgba(255, 255, 255, 0.07), transparent 62%),
+    var(--glass-solid);
   backdrop-filter: var(--glass-blur) saturate(1.3);
   -webkit-backdrop-filter: var(--glass-blur) saturate(1.3);
 }
+/* perf-lite: blur o'chirilgan bo'ladi — shisha o'rniga to'liq opaq yuza */
+html.perf-lite .mobile-menu::before {
+  background: var(--bg-elev);
+}
 .mobile-menu.open {
-  transform: translateY(0);
+  transform: translateY(0) scale(1);
   opacity: 1;
   pointer-events: auto;
 }
+
+/* Panel ichidagi elementlar — ochilishda pog'onali kirish */
+.mobile-menu .mobile-search,
+.mobile-menu .mm-item,
+.mobile-menu .mobile-auth {
+  opacity: 0;
+  transform: translateY(6px);
+  transition:
+    opacity 0.28s ease,
+    transform 0.34s var(--ease-out);
+}
+.mobile-menu.open .mobile-search,
+.mobile-menu.open .mm-item,
+.mobile-menu.open .mobile-auth {
+  opacity: 1;
+  transform: none;
+}
+/* Kechikishlar faqat ochiq holatda — yopilish oniy bo'ladi */
+.mobile-menu.open .mobile-search { transition-delay: 0.03s; }
+.mobile-menu.open .mm-item { transition-delay: calc(0.07s + var(--mm-i, 0) * 0.035s); }
+.mobile-menu.open .mobile-auth { transition-delay: 0.28s; }
+
 .mobile-search {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
-  background: rgba(255, 255, 255, 0.05);
+  gap: 10px;
+  background: var(--glass-1);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--r-pill);
-  padding: 11px 16px;
+  padding: 0 16px;
+  height: 48px;
+  flex-shrink: 0;
+  transition:
+    border-color 0.2s,
+    background 0.2s;
+}
+.mobile-search:focus-within {
+  border-color: rgba(255, 255, 255, 0.35);
+  background: var(--glass-2);
 }
 .mobile-search svg {
   color: var(--text-muted);
@@ -517,7 +574,7 @@ ul {
   outline: none;
   color: #ffffff;
   font-family: "Outfit", sans-serif;
-  font-size: 17px;
+  font-size: 16.5px;
   width: 100%;
 }
 .mobile-search input::placeholder {
@@ -526,29 +583,79 @@ ul {
 .mobile-links {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
   list-style: none;
   margin: 0;
   padding: 0;
+  /* Past bo'yli ekranlarda (landshaft) ro'yxat ichki scroll bilan sig'adi */
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
 }
-.mobile-links li a {
-  display: block;
+.mobile-links::-webkit-scrollbar {
+  display: none;
+}
+.mm-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   color: var(--text-dim);
-  font-size: 18px;
-  font-weight: 500;
-  padding: 13px 14px;
-  border-radius: var(--r-md);
+  font-size: 16.5px;
+  font-weight: 600;
+  padding: 8px 10px 8px 8px;
+  border-radius: 14px;
   transition:
     color 0.18s,
-    background 0.18s;
+    background 0.18s,
+    transform 0.18s;
 }
-.mobile-links li a:hover {
-  color: #fff;
-  background: rgba(255, 255, 255, 0.06);
+.mm-link:active {
+  transform: scale(var(--press-scale));
 }
-.mobile-links li a.active {
-  color: #fff;
-  background: rgba(255, 255, 255, 0.09);
+.mm-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  background: var(--glass-1);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  color: rgba(255, 255, 255, 0.82);
+  transition:
+    background 0.18s,
+    color 0.18s,
+    border-color 0.18s;
+}
+.mm-chevron {
+  margin-left: auto;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+/* Aktiv sahifa: qator yoritiladi, ikon plitkasi oq (invert) —
+   monoxrom tizimda accent vazifasini oq bajaradi */
+.mm-dot {
+  margin-left: auto;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+  flex-shrink: 0;
+}
+.mm-link:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.05);
+}
+.mm-link.active {
+  color: #ffffff;
+  background: var(--glass-1);
+}
+.mm-link.active .mm-icon {
+  background: #ffffff;
+  border-color: transparent;
+  color: #0a0a0c;
 }
 .mobile-lang {
   display: flex;
@@ -604,19 +711,25 @@ body.menu-open {
 .mobile-auth {
   display: flex;
   gap: var(--space-2);
-  margin-top: var(--space-1);
+  border-top: 1px solid var(--separator);
+  padding-top: 12px;
+  flex-shrink: 0;
 }
 .mobile-auth a {
   flex: 1;
   text-align: center;
-  padding: 12px 0;
-  border-radius: var(--r-sm);
-  font-size: 16px;
+  padding: 13px 0;
+  border-radius: var(--r-pill);
+  font-size: 15.5px;
   font-weight: 600;
   transition:
     background 0.18s,
     color 0.18s,
-    border-color 0.18s;
+    border-color 0.18s,
+    transform 0.18s;
+}
+.mobile-auth a:active {
+  transform: scale(var(--press-scale));
 }
 .mobile-auth-login {
   background: rgba(255, 255, 255, 0.05);

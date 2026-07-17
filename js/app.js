@@ -31,12 +31,18 @@ const App = {
   _navHTML(activePage, root) {
     root = root || '';
     const T = (k, fb) => (typeof I18N !== 'undefined' ? I18N.t(k) : fb);
+    /* icon — faqat mobil menyuda ishlatiladi (desktop nav matnligicha qoladi) */
     const links = [
-      { key: 'home',       label: T('nav.home', 'Bosh sahifa'),     href: root + 'index.html' },
-      { key: 'new',        label: T('nav.new', 'Yangi'),            href: root + 'pages/new.html' },
-      { key: 'movies',     label: T('nav.movies', 'Filmlar'),       href: root + 'pages/movies.html' },
-      { key: 'series',     label: T('nav.series', 'Seriallar'),     href: root + 'pages/series.html' },
-      { key: 'actors',     label: T('nav.actors', 'Aktyorlar'),     href: root + 'pages/actors.html' },
+      { key: 'home',   label: T('nav.home', 'Bosh sahifa'), href: root + 'index.html',
+        icon: '<path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>' },
+      { key: 'new',    label: T('nav.new', 'Yangi'),        href: root + 'pages/new.html',
+        icon: '<path d="M12 3l1.9 5.8a2 2 0 0 0 1.3 1.3L21 12l-5.8 1.9a2 2 0 0 0-1.3 1.3L12 21l-1.9-5.8a2 2 0 0 0-1.3-1.3L3 12l5.8-1.9a2 2 0 0 0 1.3-1.3z"/>' },
+      { key: 'movies', label: T('nav.movies', 'Filmlar'),   href: root + 'pages/movies.html',
+        icon: '<rect x="2" y="2" width="20" height="20" rx="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/>' },
+      { key: 'series', label: T('nav.series', 'Seriallar'), href: root + 'pages/series.html',
+        icon: '<rect x="2" y="7" width="20" height="15" rx="2"/><polyline points="17 2 12 7 7 2"/>' },
+      { key: 'actors', label: T('nav.actors', 'Aktyorlar'), href: root + 'pages/actors.html',
+        icon: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>' },
     ];
     const curLang = (typeof I18N !== 'undefined' ? I18N.getLang() : 'uz');
     const LANG_LABELS = { uz: "O'zbekcha", ru: 'Русский', en: 'English' };
@@ -173,23 +179,37 @@ const App = {
     </div>
 
   </div>
+</nav>
 
-  <!-- Mobile slide-down menu (≤640px) -->
-  <div class="mobile-menu" id="mobile-menu">
+<!-- Mobile slide-down menu (burger ko'rinadigan ekranlar) — suzuvchi shisha
+     panel. ATAYLAB nav elementidan TASHQARIDA: navbar'ning backdrop-filter'i
+     fixed elementlar uchun containing block yaratadi va backdrop'ning bottom:0
+     qiymati navbar pastiga tenglashib, qorong'i fon ko'rinmay qolardi. -->
+<div class="mobile-menu-backdrop" id="mobile-menu-backdrop"></div>
+<div class="mobile-menu" id="mobile-menu">
     <div class="mobile-search" id="mobile-search-wrap">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
       <input type="text" id="mobile-search-input" placeholder="${T('nav.search_ph', 'Film qidiring…')}">
     </div>
     <ul class="mobile-links">
-      ${links.map(l => `<li><a href="${l.href}" class="${activePage === l.key ? 'active' : ''}">${l.label}</a></li>`).join('')}
+      ${links.map((l, i) => {
+        const isActive = activePage === l.key;
+        return `<li class="mm-item" style="--mm-i:${i}">
+        <a href="${l.href}" class="mm-link${isActive ? ' active' : ''}">
+          <span class="mm-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${l.icon}</svg></span>
+          <span class="mm-label">${l.label}</span>
+          ${isActive
+            ? '<span class="mm-dot" aria-hidden="true"></span>'
+            : '<svg class="mm-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 18 6-6-6-6"/></svg>'}
+        </a>
+      </li>`;
+      }).join('')}
     </ul>
     <div class="mobile-auth" id="mobile-auth" style="display:none">
       <a class="mobile-auth-login" href="${root}pages/login.html">${T('nav.login', 'Kirish')}</a>
       <a class="mobile-auth-register" href="${root}pages/register.html">${T('nav.register', "Ro'yxatdan o'tish")}</a>
     </div>
-  </div>
-  <div class="mobile-menu-backdrop" id="mobile-menu-backdrop"></div>
-</nav>`;
+</div>`;
   },
 
   initNavbar(activePage, root) {
