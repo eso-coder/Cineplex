@@ -2307,7 +2307,9 @@
          Bitta bosish (play/pause yoki boshqaruvlarni ko'rsatish) DOUBLE_TAP_MS
          kechiktiriladi — shu vaqt ichida ikkinchi bosish kelsa, seek ishga tushadi
          va yagona-bosish harakati bekor qilinadi. */
-      const DOUBLE_TAP_MS = 300;
+      /* 450ms — qo'sh-bosishga bemalol ulgurish uchun (300 juda tez edi);
+         evaziga yagona bosish (play/pause) shu vaqtga kechikadi */
+      const DOUBLE_TAP_MS = 450;
       let lastTapTime = 0;
       let lastTapSide = null;
       let tapTimer = null;
