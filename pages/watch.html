@@ -130,6 +130,128 @@
     body.player-fs-lock {
       overflow: hidden;
     }
+
+    /* ══ MINI PLAYER (multi-screen) ══
+       Pleyer sahifadan "uzilib" chiqib, pastki-o'ng burchakda suzuvchi
+       kichik oynaga aylanadi — foydalanuvchi film ijro etilayotganda
+       sahifani (qismlar, o'xshash filmlar) ko'rib chiqa oladi. */
+    .player-wrapper.mini-mode {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      left: auto;
+      top: auto;
+      width: 380px;
+      max-width: 46vw;
+      aspect-ratio: 16/9;
+      z-index: 9000;
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.14);
+      box-shadow: 0 18px 50px rgba(0,0,0,0.62), inset 0 1px 0 rgba(255,255,255,0.06);
+      animation: miniIn 0.34s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes miniIn {
+      from { opacity: 0; transform: translateY(26px) scale(0.9); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    /* Mini rejimda joy egallamaydigan/mos kelmaydigan elementlar */
+    .player-wrapper.mini-mode .watch-top-bar,
+    .player-wrapper.mini-mode .sub-overlay,
+    .player-wrapper.mini-mode .volume-hud,
+    .player-wrapper.mini-mode .seek-hud,
+    .player-wrapper.mini-mode .psd-group,
+    .player-wrapper.mini-mode .player-vol-wrap,
+    .player-wrapper.mini-mode .player-time,
+    .player-wrapper.mini-mode .player-rotate-btn,
+    .player-wrapper.mini-mode .player-fs-btn,
+    .player-wrapper.mini-mode .player-mini-btn {
+      display: none;
+    }
+
+    /* Mini oynaga kadr preview'i sig'maydi (158px) — mavjud .no-thumb
+       ko'rinishiga tushamiz: faqat vaqt puzirchasi qoladi. */
+    .player-wrapper.mini-mode .player-seek-preview {
+      width: auto;
+      border: none;
+      border-radius: 6px;
+    }
+    .player-wrapper.mini-mode .player-seek-preview video { display: none; }
+    .player-wrapper.mini-mode .player-seek-preview .spv-time { padding: 4px 10px; }
+
+    /* Ixcham boshqaruvlar */
+    .player-wrapper.mini-mode .player-controls { padding: 0 8px 8px; }
+    .player-wrapper.mini-mode .player-progress-wrap { margin-bottom: 8px; height: 3px; }
+    .player-wrapper.mini-mode .player-ctrl-btn { padding: 5px 6px; }
+    .player-wrapper.mini-mode .player-ctrl-btn svg { width: 17px; height: 17px; }
+    .player-wrapper.mini-mode .player-grad-overlay { height: 110px; }
+    .player-wrapper.mini-mode .player-center-btn { width: 50px; height: 50px; }
+    .player-wrapper.mini-mode .player-center-btn svg { width: 20px; height: 20px; }
+
+    /* Mini oynadagi "kattalashtirish" va "yopish" tugmalari — boshqaruvlar
+       bilan birga ko'rinadi/yashiriladi (show-ui). */
+    .mini-actions {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      z-index: 12;
+      display: none;
+      justify-content: flex-end;
+      gap: 6px;
+      padding: 8px;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, transparent 100%);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+    .player-wrapper.mini-mode .mini-actions { display: flex; }
+    .player-wrapper.mini-mode.show-ui .mini-actions { opacity: 1; pointer-events: all; }
+
+    .mini-action-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 30px; height: 30px;
+      border-radius: 50%;
+      background: rgba(25,30,37,0.62);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255,255,255,0.14);
+      color: rgba(255,255,255,0.85);
+      cursor: pointer;
+      transition: background 0.16s, color 0.16s, transform 0.14s;
+    }
+    .mini-action-btn:hover {
+      background: rgba(25,30,37,0.85);
+      color: #ffffff;
+      transform: scale(1.08);
+    }
+
+    /* Mini rejimda pleyer sahifa oqimidan chiqadi — bu element uning
+       o'rnini egallab, sahifa "sakrab" ketishining oldini oladi. */
+    .player-placeholder {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      /* O'lchamlar main.css'dagi .player-wrapper bilan bir xil bo'lishi shart —
+         aks holda mini rejimga o'tganda sahifa pastga "sakraydi". */
+      aspect-ratio: 16/9;
+      max-height: calc(100vh - var(--navbar-h) - 80px);
+      background: #0a0a0b;
+      border-bottom: 1px solid var(--border, rgba(255,255,255,0.08));
+    }
+    body.mini-active .player-placeholder { display: flex; }
+    .player-placeholder__box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      color: rgba(255,255,255,0.4);
+      font-size: 14.5px;
+      font-weight: 600;
+    }
+
     /* Hide cursor when controls are not visible (playing state) */
     .player-wrapper:not(.show-ui),
     .player-wrapper:not(.show-ui) * {
@@ -794,6 +916,19 @@
       .player-settings-dd { min-width: 180px; }
       .player-rotate-btn { display: flex; }
 
+      /* Mini pleyer telefonda ixchamroq va chekkalarga yaqinroq turadi */
+      .player-wrapper.mini-mode {
+        width: 224px;
+        max-width: 64vw;
+        right: 10px;
+        bottom: 10px;
+        border-radius: 12px;
+      }
+      .player-wrapper.mini-mode .player-ctrl-btn svg { width: 15px; height: 15px; }
+      .player-wrapper.mini-mode .player-center-btn { width: 42px; height: 42px; }
+      .player-wrapper.mini-mode .player-center-btn svg { width: 17px; height: 17px; }
+      .mini-action-btn { width: 26px; height: 26px; }
+
       .related-section { padding: 20px 12px 0; }
       .episode-item { gap: 10px; padding: 9px 10px; }
       .ep-thumb { width: 68px; height: 42px; }
@@ -837,6 +972,22 @@
         <button class="btn-secondary" id="top-fav-btn" style="padding:7px 14px;font-size: 13.5px;" onclick="toggleFavAPI()">
           <span id="top-fav-icon"></span>
           <span id="top-fav-label">Saqlangan</span>
+        </button>
+      </div>
+
+      <!-- ── MINI REJIM tugmalari (faqat mini-mode'da ko'rinadi) ── -->
+      <div class="mini-actions" id="mini-actions">
+        <button class="mini-action-btn" onclick="toggleMiniPlayer()" title="Kattalashtirish">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
+          </svg>
+        </button>
+        <button class="mini-action-btn" onclick="closeMiniPlayer()" title="Yopish">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+            stroke-linecap="round">
+            <path d="M18 6 6 18M6 6l12 12" />
+          </svg>
         </button>
       </div>
 
@@ -985,6 +1136,14 @@
 
           </div>
 
+          <!-- Mini pleyer (multi-screen): pleyerni kichik suzuvchi oynaga o'tkazadi -->
+          <button class="player-ctrl-btn player-mini-btn" id="mini-btn" onclick="toggleMiniPlayer()"
+            title="Mini pleyer (i)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="4" width="20" height="16" rx="2.5" />
+              <rect x="12" y="12" width="8" height="6" rx="1.5" fill="currentColor" stroke="none" />
+            </svg>
+          </button>
           <button class="player-ctrl-btn player-rotate-btn" onclick="toggleFullscreen()" title="Rotate">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <rect x="3" y="11" width="13.5" height="9.5" rx="2" />
@@ -992,12 +1151,26 @@
               <path d="M20.5 4v5h-5" />
             </svg>
           </button>
-          <button class="player-ctrl-btn" onclick="toggleFullscreen()" title="Fullscreen">
+          <button class="player-ctrl-btn player-fs-btn" onclick="toggleFullscreen()" title="Fullscreen">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
             </svg>
           </button>
         </div>
+      </div>
+    </div>
+
+    <!-- Mini rejimda pleyer o'rnini egallab turadi (sahifa sakramasligi uchun) -->
+    <div class="player-placeholder" id="player-placeholder">
+      <div class="player-placeholder__box">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <rect x="2" y="4" width="20" height="16" rx="2.5" />
+          <rect x="12" y="12" width="8" height="6" rx="1.5" fill="currentColor" stroke="none" />
+        </svg>
+        <div>Mini pleyerda ijro etilmoqda</div>
+        <button class="btn-secondary" style="padding:7px 14px;font-size:13.5px" onclick="toggleMiniPlayer()">
+          Kattalashtirish
+        </button>
       </div>
     </div>
 
@@ -1746,7 +1919,9 @@
 
       /* Preview videoni birinchi ehtiyojda (lazy) tayyorlaymiz */
       function ensurePreview() {
-        if (previewInit || window.CP_LITE) return;
+        /* Mini rejimda kadr ko'rinmaydi — ikkinchi video oqimini ochmaymiz.
+           previewInit belgilanmaydi: kattalashtirilganda odatdagidek tayyorlanadi. */
+        if (previewInit || window.CP_LITE || (window.isMiniMode && window.isMiniMode())) return;
         previewInit = true;
         const src = window._cpVideoUrl;
         if (!src || !prevVid) return;
@@ -1960,8 +2135,52 @@
     window.skipBackHud = function () { skipBack(); showSeekHud(-10); };
     window.skipFwdHud  = function () { skipFwd();  showSeekHud(10); };
 
+    /* ══════════════════════════════════════════
+       MINI PLAYER (multi-screen)
+       Pleyerni pastki-o'ng burchakdagi suzuvchi kichik oynaga o'tkazadi —
+       video to'xtamaydi, sifat/subtitr/audio holati saqlanib qoladi
+       (video elementi DOM'da ko'chirilmaydi, faqat CSS o'zgaradi).
+    ══════════════════════════════════════════ */
+    window.isMiniMode = function () {
+      return document.getElementById('player-wrapper')?.classList.contains('mini-mode') || false;
+    };
+
+    window.toggleMiniPlayer = function () {
+      const el = document.getElementById('player-wrapper');
+      if (!el) return;
+      const on = !el.classList.contains('mini-mode');
+
+      if (on) {
+        // Fullscreen va mini rejim birga ishlamaydi — avval fullscreen'dan chiqamiz
+        if (document.fullscreenElement || document.webkitFullscreenElement) {
+          (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+        }
+        el.classList.remove('pseudo-fs');
+        document.body.classList.remove('player-fs-lock');
+        el.classList.add('mini-mode');
+        document.body.classList.add('mini-active');
+      } else {
+        el.classList.remove('mini-mode');
+        document.body.classList.remove('mini-active');
+      }
+
+      document.getElementById('mini-btn')?.classList.toggle('active-ctrl', on);
+      // Ochiq sozlama menyulari mini oynaga sig'maydi
+      document.querySelectorAll('.player-settings-dd').forEach(dd => dd.classList.remove('open'));
+      showControls();
+    };
+
+    /* Yopish: mini oynadan chiqadi va videoni to'xtatadi */
+    window.closeMiniPlayer = function () {
+      if (hasRealVideo()) videoEl.pause();
+      else { playing = false; updatePlayIcons(); }
+      if (window.isMiniMode()) toggleMiniPlayer();
+    };
+
     window.toggleFullscreen = async function () {
       const el = document.getElementById('player-wrapper');
+      // Mini rejimda fullscreen'ga o'tishdan oldin pleyerni sahifaga qaytaramiz
+      if (el && el.classList.contains('mini-mode')) toggleMiniPlayer();
       const reqFs = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen;
       const isIOS = /iP(hone|od|ad)/.test(navigator.userAgent) ||
                     (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
@@ -2137,6 +2356,7 @@
         else if (e.code === 'ArrowDown')  { e.preventDefault(); adjustVolumeHud(-5); }
         else if (e.code === 'KeyM')       { toggleMute(); const vs = document.getElementById('vol-slider'); showVolumeHud(muted ? 0 : (vs ? +vs.value : 80), muted); }
         else if (e.code === 'KeyF')       { toggleFullscreen(); }
+        else if (e.code === 'KeyI')       { toggleMiniPlayer(); }
       } catch (err) { console.error('Player keyboard shortcut xato:', err); }
     });
 
