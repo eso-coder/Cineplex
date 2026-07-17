@@ -70,7 +70,8 @@
 
       this._bindSkip();
 
-      if (prefersReduced()) { this._fastReveal(); return; }
+      /* Kuchsiz qurilmada (perf-lite) intro sekvensiyasi o'tkazib yuboriladi */
+      if (prefersReduced() || window.CP_LITE) { this._fastReveal(); return; }
       this._play();
     },
 

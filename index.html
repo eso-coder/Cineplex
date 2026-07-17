@@ -14,6 +14,9 @@
       href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap"
       rel="stylesheet"
     />
+    <!-- Kuchsiz qurilma (Smart TV va h.k.) aniqlanadi — CSS'dan OLDIN,
+         birinchi paint'dan boshlab yengil rejim amal qilishi uchun -->
+    <script src="js/perf-lite.js"></script>
     <link rel="stylesheet" href="css/main.css" />
     <link rel="stylesheet" href="css/design-system.css" />
     <link rel="stylesheet" href="css/aurora-motion.css" />
@@ -469,6 +472,7 @@
       var ytApiReady   = false;
       /* API skriptini yuklab qo'yamiz (bir marta) */
       (function loadYTApi() {
+        if (window.CP_LITE) return; /* lite: treyler yo'q — YT API ham kerak emas */
         if (window.YT && window.YT.Player) { ytApiReady = true; return; }
         if (document.getElementById('yt-iframe-api')) return;
         var s = document.createElement('script');
@@ -634,9 +638,15 @@
             else App.go('pages/watch.html?id=' + d.id);
           };
 
-          /* Load trailer — S3 yoki YouTube */
+          /* Load trailer — S3 yoki YouTube.
+             LITE rejimda treyler umuman yuklanmaydi — kuchsiz qurilmada
+             fonda video dekodlash sahifani qotiradi; poster kifoya. */
           var heroVideo = document.getElementById('hero-video');
-          if (d.trailer && isS3Trailer(d.trailer)) {
+          if (window.CP_LITE) {
+            iframe.src = '';
+            iframe.classList.remove('visible');
+            if (heroVideo) { heroVideo.src = ''; heroVideo.style.display = 'none'; heroVideo.classList.remove('visible'); }
+          } else if (d.trailer && isS3Trailer(d.trailer)) {
             /* S3 / to'g'ridan-to'g'ri video */
             iframe.src = '';
             iframe.classList.remove('visible');
