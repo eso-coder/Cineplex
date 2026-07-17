@@ -748,10 +748,23 @@
         padding: 0 18px;
       }
 
-      /* Yig'ilgan holat — faqat birinchi 2 karta ko'rinadi,
-         "See All" bosilganda klass olib tashlanib to'liq yoyiladi */
-      .mob-related-grid.collapsed .mob-related-card:nth-child(n + 3) {
+      /* Yig'ilgan holat — bitta qator: 2 karta ko'rinadi, qolganlari
+         O'NGGA SCROLL qilib ko'riladi (Gallereya kabi).
+         "See All" bosilganda klass olib tashlanib to'liq grid yoyiladi.
+         !important — JS inline style.display='grid' ustidan ishlashi uchun */
+      .mob-related-grid.collapsed {
+        display: flex !important;
+        overflow-x: auto;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        scroll-snap-type: x mandatory;
+      }
+      .mob-related-grid.collapsed::-webkit-scrollbar {
         display: none;
+      }
+      .mob-related-grid.collapsed .mob-related-card {
+        flex: 0 0 calc(50% - 5px);
+        scroll-snap-align: start;
       }
 
       .mob-related-card {
