@@ -47,13 +47,13 @@
     /* ── 3D FILM REEL (immersiv galereya) ── */
     .reel3d-section {
       position: relative;
-      height: min(78vh, 760px);
-      min-height: 400px;
-      margin: 0 0 26px;
+      /* TO'LIQ EKRAN: navbar (logo) pastidan viewport oxirigacha.
+         main'ning 22px tepki paddingi manfiy margin bilan yutiladi. */
+      height: calc(100svh - var(--navbar-h));
+      min-height: 420px;
+      margin: -22px 0 28px;
       background: #0a0a0a;
       overflow: hidden;
-      /* Sahifa fonidan ajralib turadigan kinoteatr zali hissi */
-      border-top: 1px solid rgba(255, 255, 255, 0.06);
       border-bottom: 1px solid rgba(255, 255, 255, 0.06);
     }
     .reel3d-section canvas {
@@ -104,10 +104,6 @@
       transition: opacity 0.5s ease;
     }
     .reel3d-fade.on { opacity: 1; }
-    /* Sahifa yon gutter'idan chiqib, to'liq enni egallaydi */
-    @media (min-width: 641px) {
-      .reel3d-section { margin-top: -6px; }
-    }
   </style>
   <link rel="stylesheet" href="../css/design-system.css">
   <link rel="stylesheet" href="../css/aurora-catalog.css">
@@ -117,20 +113,20 @@
   <div id="navbar-placeholder"></div>
 
   <main>
+    <!-- 3D film globe — to'liq ekran immersiv galereya (WebGL bo'lmasa/
+         perf-lite'da yashirin qoladi, pastdagi band fallback bo'ladi) -->
+    <section class="reel3d-section" id="reel3d-section" hidden>
+      <div class="reel3d-tooltip" id="reel3d-tooltip"></div>
+      <div class="reel3d-hint">Istalgan tomonga suring — kadr ustiga bosing</div>
+      <div class="reel3d-fade" id="reel3d-fade"></div>
+    </section>
+
     <div class="catalog-header animate-in">
       <div>
         <h1 class="catalog-title">Yangi chiqmalar</h1>
         <div class="catalog-count" id="count-label">Yuklanmoqda…</div>
       </div>
     </div>
-
-    <!-- 3D film reel — immersiv galereya (WebGL bo'lmasa/perf-lite'da
-         yashirin qoladi, pastdagi featured band fallback bo'lib ishlaydi) -->
-    <section class="reel3d-section" id="reel3d-section" hidden>
-      <div class="reel3d-tooltip" id="reel3d-tooltip"></div>
-      <div class="reel3d-hint">Aylantiring yoki suring — kadr ustiga bosing</div>
-      <div class="reel3d-fade" id="reel3d-fade"></div>
-    </section>
 
     <!-- Featured band (top 3 new) — 3D reel ishlamasa ko'rinadi -->
     <div class="new-hero-band animate-in" id="new-hero-band" style="transition-delay:0.06s"></div>
