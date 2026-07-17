@@ -302,13 +302,10 @@ const FilmReel = (() => {
     const DRIFT = reduced ? 0 : 0.00045;
 
     const el = renderer.domElement;
+    /* G'ildirak SAHIFANI scroll qiladi (hijack yo'q — galereyadan pastga
+       bemalol tushiladi); devor faqat chap tugma bilan sudrab (drag)
+       boshqariladi. Mobilda vertikal svayp sahifa, gorizontal — devor. */
     el.style.touchAction = isMobile ? 'pan-y' : 'none';
-    el.addEventListener('wheel', (e) => {
-      e.preventDefault();
-      velA += e.deltaX * 0.00008;
-      velY += e.deltaY * 0.0008;  /* wheel-down → devor yuqoriga (hujjat kabi) */
-      lastInput = performance.now();
-    }, { passive: false });
 
     let dragging = false, dragX = 0, dragY = 0, dragDist = 0;
     el.addEventListener('pointerdown', (e) => {
