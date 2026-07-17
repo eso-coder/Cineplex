@@ -149,12 +149,58 @@
       overflow: hidden;
       border: 1px solid rgba(255,255,255,0.14);
       box-shadow: 0 18px 50px rgba(0,0,0,0.62), inset 0 1px 0 rgba(255,255,255,0.06);
+      /* Barmoq bilan surishda sahifa scroll bo'lib ketmasin */
+      touch-action: none;
+      cursor: grab;
+    }
+
+    /* Kirish animatsiyasi ATAYIN alohida klassda: agar u .mini-mode'ning
+       o'zida tursa, boshqa klass (masalan .is-dragging) qo'shilib-olinganda
+       QAYTA ishga tushadi va oyna surishdan keyin "sakrab" kichrayadi.
+       Klass animatsiya tugashi bilan olib tashlanadi (bir martalik). */
+    .player-wrapper.mini-mode.mini-enter {
       animation: miniIn 0.34s cubic-bezier(0.16, 1, 0.3, 1);
     }
     @keyframes miniIn {
       from { opacity: 0; transform: translateY(26px) scale(0.9); }
       to   { opacity: 1; transform: translateY(0) scale(1); }
     }
+
+    /* Surish/o'lchash paytida matn tanlash xalaqit bermasin */
+    .player-wrapper.mini-mode.is-dragging,
+    .player-wrapper.mini-mode.is-resizing {
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .player-wrapper.mini-mode.is-dragging { cursor: grabbing; }
+    .player-wrapper.mini-mode.is-resizing { cursor: nwse-resize; }
+
+    /* ── O'lcham dastagi (yuqori-chap burchak) ──
+       Oyna pastki-o'ng burchakda turgani uchun cho'zish yuqori-chapdan
+       bo'ladi: pastki-o'ng burchak qotib turadi, oyna ichkariga o'sadi. */
+    .mini-resize-handle {
+      position: absolute;
+      top: 0; left: 0;
+      width: 24px; height: 24px;
+      z-index: 13;
+      display: none;
+      cursor: nwse-resize;
+      touch-action: none;
+    }
+    .player-wrapper.mini-mode .mini-resize-handle { display: block; }
+    .mini-resize-handle::before {
+      content: '';
+      position: absolute;
+      top: 7px; left: 7px;
+      width: 9px; height: 9px;
+      border-top: 2px solid #ffffff;
+      border-left: 2px solid #ffffff;
+      border-radius: 3px 0 0 0;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      filter: drop-shadow(0 1px 3px rgba(0,0,0,0.8));
+    }
+    .player-wrapper.mini-mode.show-ui .mini-resize-handle::before { opacity: 0.9; }
 
     /* Mini rejimda joy egallamaydigan/mos kelmaydigan elementlar */
     .player-wrapper.mini-mode .watch-top-bar,
@@ -974,6 +1020,9 @@
           <span id="top-fav-label">Saqlangan</span>
         </button>
       </div>
+
+      <!-- O'lcham dastagi — yuqori-chap burchakdan cho'ziladi -->
+      <div class="mini-resize-handle" id="mini-resize" title="O'lchamni o'zgartirish"></div>
 
       <!-- ── MINI REJIM tugmalari (faqat mini-mode'da ko'rinadi) ── -->
       <div class="mini-actions" id="mini-actions">
@@ -2145,6 +2194,52 @@
       return document.getElementById('player-wrapper')?.classList.contains('mini-mode') || false;
     };
 
+    /* Mini oyna o'lchami/joylashuvi chegaralari */
+    const MINI_MIN_W = 180;   // undan kichikda boshqaruvlar sig'maydi
+    const MINI_MAX_W = 720;
+    const MINI_EDGE  = 8;     // ekran chetidan minimal masofa
+
+    /* Foydalanuvchi surgan/o'lchagan holat — sessiya davomida eslab qolinadi,
+       shunda mini rejimga qayta kirilganda oyna o'sha joyda ochiladi. */
+    let _miniSaved   = null;  // {left, top, width}
+    let _miniDragged = false; // surishdan keyingi "click" play/pause qilmasligi uchun
+
+    const miniClamp = (v, min, max) => Math.min(Math.max(v, min), Math.max(min, max));
+
+    /* CSS'dagi right/bottom joylashuvini inline left/top ga o'tkazadi —
+       surish uchun bitta izchil model kerak. max-width ham olib tashlanadi,
+       aks holda CSS va JS o'lcham ustida "kurashadi". */
+    function miniMaterialize(el) {
+      if (el.style.left) return;
+      const r = el.getBoundingClientRect();
+      el.style.width    = r.width + 'px';
+      el.style.maxWidth = 'none';
+      el.style.left     = r.left + 'px';
+      el.style.top      = r.top + 'px';
+      el.style.right    = 'auto';
+      el.style.bottom   = 'auto';
+    }
+
+    /* Saqlangan holatni (yoki oyna o'lchami o'zgargach mavjud holatni)
+       ekran ichida ushlab turadi */
+    function miniApplyRect(el, rect) {
+      if (!rect) return;
+      const w = miniClamp(rect.width, MINI_MIN_W, Math.min(MINI_MAX_W, innerWidth - 2 * MINI_EDGE));
+      const h = w * 9 / 16;
+      el.style.width    = w + 'px';
+      el.style.maxWidth = 'none';
+      el.style.right    = 'auto';
+      el.style.bottom   = 'auto';
+      el.style.left     = miniClamp(rect.left, MINI_EDGE, innerWidth  - w - MINI_EDGE) + 'px';
+      el.style.top      = miniClamp(rect.top,  MINI_EDGE, innerHeight - h - MINI_EDGE) + 'px';
+    }
+
+    /* Inline joylashuvni butunlay tozalash — mini rejimdan chiqqanda SHART,
+       aks holda fixed/left/top qiymatlari oddiy (katta) pleyerga o'tib ketadi. */
+    function miniClearInline(el) {
+      ['left', 'top', 'width', 'right', 'bottom', 'maxWidth'].forEach(p => { el.style[p] = ''; });
+    }
+
     window.toggleMiniPlayer = function () {
       const el = document.getElementById('player-wrapper');
       if (!el) return;
@@ -2159,8 +2254,25 @@
         document.body.classList.remove('player-fs-lock');
         el.classList.add('mini-mode');
         document.body.classList.add('mini-active');
+        miniApplyRect(el, _miniSaved);   // oldingi joy/o'lcham bo'lsa — tiklaymiz
+        // Kirish animatsiyasi — bir marta o'ynab, klass olib tashlanadi
+        el.classList.add('mini-enter');
+        el.addEventListener('animationend', function onEnd(ev) {
+          if (ev.animationName !== 'miniIn') return;
+          el.classList.remove('mini-enter');
+          el.removeEventListener('animationend', onEnd);
+        });
       } else {
-        el.classList.remove('mini-mode');
+        // Joriy holatni eslab qolamiz, so'ng inline stillarni tozalaymiz
+        if (el.style.left) {
+          _miniSaved = {
+            left:  parseFloat(el.style.left),
+            top:   parseFloat(el.style.top),
+            width: parseFloat(el.style.width),
+          };
+        }
+        miniClearInline(el);
+        el.classList.remove('mini-mode', 'mini-enter', 'is-dragging', 'is-resizing');
         document.body.classList.remove('mini-active');
       }
 
@@ -2176,6 +2288,101 @@
       else { playing = false; updatePlayIcons(); }
       if (window.isMiniMode()) toggleMiniPlayer();
     };
+
+    /* ══ Mini oynani SURISH va O'LCHAMINI o'zgartirish ══
+       Surish: oynaning istalgan joyidan (tugmalar va boshqaruvlardan tashqari).
+       O'lcham: yuqori-chap dastagi — pastki-o'ng burchak qotib turadi,
+       nisbat 16:9 saqlanadi (CSS aspect-ratio balandlikni o'zi hisoblaydi). */
+    (function initMiniDragResize() {
+      const el = document.getElementById('player-wrapper');
+      const handle = document.getElementById('mini-resize');
+      if (!el || !handle) return;
+
+      let mode = null;          // 'drag' | 'resize'
+      let sx = 0, sy = 0;
+      let start = null;
+
+      function onDown(e, m) {
+        if (!el.classList.contains('mini-mode')) return;
+        if (e.button != null && e.button !== 0) return;   // faqat chap tugma
+        // Kirish animatsiyasidagi transform (scale/translate) o'lchovni buzadi —
+        // klassni olib tashlab, oynani yakuniy holatiga qo'yamiz, keyin o'lchaymiz.
+        el.classList.remove('mini-enter');
+        miniMaterialize(el);
+
+        const r = el.getBoundingClientRect();
+        start = { left: r.left, top: r.top, right: r.right, bottom: r.bottom, width: r.width };
+        sx = e.clientX; sy = e.clientY;
+        mode = m;
+        _miniDragged = false;
+        el.classList.add(m === 'drag' ? 'is-dragging' : 'is-resizing');
+
+        // Dastakda preventDefault xavfsiz; surishda YO'Q — touch'da u
+        // keyingi "click" (play/pause) hodisasini yo'q qilib yuboradi.
+        if (m === 'resize') e.preventDefault();
+
+        window.addEventListener('pointermove', onMove);
+        window.addEventListener('pointerup', onUp);
+        window.addEventListener('pointercancel', onUp);
+      }
+
+      function onMove(e) {
+        if (!mode) return;
+        const dx = e.clientX - sx, dy = e.clientY - sy;
+        if (Math.abs(dx) > 3 || Math.abs(dy) > 3) _miniDragged = true;
+
+        if (mode === 'drag') {
+          const h = start.bottom - start.top;
+          el.style.left = miniClamp(start.left + dx, MINI_EDGE, innerWidth  - start.width - MINI_EDGE) + 'px';
+          el.style.top  = miniClamp(start.top  + dy, MINI_EDGE, innerHeight - h - MINI_EDGE) + 'px';
+        } else {
+          // Kenglik kursor bilan birga o'sadi; chegaralar oyna ekrandan
+          // chiqib ketmasligini kafolatlaydi (pastki-o'ng burchak qotgan).
+          const maxW = Math.min(
+            MINI_MAX_W,
+            start.right - MINI_EDGE,                    // chapga chiqib ketmasin
+            (start.bottom - MINI_EDGE) * 16 / 9,        // tepaga chiqib ketmasin
+            innerWidth - 2 * MINI_EDGE
+          );
+          const w = miniClamp(start.right - e.clientX, MINI_MIN_W, maxW);
+          el.style.width = w + 'px';
+          el.style.left  = (start.right  - w) + 'px';
+          el.style.top   = (start.bottom - w * 9 / 16) + 'px';
+        }
+        showControls();
+      }
+
+      function onUp() {
+        if (!mode) return;
+        mode = null;
+        el.classList.remove('is-dragging', 'is-resizing');
+        window.removeEventListener('pointermove', onMove);
+        window.removeEventListener('pointerup', onUp);
+        window.removeEventListener('pointercancel', onUp);
+        // _miniDragged'ni bu yerda tozalamaymiz — undan keyin keladigan
+        // "click" hodisasi uni o'zi o'qib, o'chiradi (play/pause bo'lmasin).
+      }
+
+      el.addEventListener('pointerdown', e => {
+        if (!el.classList.contains('mini-mode')) return;
+        // Boshqaruvlar, tugmalar va dastak o'z vazifasini bajarsin
+        if (e.target.closest('.player-controls') ||
+            e.target.closest('.mini-action-btn') ||
+            e.target.closest('.mini-resize-handle')) return;
+        onDown(e, 'drag');
+      });
+      handle.addEventListener('pointerdown', e => onDown(e, 'resize'));
+
+      /* Brauzer oynasi kichraysa — mini oyna ko'rinmay qolmasin */
+      window.addEventListener('resize', () => {
+        if (!el.classList.contains('mini-mode') || !el.style.left) return;
+        miniApplyRect(el, {
+          left:  parseFloat(el.style.left),
+          top:   parseFloat(el.style.top),
+          width: parseFloat(el.style.width),
+        });
+      });
+    })();
 
     window.toggleFullscreen = async function () {
       const el = document.getElementById('player-wrapper');
@@ -2315,6 +2522,9 @@
       let tapTimer = null;
 
       pw.addEventListener('click', e => {
+        // Mini oyna surilgan/o'lchangan bo'lsa — bu "click" surishning davomi,
+        // play/pause qilmaymiz (bayroqni shu yerda o'qib, tozalaymiz).
+        if (_miniDragged) { _miniDragged = false; return; }
         if (e.target.closest('.player-controls') || e.target.closest('.player-center-btn') || e.target.closest('.watch-top-bar')) return;
         const isPlayerArea = e.target === pw || e.target === videoEl || e.target.closest('#player-poster-wrap');
         if (!isPlayerArea) return;
