@@ -202,14 +202,16 @@
          yashiriladi (u fallback), aks holda hammasi eskicha qoladi ── */
       const startReel = () => {
         const sec = document.getElementById('reel3d-section');
-        if (!sec || !newList.length) return;
+        /* Devorda FAQAT kinolar — seriallar grid/hero'da qoladi */
+        const reelList = newList.filter(m => m.type !== 'series');
+        if (!sec || !reelList.length) return;
         try {
           sec.hidden = false; /* init'dan OLDIN — o'lcham 0 bo'lmasligi uchun */
           const ok = window.FilmReel && FilmReel.init(
             sec,
             document.getElementById('reel3d-tooltip'),
             document.getElementById('reel3d-fade'),
-            newList,
+            reelList,
             { root: '../' }
           );
           if (ok) document.getElementById('new-hero-band').style.display = 'none';
