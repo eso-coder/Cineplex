@@ -344,10 +344,20 @@ const FilmReel = (() => {
     const DRIFT = reduced ? 0 : 0.00045;
 
     const el = renderer.domElement;
-    /* G'ildirak SAHIFANI scroll qiladi (hijack yo'q — galereyadan pastga
-       bemalol tushiladi); devor faqat chap tugma bilan sudrab (drag)
-       boshqariladi. Mobilda vertikal svayp sahifa, gorizontal — devor. */
-    el.style.touchAction = isMobile ? 'pan-y' : 'none';
+    /* Sahifada galereyadan boshqa kontent yo'q (opts.wheel) — g'ildirak
+       DEVORNI boshqaradi: pastga aylantirsang qatorlar harakatlanadi,
+       mobilda vertikal svayp ham devorni suradi. Aks holda (fallback
+       rejim) g'ildirak sahifani scroll qiladi, devor faqat drag bilan. */
+    el.style.touchAction = (isMobile && !opts.wheel) ? 'pan-y' : 'none';
+    if (opts.wheel) {
+      el.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        scrollY += e.deltaY * 0.004;
+        scrollA += e.deltaX * 0.0009;
+        velY = e.deltaY * 0.0007;
+        lastInput = performance.now();
+      }, { passive: false });
+    }
 
     let dragging = false, dragX = 0, dragY = 0, dragDist = 0;
     el.addEventListener('pointerdown', (e) => {
