@@ -74,6 +74,9 @@ const userSchema = new mongoose.Schema(
     }],
 
     refreshToken: { type: String, select: false },
+    // Ko'p qurilmali sessiyalar: har bir qurilma/brauzer o'z refresh
+    // tokeniga ega — birida kirish boshqasidagi sessiyani bekor qilmaydi.
+    refreshTokens: { type: [String], select: false, default: [] },
     isActive: { type: Boolean, default: true },
 
     // ── Activity tracking (admin panel uchun) ──
@@ -107,6 +110,7 @@ userSchema.methods.toPublic = function () {
   const obj = this.toObject();
   delete obj.password;
   delete obj.refreshToken;
+  delete obj.refreshTokens;
   // Flatten media objects to plain URLs for the frontend, but keep nested too.
   obj.avatarUrl = obj.avatar?.url || '';
   obj.coverImageUrl = obj.coverImage?.url || '';

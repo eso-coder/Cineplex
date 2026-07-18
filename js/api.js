@@ -65,27 +65,29 @@ if (typeof window !== 'undefined') window.CPCache = CPCache;
    ketish (logout) o'rniga, boshqa tab yangilagan cookie ulgurishi uchun
    qisqa kutib BIR MARTA qayta urinamiz. ── */
 let _refreshInFlight = null;
+/* Natija: 'ok' — yangilandi, 'invalid' — server tokenni rad etdi (401/403),
+   'network' — tarmoq/server xatosi (token aybdor EMAS — logout qilinmaydi) */
 function _requestRefresh() {
   return fetch(`${API_BASE}/auth/refresh-token`, {
     method: 'POST',
     credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
   })
-    .then(r => r.json().catch(() => ({})))
-    .then(d => {
+    .then(async (r) => {
+      const d = await r.json().catch(() => ({}));
       if (d.success && d.data && d.data.accessToken) {
         Auth.setToken(d.data.accessToken);
-        return true;
+        return 'ok';
       }
-      return false;
+      return (r.status === 401 || r.status === 403) ? 'invalid' : 'network';
     })
-    .catch(() => false);
+    .catch(() => 'network');
 }
 async function _silentRefresh() {
   if (!_refreshInFlight) {
     _refreshInFlight = _requestRefresh()
-      .then(async (ok) => {
-        if (ok) return true;
+      .then(async (st) => {
+        if (st === 'ok') return st;
         // Boshqa tab ulgurib rotatsiya qilgan bo'lishi mumkin — biroz kutib qayta urinamiz
         await new Promise(r => setTimeout(r, 400));
         return _requestRefresh();
@@ -106,16 +108,17 @@ async function apiFetch(path, opts = {}) {
 
   // Access token muddati tugagan — refresh token (cookie) orqali yangilash
   if (res.status === 401 && !path.startsWith('/auth/refresh')) {
-    const refreshed = await _silentRefresh();
-    if (refreshed) {
+    const st = await _silentRefresh();
+    if (st === 'ok') {
       const retryHeaders = { ...headers, 'Authorization': `Bearer ${Auth.getToken()}` };
       const retry = await fetch(`${API_BASE}${path}`, { ...opts, headers: retryHeaders, credentials: 'include' });
       const retryData = await retry.json().catch(() => ({}));
       if (!retry.ok) throw Object.assign(new Error(retryData.message || 'Xato yuz berdi'), { status: retry.status, data: retryData });
       return retryData;
     }
-    // Refresh ham muddati tugagan — qayta kirish kerak
-    Auth.removeToken();
+    // FAQAT server tokenni aniq rad etganda chiqaramiz. Tarmoq xatosida
+    // sessiya saqlanadi — internet qaytganda o'z-o'zidan davom etadi.
+    if (st === 'invalid') Auth.removeToken();
   }
 
   if (!res.ok) throw Object.assign(new Error(data.message || 'Xato yuz berdi'), { status: res.status, data });
@@ -650,21 +653,40 @@ function updateNavAuth() {
 
 document.addEventListener('DOMContentLoaded', updateNavAuth);
 
-/* ─── Yangi chiqmalar keshini oldindan isitish ───
-   Foydalanuvchi saytning istalgan sahifasiga kirganda, brauzer bo'sh
-   qolganda ro'yxat + old posterlar + video manifestlari yengil prefetch
-   qilinadi — new sahifasi (3D devor) ochilganda hammasi tayyor bo'ladi.
+/* ─── Yangi chiqmalar (3D devor) ni oldindan isitish ───
+   Foydalanuvchi saytning ISTALGAN sahifasiga kirganda, brauzer bo'sh
+   qolganda quyidagilar yengil prefetch qilinadi:
+     1) 100 talik ro'yxat (sessionStorage keshi — MoviesAPI.newMovies)
+     2) 3D devor kodi: film-reel.js moduli (u bilan birga three.js) va
+        hls.js — new sahifasi ochilganda skriptlar allaqachon keshda
+     3) Old posterlar + birinchi video manifestlari
+   Natija: /new ochilganda 3D galereya tarmoqni kutmasdan darhol chiqadi.
    Sessiyada bir marta; lite rejim va saveData'da o'chiq. */
 (function warmNewMovies() {
   if (window.CP_LITE) return;
+  /* Skript manzili sinxron bosqichda olinadi (callback ichida currentScript null) */
+  var apiSrc = document.currentScript && document.currentScript.src;
   try {
     if (navigator.connection && navigator.connection.saveData) return;
     if (sessionStorage.getItem('cp_warmed')) return;
   } catch (e) { return; }
   const run = () => {
+    /* 3D devor skriptlari — new.html'dagi bilan BIR XIL URL (?v=13),
+       shunda u yerda ochilganda modul keshdan oladi. new sahifasining
+       o'zida ehtiyoj yo'q — modul baribir hozir yuklanyapti. */
+    if (apiSrc && !/\/pages\/new\.html/i.test(location.pathname) && !window.FilmReel) {
+      try {
+        import(new URL('film-reel.js?v=13', apiSrc).href).catch(() => {});
+      } catch (e) {}
+      const hl = document.createElement('link');
+      hl.rel = 'prefetch';
+      hl.as = 'script';
+      hl.href = 'https://cdn.jsdelivr.net/npm/hls.js@1.5.13/dist/hls.min.js';
+      document.head.appendChild(hl);
+    }
     MoviesAPI.newMovies(100).then((list) => {
       try { sessionStorage.setItem('cp_warmed', '1'); } catch (e) {}
-      list.slice(0, 12).forEach((m) => { if (m.img) { new Image().src = m.img; } });
+      list.slice(0, 16).forEach((m) => { if (m.img) { new Image().src = m.img; } });
       list.slice(0, 8).forEach((m) => {
         const u = m.videoUrl || '';
         if (/\.m3u8(\?|#|$)/i.test(u)) fetch(u, { priority: 'low' }).catch(() => {});

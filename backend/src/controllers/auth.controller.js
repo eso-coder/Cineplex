@@ -23,11 +23,30 @@ const isSafeImageUrl = (url) => {
   return /^data:image\/(png|jpe?g|gif|webp|avif);base64,[a-z0-9+/=]+$/i.test(url);
 };
 
-const generateTokens = async (user) => {
+/* Har bir qurilma/brauzer uchun ALOHIDA refresh token saqlanadi
+   (refreshTokens massivi, oxirgi 10 ta sessiya). Avvalgi xato: bitta
+   `refreshToken` maydoni bo'lgani uchun boshqa qurilmada kirish eski
+   sessiyani bekor qilardi — foydalanuvchi tez-tez qayta login qilishga
+   majbur bo'lardi. `replacedToken` — rotatsiyada eskisining o'rniga
+   yangisi qo'yiladi (massiv cheksiz o'smaydi). */
+const MAX_SESSIONS = 10;
+const generateTokens = async (user, replacedToken) => {
   const payload = { id: user._id, role: user.role };
   const accessToken = signAccessToken(payload);
   const refreshToken = signRefreshToken(payload);
-  user.refreshToken = refreshToken;
+  // refreshTokens select:false — hujjatda tanlanmagan bo'lsa DB'dan olamiz,
+  // aks holda mavjud sessiyalar ro'yxati bilinmasdan o'chib ketadi
+  if (user.refreshTokens === undefined) {
+    const fresh = await User.findById(user._id).select('+refreshTokens');
+    user.refreshTokens = (fresh && fresh.refreshTokens) || [];
+  }
+  const list = (user.refreshTokens || []).filter(
+    (t) => t && t !== replacedToken
+  );
+  list.push(refreshToken);
+  user.refreshTokens = list.slice(-MAX_SESSIONS);
+  // Legacy maydon endi ishlatilmaydi — eski qiymat qolib ketmasin
+  user.refreshToken = '';
   await user.save({ validateBeforeSave: false });
   return { accessToken, refreshToken };
 };
@@ -271,7 +290,13 @@ const appleAuth = oauthLogin('apple', verifyAppleToken);
 // POST /api/auth/logout
 // ─────────────────────────────────────────────────────────────────────────────
 const logout = asyncHandler(async (req, res) => {
-  await User.findByIdAndUpdate(req.user._id, { refreshToken: '' });
+  // Faqat SHU qurilmaning sessiyasi yopiladi — boshqa qurilmalardagi
+  // sessiyalar (refreshTokens massividagi qolgan tokenlar) saqlanadi
+  const token = req.cookies?.refreshToken || '';
+  await User.findByIdAndUpdate(req.user._id, {
+    $set: { refreshToken: '' },
+    ...(token ? { $pull: { refreshTokens: token } } : {}),
+  });
   res.clearCookie('refreshToken');
   sendSuccess(res, null, 'Logged out successfully');
 });
@@ -286,11 +311,16 @@ const refreshToken = asyncHandler(async (req, res) => {
   } catch {
     throw ApiError.unauthorized('Invalid or expired refresh token');
   }
-  const user = await User.findById(decoded.id).select('+refreshToken');
-  if (!user || user.refreshToken !== token) {
+  const user = await User.findById(decoded.id).select('+refreshToken +refreshTokens');
+  // Token yangi massivda YOKI eski legacy maydonda bo'lsa — haqiqiy.
+  // (Legacy: bu o'zgarishdan oldin berilgan cookie'lar ham ishlashda davom
+  // etadi — foydalanuvchi qayta login qilishga majbur bo'lmaydi.)
+  const inList = (user && user.refreshTokens || []).includes(token);
+  const isLegacy = user && user.refreshToken === token && token;
+  if (!user || (!inList && !isLegacy)) {
     throw ApiError.unauthorized('Refresh token revoked');
   }
-  const { accessToken, refreshToken: newRefresh } = await generateTokens(user);
+  const { accessToken, refreshToken: newRefresh } = await generateTokens(user, token);
   res.cookie('refreshToken', newRefresh, REFRESH_COOKIE_OPTIONS);
   sendSuccess(res, { accessToken }, 'Token refreshed');
 });

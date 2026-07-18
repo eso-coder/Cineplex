@@ -11,10 +11,11 @@
 
    Aniqlash tartibi (birinchi mos kelgani g'olib):
      1) URL:  ?lite=1 majburiy yoqadi, ?lite=0 o'chiradi (saqlanadi)
-     2) localStorage cp_lite ('1'/'0') — oldingi qaror
+     2) localStorage cp_lite3 ('1'/'0') — faqat qo'lda ?lite= tanlovi
      3) Smart TV user-agent / kam RAM (<=2GB) / kam yadro (<=2)
      4) FPS zond: sahifa yuklangach ~2s davomida o'rtacha FPS < 22
-        bo'lsa — lite yoqiladi va keyingi sahifalar uchun saqlanadi.
+        bo'lsa — lite yoqiladi va SHU SESSIYA uchun saqlanadi
+        (abadiy emas — bitta sekin yuklanish qamab qo'ymasin).
 
    MUHIM: bu fayl <head> ichida, CSS'dan OLDIN sinxron yuklanadi —
    shunda birinchi paint'dan boshlab yengil rejim amal qiladi.
@@ -28,11 +29,13 @@
     root.classList.add('perf-lite');
   }
 
-  /* MIGRATSIYA: eski 'cp_lite' kaliti fon-tab bug'i tufayli kuchli
-     qurilmalarda ham noto'g'ri '1' bo'lib qolgan bo'lishi mumkin —
-     unga ishonmaymiz, o'chiramiz (yangi kalit: cp_lite2). Haqiqiy
-     kuchsiz qurilmalar quyida qaytadan to'g'ri aniqlanadi. */
-  try { localStorage.removeItem('cp_lite'); } catch (e) {}
+  /* MIGRATSIYA: eski 'cp_lite' va 'cp_lite2' kalitlari FPS zond tufayli
+     kuchli qurilmalarda ham noto'g'ri '1' bo'lib qolgan bo'lishi mumkin
+     (bir marta sekin yuklanish → abadiy lite → treyler yo'q) — ularga
+     ishonmaymiz, o'chiramiz. Yangi kalit 'cp_lite3' FAQAT qo'lda
+     (?lite=1/0) tanlovni saqlaydi; haqiqiy kuchsiz qurilmalar quyida
+     har safar qaytadan to'g'ri aniqlanadi. */
+  try { localStorage.removeItem('cp_lite'); localStorage.removeItem('cp_lite2'); } catch (e) {}
 
   /* 1) URL bilan majburlash (test/qo'lda boshqarish uchun) */
   var q = String(location.search || '');
@@ -40,12 +43,15 @@
   if (/[?&]lite=1\b/.test(q)) forced = true;
   else if (/[?&]lite=0\b/.test(q)) forced = false;
   if (forced !== null) {
-    try { localStorage.setItem('cp_lite2', forced ? '1' : '0'); } catch (e) {}
+    try { localStorage.setItem('cp_lite3', forced ? '1' : '0'); } catch (e) {}
   }
 
-  /* 2) Saqlangan qaror */
+  /* 2) Saqlangan qaror (faqat qo'lda ?lite= bilan tanlangani doimiy;
+     FPS zond xulosasi SESSIYAGA tegishli — quyida sessionStorage) */
   var stored = null;
-  try { stored = localStorage.getItem('cp_lite2'); } catch (e) {}
+  try { stored = localStorage.getItem('cp_lite3'); } catch (e) {}
+  var fpsVerdict = null;
+  try { fpsVerdict = sessionStorage.getItem('cp_lite_fps'); } catch (e) {}
 
   var lite = false;
   var decided = false; /* aniq qaror bormi (FPS zond kerak emasmi) */
@@ -53,6 +59,7 @@
   if (forced !== null) { lite = forced; decided = true; }
   else if (stored === '1') { lite = true; decided = true; }
   else if (stored === '0') { lite = false; decided = true; }
+  else if (fpsVerdict === '1') { lite = true; decided = true; }
   else {
     /* 3) Qurilma belgilariga qarab avtomatik */
     var ua = navigator.userAgent || '';
@@ -85,7 +92,11 @@
           var fps = frames / ((t - start) / 1000);
           if (fps < 22) {
             enable();
-            try { localStorage.setItem('cp_lite2', '1'); } catch (e) {}
+            /* MUHIM: sessionStorage — bitta sekin yuklanish qurilmani
+               ABADIY lite'ga (treylersiz) qamab qo'ymasligi uchun.
+               Haqiqiy kuchsiz qurilma keyingi sessiyada ham qayta
+               aniqlanadi (UA/RAM/yadro yoki yana FPS zond orqali). */
+            try { sessionStorage.setItem('cp_lite_fps', '1'); } catch (e) {}
           }
         };
         requestAnimationFrame(tick);

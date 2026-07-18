@@ -521,6 +521,18 @@
           });
         } catch (e) { /* ignore */ }
       }
+      /* YouTube treylerini TO'XTATISH. BUG edi: iframe.src='' qilib
+         tozalanardi — bu bog'langan YT.Player'ni butunlay buzadi va
+         keyingi YouTube filmga o'tilganda treyler boshqa chiqmay qolardi.
+         Endi player bog'langan bo'lsa stopVideo bilan to'xtatamiz (src
+         saqlanadi, iframe baribir ko'rinmas — .visible olib tashlangan). */
+      function stopHeroYouTube(ifr) {
+        if (ytHeroPlayer && ytHeroPlayer.stopVideo) {
+          try { ytHeroPlayer.stopVideo(); } catch (e) {}
+        } else if (ifr) {
+          ifr.src = '';
+        }
+      }
       /* YouTube trailerни yuklash — API tayyor bo'lsa loadVideoById (qotmaydi),
          aks holda iframe.src (fallback), keyin API tayyor bo'lganda bog'lanadi */
       function loadHeroYouTube(videoId) {
@@ -553,6 +565,19 @@
         if (!url) return false;
         if (url.includes('youtube') || url.includes('youtu.be')) return false;
         return /^https?:\/\//.test(url);
+      }
+
+      /* Hero config'dagi trailer maydonini normallashtirish.
+         BUG edi: to'liq YouTube URL saqlangan bo'lsa (masalan qo'lda
+         kiritilgan https://youtube.com/watch?v=XXX), u to'g'ridan-to'g'ri
+         embed'ga qo'yilib treyler UMUMAN chiqmay qolardi. Endi YouTube
+         URL'dan 11 belgili ID ajratib olinadi; S3 URL o'zgarishsiz qoladi. */
+      function normalizeHeroTrailer(t) {
+        if (!t) return '';
+        t = String(t).trim();
+        if (isS3Trailer(t)) return t;
+        var id = (typeof extractYouTubeId === 'function') ? extractYouTubeId(t) : null;
+        return id || t;
       }
 
       /* Handle empty hero state */
@@ -646,12 +671,12 @@
              fonda video dekodlash sahifani qotiradi; poster kifoya. */
           var heroVideo = document.getElementById('hero-video');
           if (window.CP_LITE) {
-            iframe.src = '';
+            stopHeroYouTube(iframe);
             iframe.classList.remove('visible');
             if (heroVideo) { heroVideo.src = ''; heroVideo.style.display = 'none'; heroVideo.classList.remove('visible'); }
           } else if (d.trailer && isS3Trailer(d.trailer)) {
             /* S3 / to'g'ridan-to'g'ri video */
-            iframe.src = '';
+            stopHeroYouTube(iframe);
             iframe.classList.remove('visible');
             if (heroVideo) {
               heroVideo.src = d.trailer;
@@ -671,7 +696,7 @@
               iframe.classList.add('visible');
             }, 500);
           } else {
-            iframe.src = '';
+            stopHeroYouTube(iframe);
             if (heroVideo) { heroVideo.src = ''; heroVideo.style.display = 'none'; heroVideo.classList.remove('visible'); }
           }
         }, 280);
@@ -741,7 +766,9 @@
         var cached = CPCache.get('hero_cfg');
         var booted = false;
         if (cached && cached.v && Array.isArray(cached.v.items) && cached.v.items.length) {
-          heroFilms = cached.v.items;
+          heroFilms = cached.v.items.map(function (it) {
+            it.trailer = normalizeHeroTrailer(it.trailer); return it;
+          });
           heroClickableCfg = cached.v.clickable !== false;
           booted = true;
           bootHero();
@@ -751,8 +778,11 @@
           .then(function(cfg) {
             CPCache.set('hero_cfg', cfg);
             heroClickableCfg = cfg.clickable !== false;
-            var changed = JSON.stringify(cfg.items) !== JSON.stringify(heroFilms);
-            if (!booted || changed) { heroFilms = cfg.items; bootHero(); }
+            var items = (cfg.items || []).map(function (it) {
+              it.trailer = normalizeHeroTrailer(it.trailer); return it;
+            });
+            var changed = JSON.stringify(items) !== JSON.stringify(heroFilms);
+            if (!booted || changed) { heroFilms = items; bootHero(); }
           })
           .catch(function() { if (!booted) handleHeroEmpty(); });
       })();
