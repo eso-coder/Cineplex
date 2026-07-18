@@ -137,8 +137,8 @@ tbody tr:hover td{background:rgba(255,255,255,0.02)}
 .season-head button:hover{background:rgba(255,255,255,0.12);color:#fff}
 .season-head .season-del{color:#ff6b6b}
 .episode-rows{display:flex;flex-direction:column;gap:7px}
-.episode-row{display:grid;grid-template-columns:46px 1.2fr 2fr 76px 1fr 28px;gap:7px;align-items:center}
-.episode-row input{background:rgba(0,0,0,0.25);border:1px solid rgba(255,255,255,0.1);border-radius:7px;padding:7px 9px;color:#fff;font-family:inherit;font-size: 13.5px;width:100%;outline:none}
+.episode-row{display:grid;grid-template-columns:50px 1.5fr 1.8fr 90px 1fr 28px;gap:8px;align-items:center}
+.episode-row input{background:rgba(0,0,0,0.25);border:1px solid rgba(255,255,255,0.1);border-radius:7px;padding:9px 11px;color:#fff;font-family:inherit;font-size: 13.5px;width:100%;outline:none}
 .episode-row input:focus{border-color:rgba(255,255,255,0.3)}
 .episode-row .ep-del{background:none;border:none;color:#ff6b6b;font-size: 20.5px;cursor:pointer;padding:0;line-height:1}
 @media(max-width:680px){.episode-row{grid-template-columns:1fr 1fr;gap:6px}.episode-row .ep-del{grid-column:2;justify-self:end}}
@@ -182,7 +182,7 @@ tbody tr:hover td{background:rgba(255,255,255,0.02)}
 /* ── DRAWER ── */
 .drawer-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0);z-index:300;pointer-events:none;transition:background 280ms var(--ease-out)}
 .drawer-backdrop.open{background:rgba(0,0,0,0.75);pointer-events:all}
-.drawer{position:fixed;top:0;right:0;bottom:0;width:680px;background:var(--bg2);border-left:1px solid var(--border2);z-index:301;display:flex;flex-direction:column;transform:translateX(100%);transition:transform 300ms var(--ease-out)}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(980px,calc(100vw - 16px));background:var(--bg2);border-left:1px solid var(--border2);z-index:301;display:flex;flex-direction:column;transform:translateX(100%);transition:transform 300ms var(--ease-out)}
 .drawer.open{transform:translateX(0)}
 .drawer-head{display:flex;align-items:center;justify-content:space-between;padding:16px 22px;border-bottom:1px solid var(--border);flex-shrink:0}
 .drawer-title{font-size: 17px;font-weight:700}
@@ -1634,11 +1634,50 @@ function updateSeriesRows() {
 }
 
 /* ─── Episode manager (mavsumlar + qismlar) ─── */
+
+/* Fayl-nom ko'rinishidagi qism nomlarini odam o'qiydigan nomga aylantiradi:
+   "eps2.0_unm4sk-pt1.tc" → "Unmask Pt 1", "zer0-day.avi" → "Zero Day",
+   "br4ve-trav3ler.asf" → "Brave Traveler". Oddiy (bo'shliqli yoki toza)
+   nomlarga TEGMAYDI — faqat fayl nomiga o'xshaganlar tozalanadi. */
+function cleanEpisodeTitle(raw) {
+  let t = String(raw || '').trim();
+  if (!t) return '';
+  const looksLikeFile = !t.includes(' ') && (
+    /\.[a-z0-9]{1,5}$/i.test(t) ||   // .tc / .avi / .mov kengaytma
+    /^eps?[\d.]/i.test(t) ||         // "eps2.0_..." prefiksi
+    t.includes('_') ||
+    /[a-z][013457]|[013457][a-z]/.test(t) // leet: harf-raqam aralash
+  );
+  if (!looksLikeFile) return t;
+  t = t.replace(/^eps?[\d.]+[_\-. ]*/i, '');          // "eps2.0_" prefiksi
+  const noExt = t.replace(/\.[a-z0-9]{1,5}$/i, '');   // kengaytma
+  if (noExt.trim()) t = noExt;
+  t = t.replace(/[._\-]+/g, ' ').trim();
+  const LEET = { '0': 'o', '1': 'i', '3': 'e', '4': 'a', '5': 's', '7': 't' };
+  t = t.split(/\s+/).map(w => {
+    /* "pt1"/"part2" — oxiridagi raqam qism tartibi, saqlanadi */
+    const m = w.match(/^(pt|part)(\d+)$/i);
+    if (m) return (m[1].toLowerCase() === 'pt' ? 'Pt ' : 'Part ') + m[2];
+    /* leet faqat kichik harfli fayl-nom so'zlarida (M3GAN kabi rasmiy
+       nomlarni buzmaslik uchun katta harfli so'zlarga tegilmaydi) */
+    if (/[a-z]/.test(w) && /[013457]/.test(w) && !/[A-Z]/.test(w))
+      w = w.replace(/[013457]/g, d => LEET[d]);
+    return w;
+  }).join(' ');
+  return t.replace(/(^|\s)[a-z]/g, c => c.toUpperCase());
+}
+
+/* Nom maydoniga yozilganda/qo'yilganda (blur) avtomatik tozalash */
+document.getElementById('seasons-container').addEventListener('change', (e) => {
+  if (e.target.classList && e.target.classList.contains('ep-title'))
+    e.target.value = cleanEpisodeTitle(e.target.value);
+});
+
 function episodeRowHTML(ep = {}) {
   return `
     <div class="episode-row">
       <input class="ep-number"   type="number" min="1" placeholder="#"          value="${ep.number   || ''}">
-      <input class="ep-title"    type="text"   placeholder="Qism nomi"          value="${(ep.title    || '').replace(/"/g,'&quot;')}">
+      <input class="ep-title"    type="text"   placeholder="Qism nomi"          value="${cleanEpisodeTitle(ep.title || '').replace(/"/g,'&quot;')}">
       <input class="ep-video"    type="url"    placeholder="Video URL *"        value="${(ep.videoUrl || '').replace(/"/g,'&quot;')}">
       <input class="ep-duration" type="text"   placeholder="42 min"             value="${(ep.duration || '').replace(/"/g,'&quot;')}">
       <input class="ep-thumb"    type="url"    placeholder="Thumbnail URL"      value="${(ep.thumb    || '').replace(/"/g,'&quot;')}">
@@ -1717,7 +1756,7 @@ function collectEpisodes() {
       out.push({
         season,
         number:   parseInt(row.querySelector('.ep-number').value) || (ei + 1),
-        title:    row.querySelector('.ep-title').value.trim(),
+        title:    cleanEpisodeTitle(row.querySelector('.ep-title').value.trim()),
         videoUrl,
         duration: row.querySelector('.ep-duration').value.trim(),
         thumb:    row.querySelector('.ep-thumb').value.trim(),
