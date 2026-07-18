@@ -69,6 +69,10 @@
       setTimeout(function () {
         var frames = 0, start;
         var tick = function (t) {
+          /* Fon tabda brauzer kadrlarni ataylab sekinlatadi — o'lchov
+             yolg'on chiqib, kuchli qurilma abadiy lite'ga tushib qolardi.
+             Tab ko'ringuncha o'lchovni qayta boshlab turamiz. */
+          if (document.hidden) { start = undefined; frames = 0; requestAnimationFrame(tick); return; }
           if (start === undefined) start = t;
           frames++;
           if (t - start < 2000) { requestAnimationFrame(tick); return; }

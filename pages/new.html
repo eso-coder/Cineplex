@@ -152,7 +152,7 @@
   <script src="../js/app.js"></script>
   <script src="../js/api.js"></script>
   <!-- ?v= — brauzer keshi eski modulni ushlab qolmasligi uchun -->
-  <script type="module" src="../js/film-reel.js?v=9"></script>
+  <script type="module" src="../js/film-reel.js?v=11"></script>
   <script>
     App.initNavbar('new', '../');
     App.initAnimations();
@@ -183,15 +183,18 @@
     let newList = [];
     (async () => {
       try {
-        const data = await MoviesAPI.newMovies();
+        /* 100 ta — 3D devor ~95 slotining har biri unikal film bo'lishi uchun */
+        const data = await MoviesAPI.newMovies(100);
         newList = data || [];
       } catch {
         newList = [];
       }
-      buildHeroBand(newList);
-      render(newList);
+      /* Pastdagi grid/hero avvalgidek faqat 20 ta yangi bilan ishlaydi */
+      const gridList = newList.slice(0, 20);
+      buildHeroBand(gridList);
+      render(gridList);
       App.initGenrePills('genre-bar', genre => {
-        const filtered = genre === 'all' ? newList : newList.filter(m => (m.genre || []).includes(genre));
+        const filtered = genre === 'all' ? gridList : gridList.filter(m => (m.genre || []).includes(genre));
         render(filtered);
       });
 
@@ -206,7 +209,7 @@
             sec,
             document.getElementById('reel3d-tooltip'),
             document.getElementById('reel3d-fade'),
-            newList.slice(0, 20),
+            newList,
             { root: '../' }
           );
           if (ok) document.getElementById('new-hero-band').style.display = 'none';

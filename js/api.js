@@ -417,8 +417,8 @@ const MoviesAPI = {
     return (resp.data || []).map(normalizeMovie);
   },
 
-  async newMovies() {
-    const resp = await apiFetch('/movies?' + new URLSearchParams({ sort: 'newest', limit: 20, page: 1 }));
+  async newMovies(limit = 20) {
+    const resp = await apiFetch('/movies?' + new URLSearchParams({ sort: 'newest', limit, page: 1 }));
     return (resp.data || []).map(normalizeMovie);
   },
 

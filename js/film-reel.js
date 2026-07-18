@@ -15,9 +15,11 @@
    Kartalar orasida masofa yo'q (qator balandligi = karta balandligi,
    slot kengligi = tile kengligi).
 
-   Video: to'g'ridan-to'g'ri mp4/webm hamda HLS (.m3u8 — hls.js CDN'dan
-   kerak bo'lganda; Safari'da native). YouTube WebGL texturaga olinmaydi
-   — ularda poster. Bir vaqtda maks 6-8 video, markazdan uzoqlari pauza.
+   Video: treylerlar YouTube'da (WebGL texturaga olinmaydi) — o'rniga
+   kartada FILMNING O'ZI (Bunny HLS, videoUrl) o'rtasidan boshlab jonli
+   preview bo'lib oynaydi. mp4/webm/HLS (.m3u8 — native yoki hls.js
+   CDN'dan). Ko'rinayotgan kartalar (desktop 16 / mobil 4) oynaydi,
+   markazdan uzoqlari pauza, pool chegarasidan oshgani yo'q qilinadi.
 
    CP_LITE / WebGL yo'q — init false, sahifadagi band fallback qoladi.
    ═══════════════════════════════════════════════════════════════════ */
@@ -34,7 +36,7 @@ const FilmReel = (() => {
                              bir-biriga xalaqit qilmasligi uchun */
   const CORNER   = 0.13;  /* oyna burchak radiusi — yumaloq */
   const SEGS     = 24;
-  const N_ROWS   = 6;     /* vertikal wrap halqasidagi qatorlar soni */
+  const N_ROWS   = 5;     /* vertikal wrap halqasidagi qatorlar soni */
 
   /* Slotga bog'liq o'lchamlar init'da hisoblanadi (step butun bo'lishi
      uchun); bu modul-darajali o'zgaruvchilar texture chizishda kerak */
@@ -152,7 +154,12 @@ const FilmReel = (() => {
     } catch (_) { return false; }
 
     THREE.Cache.enabled = true;
-    const MAX_VIDEOS = isMobile ? 3 : 7;
+    const MAX_VIDEOS = isMobile ? 4 : 16;
+    /* Yaratilgan <video> elementlar xotirada cheksiz yig'ilmasligi uchun
+       pool: rank shu chegaradan oshgan videolar to'liq yo'q qilinadi.
+       MAX_VIDEOS..POOL_MAX oralig'i gisterezis — scroll paytida
+       yaratish/o'chirish tebranmasin. */
+    const POOL_MAX = isMobile ? 8 : 24;
     const DPR = Math.min(window.devicePixelRatio || 1, isMobile ? 1.5 : 1.75);
 
     renderer.setPixelRatio(DPR);
@@ -192,9 +199,9 @@ const FilmReel = (() => {
 
     for (let ri = 0; ri < N_ROWS; ri++) {
       for (let i = 0; i < count; i++) {
-        /* Qator boshiga 7 qadam siljish — bir xil film vertikal/diagonal
-           qo'shni kataklarga tushib "ulanib ketgan"day ko'rinmasin */
-        const m = movies[(i + ri * 7) % movies.length];
+        /* Ketma-ket unikal to'ldirish — film yetarli bo'lsa har slot
+           alohida (eng yangi) kinoga tegishli, yetmasa takrorlanadi */
+        const m = movies[(ri * count + i) % movies.length];
         const pivot = new THREE.Object3D();
         scene.add(pivot);
 
@@ -238,8 +245,10 @@ const FilmReel = (() => {
           );
         }
 
-        const tUrl = m.trailerS3Url || '';
-        if (isPlayableVideo(tUrl)) frame.trailerUrl = tUrl;
+        /* Treylerlar YouTube'da (texture'ga olinmaydi) — o'rniga filmning
+           O'ZI (Bunny HLS) jonli preview bo'lib oynaydi, o'rtasidan boshlab */
+        const tUrl = [m.trailerS3Url, m.videoUrl].find(isPlayableVideo) || '';
+        if (tUrl) frame.trailerUrl = tUrl;
       }
     }
 
@@ -258,13 +267,21 @@ const FilmReel = (() => {
         frame.videoTex = tex;
       });
       v.addEventListener('error', () => { frame.videoFailed = true; frame.trailerUrl = null; });
+      /* Film boshidagi logo/titrlarni tashlab, o'rtaroqdan boshlaymiz */
+      v.addEventListener('loadedmetadata', () => {
+        if (isFinite(v.duration) && v.duration > 600) v.currentTime = v.duration * 0.15;
+      });
       if (isHls(frame.trailerUrl)) {
         if (v.canPlayType('application/vnd.apple.mpegurl')) {
           v.src = frame.trailerUrl;
         } else {
           loadHlsLib().then(() => {
+            /* Video bu orada pool tomonidan yo'q qilingan bo'lishi mumkin */
+            if (frame.video !== v) return;
             if (!window.Hls || !window.Hls.isSupported()) { frame.videoFailed = true; return; }
-            const h = new window.Hls({ maxBufferLength: 8, capLevelToPlayerSize: true });
+            /* capLevelToPlayerSize YO'Q — karta kichik bo'lsa ham sifat
+               yuqoriroq qolsin (ABR tarmoqqa qarab o'zi moslaydi) */
+            const h = new window.Hls({ maxBufferLength: 8 });
             h.loadSource(frame.trailerUrl);
             h.attachMedia(v);
             frame.hls = h;
@@ -274,7 +291,21 @@ const FilmReel = (() => {
         v.src = frame.trailerUrl;
       }
     }
-    const COS_PLAY = Math.cos(0.85);
+    /* Markazdan uzoqlashgan videoni to'liq bo'shatish — 95 unikal treyler
+       bilan elementlar yig'ilib xotirani yeb qo'ymasligi uchun */
+    function destroyVideo(f) {
+      if (!f.video) return;
+      f.video.pause();
+      if (f.hls) { f.hls.destroy(); f.hls = null; }
+      f.video.removeAttribute('src');
+      f.video.load();
+      f.video = null;
+      if (f.videoTex) { f.videoTex.dispose(); f.videoTex = null; }
+      f.mediaMat.map = f.posterTex || placeholderFor(f.movie);
+      f.mediaMat.needsUpdate = true;
+      f.videoPlaying = false;
+    }
+    const COS_PLAY = Math.cos(1.15);
     function updateVideos() {
       const withT = frames.filter(f => f.trailerUrl);
       withT.sort((a, b) => b.cosA - a.cosA);
@@ -287,6 +318,8 @@ const FilmReel = (() => {
             f.mediaMat.map = f.videoTex; f.mediaMat.needsUpdate = true;
             f.videoPlaying = true;
           }
+        } else if (rank >= POOL_MAX) {
+          destroyVideo(f);
         } else if (f.video && !f.video.paused) {
           f.video.pause();
           if (f.posterTex) { f.mediaMat.map = f.posterTex; f.mediaMat.needsUpdate = true; }
@@ -376,8 +409,10 @@ const FilmReel = (() => {
       /* Sekin, bosiqroq kirish — 1s davomida kadr ichiga suzib boradi */
       const start = performance.now(), DUR = 1050;
       const cam0 = camera.position.clone();
-      const wp = new THREE.Vector3();
-      target.media.getWorldPosition(wp);
+      /* Karta yuzi markazi — mesh origin emas (u drum o'qida) */
+      const wp = new THREE.Vector3(0, 0, R);
+      target.pivot.updateWorldMatrix(true, false);
+      target.pivot.localToWorld(wp);
       const dest3 = wp.clone().add(cam0.clone().sub(wp).normalize().multiplyScalar(2.2));
       if (fadeEl) fadeEl.classList.add('on');
       const tick = (now) => {
@@ -453,9 +488,11 @@ const FilmReel = (() => {
         f.pivot.rotation.y = ang;
         f.pivot.position.y = y;
 
-        /* markazga yaqinlik (video reytingi uchun) */
-        f.media.getWorldPosition(tmpV);
-        f.cosA = tmpV.z / tmpV.length();
+        /* markazga yaqinlik (video reytingi uchun). MUHIM: mesh origin'i
+           drum O'QIDA (geometriya egilgan, vertexlar radiusda) — shuning
+           uchun getWorldPosition YARAMAYDI (0 yoki NaN berardi); karta
+           yuzi markazi to'g'ridan-to'g'ri burchak/balandlikdan olinadi */
+        f.cosA = (Math.cos(ang) * R) / Math.hypot(R, y);
 
         f.scale += (f.targetScale - f.scale) * 0.14;
         if (Math.abs(f.scale - 1) > 0.001) {

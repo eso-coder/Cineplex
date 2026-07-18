@@ -9,7 +9,9 @@ const { sendSuccess, sendPaginated } = require('../utils/response');
 
 // Ro'yxat (karta) javoblarida og'ir maydonlar jo'natilmaydi — ular faqat
 // bitta film sahifasida (getMovie) kerak. Seriallarda episodeList ayniqsa katta.
-const LIST_EXCLUDE = '-episodeList -subtitles -gallery -videoUrl';
+// videoUrl ro'yxatda QOLADI — 3D galereya kartalari filmning o'zini jonli
+// preview sifatida oynatadi (treylerlar YouTube'da, texture'ga olib bo'lmaydi).
+const LIST_EXCLUDE = '-episodeList -subtitles -gallery';
 
 const SORT_MAP = {
   newest: { createdAt: -1 },
