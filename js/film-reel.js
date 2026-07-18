@@ -18,8 +18,9 @@
    Video: treylerlar YouTube'da (WebGL texturaga olinmaydi) — o'rniga
    kartada FILMNING O'ZI (Bunny HLS, videoUrl) o'rtasidan boshlab jonli
    preview bo'lib oynaydi. mp4/webm/HLS (.m3u8 — native yoki hls.js
-   CDN'dan). Ko'rinayotgan kartalar (desktop 16 / mobil 4) oynaydi,
-   markazdan uzoqlari pauza, pool chegarasidan oshgani yo'q qilinadi.
+   CDN'dan). Ko'rinayotgan kartalar oynaydi (qurilma kuchiga qarab
+   2-16 ta), markazdan uzoqlari pauza, pool chegarasidan oshgani yo'q
+   qilinadi. Sifat karta o'lchamiga moslanadi (past oqim — yengil).
 
    CP_LITE / WebGL yo'q — init false, sahifadagi band fallback qoladi.
    ═══════════════════════════════════════════════════════════════════ */
@@ -154,12 +155,17 @@ const FilmReel = (() => {
     } catch (_) { return false; }
 
     THREE.Cache.enabled = true;
-    const MAX_VIDEOS = isMobile ? 4 : 16;
+    /* Qurilma kuchiga moslashuvchan parallel video limiti — kuchsiz
+       qurilmalarda kamroq dekod, sahifa qotmaydi */
+    const mem = navigator.deviceMemory || 8;
+    const cores = navigator.hardwareConcurrency || 8;
+    const weakDev = mem <= 4 || cores <= 4;
+    const MAX_VIDEOS = isMobile ? (weakDev ? 2 : 4) : (weakDev ? 6 : 16);
     /* Yaratilgan <video> elementlar xotirada cheksiz yig'ilmasligi uchun
        pool: rank shu chegaradan oshgan videolar to'liq yo'q qilinadi.
        MAX_VIDEOS..POOL_MAX oralig'i gisterezis — scroll paytida
        yaratish/o'chirish tebranmasin. */
-    const POOL_MAX = isMobile ? 8 : 24;
+    const POOL_MAX = MAX_VIDEOS + 8;
     const DPR = Math.min(window.devicePixelRatio || 1, isMobile ? 1.5 : 1.75);
 
     renderer.setPixelRatio(DPR);
@@ -259,6 +265,9 @@ const FilmReel = (() => {
       v.muted = true; v.loop = true; v.playsInline = true;
       v.crossOrigin = 'anonymous';
       v.preload = 'metadata';
+      /* Native HLS (Safari/Chrome) ABR'i element o'lchamiga qaraydi —
+         karta kichik, past sifat oqimini tanlasin */
+      v.width = 640; v.height = 360;
       frame.video = v;
       v.addEventListener('loadeddata', () => {
         const tex = new THREE.VideoTexture(v);
@@ -279,9 +288,9 @@ const FilmReel = (() => {
             /* Video bu orada pool tomonidan yo'q qilingan bo'lishi mumkin */
             if (frame.video !== v) return;
             if (!window.Hls || !window.Hls.isSupported()) { frame.videoFailed = true; return; }
-            /* capLevelToPlayerSize YO'Q — karta kichik bo'lsa ham sifat
-               yuqoriroq qolsin (ABR tarmoqqa qarab o'zi moslaydi) */
-            const h = new window.Hls({ maxBufferLength: 8 });
+            /* Karta kichik — sifat karta o'lchamiga moslanadi (past oqim),
+               trafik va dekod yuki minimal, kichik ekranda tiniq ko'rinadi */
+            const h = new window.Hls({ maxBufferLength: 8, capLevelToPlayerSize: true });
             h.loadSource(frame.trailerUrl);
             h.attachMedia(v);
             frame.hls = h;

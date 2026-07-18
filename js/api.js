@@ -417,9 +417,25 @@ const MoviesAPI = {
     return (resp.data || []).map(normalizeMovie);
   },
 
+  /* Yangi chiqmalar — sessiya keshi bilan: bir marta 100 talik ro'yxat
+     olinadi va 5 daqiqa sessionStorage'da turadi. Istalgan sahifadan
+     kelgan so'rov shu keshdan kesib olinadi — new sahifasi (3D devor)
+     ochilganda tarmoq kutilmaydi. */
   async newMovies(limit = 20) {
-    const resp = await apiFetch('/movies?' + new URLSearchParams({ sort: 'newest', limit, page: 1 }));
-    return (resp.data || []).map(normalizeMovie);
+    const KEY = 'cp_new100';
+    try {
+      const c = JSON.parse(sessionStorage.getItem(KEY) || 'null');
+      if (c && Date.now() - c.t < 5 * 60 * 1000 && c.data.length >= Math.min(limit, c.total)) {
+        return c.data.slice(0, limit).map(normalizeMovie);
+      }
+    } catch (e) {}
+    const resp = await apiFetch('/movies?' + new URLSearchParams({ sort: 'newest', limit: Math.max(limit, 100), page: 1 }));
+    const raw = resp.data || [];
+    try {
+      const total = (resp.pagination && resp.pagination.total) || raw.length;
+      sessionStorage.setItem(KEY, JSON.stringify({ t: Date.now(), total, data: raw }));
+    } catch (e) {}
+    return raw.slice(0, limit).map(normalizeMovie);
   },
 
   async getById(id) {
@@ -633,3 +649,28 @@ function updateNavAuth() {
 }
 
 document.addEventListener('DOMContentLoaded', updateNavAuth);
+
+/* ─── Yangi chiqmalar keshini oldindan isitish ───
+   Foydalanuvchi saytning istalgan sahifasiga kirganda, brauzer bo'sh
+   qolganda ro'yxat + old posterlar + video manifestlari yengil prefetch
+   qilinadi — new sahifasi (3D devor) ochilganda hammasi tayyor bo'ladi.
+   Sessiyada bir marta; lite rejim va saveData'da o'chiq. */
+(function warmNewMovies() {
+  if (window.CP_LITE) return;
+  try {
+    if (navigator.connection && navigator.connection.saveData) return;
+    if (sessionStorage.getItem('cp_warmed')) return;
+  } catch (e) { return; }
+  const run = () => {
+    MoviesAPI.newMovies(100).then((list) => {
+      try { sessionStorage.setItem('cp_warmed', '1'); } catch (e) {}
+      list.slice(0, 12).forEach((m) => { if (m.img) { new Image().src = m.img; } });
+      list.slice(0, 8).forEach((m) => {
+        const u = m.videoUrl || '';
+        if (/\.m3u8(\?|#|$)/i.test(u)) fetch(u, { priority: 'low' }).catch(() => {});
+      });
+    }).catch(() => {});
+  };
+  if ('requestIdleCallback' in window) requestIdleCallback(run, { timeout: 6000 });
+  else setTimeout(run, 2500);
+})();
