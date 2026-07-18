@@ -6,6 +6,7 @@ const movieQuery = Joi.object({
   genre: Joi.string().optional(),
   year: Joi.number().integer().min(1888).optional(),
   sort: Joi.string().valid('newest', 'oldest', 'rating', 'views').default('newest'),
+  type: Joi.string().valid('movie', 'series').optional(),
   search: Joi.string().max(200).allow('').optional(),
 });
 

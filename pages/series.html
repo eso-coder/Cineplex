@@ -52,7 +52,8 @@
     (async () => {
       try {
         const data = await MoviesAPI.list({ type: 'series', limit: 500 });
-        allSeries = data.data || [];
+        // Himoya: CDN keshidan eski (filtrsiz) javob kelsa ham faqat seriallar qoladi
+        allSeries = (data.data || []).filter(m => m.type === 'series');
       } catch {
         allSeries = [];
       }
