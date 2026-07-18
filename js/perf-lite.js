@@ -28,18 +28,24 @@
     root.classList.add('perf-lite');
   }
 
+  /* MIGRATSIYA: eski 'cp_lite' kaliti fon-tab bug'i tufayli kuchli
+     qurilmalarda ham noto'g'ri '1' bo'lib qolgan bo'lishi mumkin —
+     unga ishonmaymiz, o'chiramiz (yangi kalit: cp_lite2). Haqiqiy
+     kuchsiz qurilmalar quyida qaytadan to'g'ri aniqlanadi. */
+  try { localStorage.removeItem('cp_lite'); } catch (e) {}
+
   /* 1) URL bilan majburlash (test/qo'lda boshqarish uchun) */
   var q = String(location.search || '');
   var forced = null;
   if (/[?&]lite=1\b/.test(q)) forced = true;
   else if (/[?&]lite=0\b/.test(q)) forced = false;
   if (forced !== null) {
-    try { localStorage.setItem('cp_lite', forced ? '1' : '0'); } catch (e) {}
+    try { localStorage.setItem('cp_lite2', forced ? '1' : '0'); } catch (e) {}
   }
 
   /* 2) Saqlangan qaror */
   var stored = null;
-  try { stored = localStorage.getItem('cp_lite'); } catch (e) {}
+  try { stored = localStorage.getItem('cp_lite2'); } catch (e) {}
 
   var lite = false;
   var decided = false; /* aniq qaror bormi (FPS zond kerak emasmi) */
@@ -79,7 +85,7 @@
           var fps = frames / ((t - start) / 1000);
           if (fps < 22) {
             enable();
-            try { localStorage.setItem('cp_lite', '1'); } catch (e) {}
+            try { localStorage.setItem('cp_lite2', '1'); } catch (e) {}
           }
         };
         requestAnimationFrame(tick);

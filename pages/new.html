@@ -122,29 +122,33 @@
       <div class="reel3d-fade" id="reel3d-fade"></div>
     </section>
 
-    <div class="catalog-header animate-in">
-      <div>
-        <h1 class="catalog-title">Yangi chiqmalar</h1>
-        <div class="catalog-count" id="count-label">Yuklanmoqda…</div>
+    <!-- Klassik "Yangi chiqmalar" kontenti — FAQAT 3D devor ishga
+         tushmasa (WebGL yo'q / lite rejim) ko'rinadigan fallback -->
+    <div id="new-classic">
+      <div class="catalog-header animate-in">
+        <div>
+          <h1 class="catalog-title">Yangi chiqmalar</h1>
+          <div class="catalog-count" id="count-label">Yuklanmoqda…</div>
+        </div>
       </div>
+
+      <!-- Featured band (top 3 new) -->
+      <div class="new-hero-band animate-in" id="new-hero-band" style="transition-delay:0.06s"></div>
+
+      <!-- Genre filter -->
+      <div class="catalog-genre-bar animate-in" id="genre-bar" style="transition-delay:0.1s">
+        <button class="genre-pill active" data-genre="all">Barchasi</button>
+        <button class="genre-pill" data-genre="action">Jangovar</button>
+        <button class="genre-pill" data-genre="drama">Drama</button>
+        <button class="genre-pill" data-genre="comedy">Komediya</button>
+        <button class="genre-pill" data-genre="scifi">Fantastika</button>
+        <button class="genre-pill" data-genre="fantasy">Fantaziya</button>
+        <button class="genre-pill" data-genre="historical">Tarixiy</button>
+      </div>
+
+      <!-- All new grid -->
+      <div class="catalog-grid animate-in" id="catalog-grid" style="transition-delay:0.16s"></div>
     </div>
-
-    <!-- Featured band (top 3 new) — 3D reel ishlamasa ko'rinadi -->
-    <div class="new-hero-band animate-in" id="new-hero-band" style="transition-delay:0.06s"></div>
-
-    <!-- Genre filter -->
-    <div class="catalog-genre-bar animate-in" id="genre-bar" style="transition-delay:0.1s">
-      <button class="genre-pill active" data-genre="all">Barchasi</button>
-      <button class="genre-pill" data-genre="action">Jangovar</button>
-      <button class="genre-pill" data-genre="drama">Drama</button>
-      <button class="genre-pill" data-genre="comedy">Komediya</button>
-      <button class="genre-pill" data-genre="scifi">Fantastika</button>
-      <button class="genre-pill" data-genre="fantasy">Fantaziya</button>
-      <button class="genre-pill" data-genre="historical">Tarixiy</button>
-    </div>
-
-    <!-- All new grid -->
-    <div class="catalog-grid animate-in" id="catalog-grid" style="transition-delay:0.16s"></div>
   </main>
 
   <script src="../js/data.js"></script>
@@ -214,7 +218,8 @@
             reelList,
             { root: '../' }
           );
-          if (ok) document.getElementById('new-hero-band').style.display = 'none';
+          /* Devor ishladi — sahifada FAQAT 3D galereya qoladi */
+          if (ok) document.getElementById('new-classic').style.display = 'none';
           else sec.hidden = true;
         } catch (e) {
           sec.hidden = true;
