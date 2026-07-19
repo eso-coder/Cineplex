@@ -2937,16 +2937,10 @@ main {
   position: absolute;
   inset: 0;
   z-index: 1;
-  /* Pastki qismi ERTAROQ shaffoflashadi — o'tish bandida qo'shimcha
-     qoraytirish bo'lmasin (mobil kabi blur fon toza ko'rinsin). */
-  background: linear-gradient(
-    to bottom,
-    rgba(5, 5, 5, 0.12) 0%,
-    rgba(5, 5, 5, 0.18) 30%,
-    rgba(5, 5, 5, 0.42) 52%,
-    rgba(5, 5, 5, 0.12) 72%,
-    transparent 88%
-  );
+  /* Qoraytiruvchi gradient OLIB TASHLANDI: u banner/treyler ustida turib
+     butun hero'ni xira ko'rsatardi (ayniqsa 52% nuqtadagi 0.42 qorayish).
+     Pastga o'tish uchun .dp-hero-img/.dp-hero-media mask'lari yetarli. */
+  background: none;
 }
 
 /* Back button — circular glass */
@@ -4910,30 +4904,11 @@ video.hero-bg-iframe {
    Qoraytiruvchi og'ir gradient YO'Q — mobil kabi orqadagi #movie-bg-blur
    (poster blur) o'zi ko'rinib turadi, qora chiziq hosil bo'lmaydi. */
 .dp-hero-fade {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -1px;
-  height: 40%;
-  z-index: 2;
-  pointer-events: none;
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  -webkit-mask-image: linear-gradient(to bottom,
-    transparent 0%,
-    rgba(0, 0, 0, 0.55) 55%,
-    #000 100%
-  );
-  mask-image: linear-gradient(to bottom,
-    transparent 0%,
-    rgba(0, 0, 0, 0.55) 55%,
-    #000 100%
-  );
-  background: linear-gradient(
-    to bottom,
-    rgba(5, 5, 5, 0) 0%,
-    rgba(5, 5, 5, 0.18) 100%
-  );
+  /* LEGACY qatlam O'CHIRILDI: blur(24px) hero pastki 40%'ini smear qilib,
+     banner ham treyler ham "xira-shira" ko'rinishiga sabab bo'lardi.
+     Hozir .dp-hero-media wrapper'ining o'zida mask bor (video ham banner
+     kabi pastda shaffofga eriydi) — bu qatlamning vazifasi qolmagan. */
+  display: none;
 }
 
 /* Banner trailer controls — mute toggle + fullscreen */
