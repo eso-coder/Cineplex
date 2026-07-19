@@ -53,6 +53,21 @@
   var fpsVerdict = null;
   try { fpsVerdict = sessionStorage.getItem('cp_lite_fps'); } catch (e) {}
 
+  var ua = navigator.userAgent || '';
+  var isTV = /SmartTV|SMART-TV|Tizen|Web0S|WebOS|NetCast|HbbTV|CrKey|BRAVIA|GoogleTV|Android TV|AFT[A-Z]|Roku|VIDAA|Viera|Opera TV|POV_TV|TV Bro/i.test(ua);
+  /* Desktop kompyuter (Windows/Mac/ChromeOS/Linux) va TV emas — FPS zond
+     BUNDAY qurilmalarga umuman qo'llanmaydi: zond aslida "kuchli"
+     ko'rinib yolg'on gapiradigan TV brauzerlari uchun edi. Desktop'da
+     bitta sekin moment (batareya tejash, og'ir yuklanish) sessiyani
+     lite'ga qamab qo'yardi — sessionStorage F5'da ham saqlanadi, shuning
+     uchun bir tab'da treyler "abadiy" yo'qolib qolardi. */
+  var isDesktop = !isTV && /Windows NT|Macintosh|CrOS|X11; Linux/i.test(ua);
+  if (isDesktop) {
+    /* Eski sessiyada noto'g'ri qo'yilgan qamoqni ochamiz */
+    try { sessionStorage.removeItem('cp_lite_fps'); } catch (e) {}
+    fpsVerdict = null;
+  }
+
   var lite = false;
   var decided = false; /* aniq qaror bormi (FPS zond kerak emasmi) */
 
@@ -62,12 +77,11 @@
   else if (fpsVerdict === '1') { lite = true; decided = true; }
   else {
     /* 3) Qurilma belgilariga qarab avtomatik */
-    var ua = navigator.userAgent || '';
-    var isTV = /SmartTV|SMART-TV|Tizen|Web0S|WebOS|NetCast|HbbTV|CrKey|BRAVIA|GoogleTV|Android TV|AFT[A-Z]|Roku|VIDAA|Viera|Opera TV|POV_TV|TV Bro/i.test(ua);
     var mem = navigator.deviceMemory || 0;          /* GB (Chrome'da bor) */
     var cores = navigator.hardwareConcurrency || 0;
     lite = isTV || (mem > 0 && mem <= 2) || (cores > 0 && cores <= 2);
     if (lite) decided = true;
+    else if (isDesktop) decided = true; /* desktop'da FPS zond o'tkazilmaydi */
   }
 
   window.CP_LITE = lite;

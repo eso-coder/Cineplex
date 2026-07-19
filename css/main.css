@@ -3077,22 +3077,27 @@ main {
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: rgba(8, 10, 9, 0.42);
+  /* DEYARLI OPAQ qorong'i parda — matn orqasida rasm/video UMUMAN
+     ko'rinmasligi uchun (avvalgi 0.42 shisha orqasidan rasm "xira shira"
+     bo'lib o'tib turardi). */
+  background: rgba(7, 8, 10, 0.94);
   backdrop-filter: blur(26px) saturate(1.15);
   -webkit-backdrop-filter: blur(26px) saturate(1.15);
-  /* Shisha-blur endi HERO TUGAGAN JOYDAN boshlanadi (px hisobida —
-     0.5*hero + 36px = section'ning hero ustidagi qismi). Avvalgi 18%
-     foizli mask sarlavha orqasidagi treylerni ham surtib, "xira shira"
-     dog' hosil qilardi. Endi sarlavha zonasi ustida glass umuman yo'q. */
+  /* PX-ASOSLI mask (oyna balandligiga bog'liq EMAS!): sarlavha bloki
+     (birinchi ~130px) video ustida toza qoladi, matn boshlanadigan
+     joydan (260px) parda to'liq opaq. Avvalgi vh-formulali variant past
+     oynalarda matnni rasm zonasiga tushirib qo'yardi. */
   -webkit-mask-image: linear-gradient(to bottom,
     transparent 0,
-    transparent calc(0.5 * max(78vh, 560px) - 40px),
-    black calc(0.5 * max(78vh, 560px) + 110px),
+    transparent 130px,
+    rgba(0, 0, 0, 0.75) 210px,
+    black 260px,
     black 100%);
   mask-image: linear-gradient(to bottom,
     transparent 0,
-    transparent calc(0.5 * max(78vh, 560px) - 40px),
-    black calc(0.5 * max(78vh, 560px) + 110px),
+    transparent 130px,
+    rgba(0, 0, 0, 0.75) 210px,
+    black 260px,
     black 100%);
   pointer-events: none;
 }
