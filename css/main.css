@@ -2919,19 +2919,21 @@ main {
      shaffofga eriydi va ostidagi #movie-bg-blur (xuddi shu poster,
      kuchli blur bilan) ko'rinib qoladi — "gradient blur" o'tishning
      o'zi shu. Qo'shimcha qoraytiruvchi qatlam kerak emas. */
-  /* Erish endi ANCHA KECH boshlanadi (72%) — avvalgi 45% butun o'rta
-     qismni (sarlavha orqasini) yarim-shaffof "xira shira" qilib qo'yardi. */
+  /* Rasm matn zonasi boshlanishidan OLDIN to'liq tugaydi (80% da) —
+     matn orqasida yarim-ko'rinadigan rasm qoldig'i bo'lmasligi uchun.
+     Erish .dp-hero-overlay'dagi qora gradient bilan birga ishlaydi:
+     rasm shaffofga emas, QORONG'ILIKKA singib ketadi. */
   -webkit-mask-image: linear-gradient(to bottom,
     black 0%,
-    black 72%,
-    rgba(0,0,0,0.5) 88%,
-    transparent 100%
+    black 52%,
+    rgba(0,0,0,0.35) 68%,
+    transparent 80%
   );
   mask-image: linear-gradient(to bottom,
     black 0%,
-    black 72%,
-    rgba(0,0,0,0.5) 88%,
-    transparent 100%
+    black 52%,
+    rgba(0,0,0,0.35) 68%,
+    transparent 80%
   );
 }
 
@@ -2939,10 +2941,18 @@ main {
   position: absolute;
   inset: 0;
   z-index: 1;
-  /* Qoraytiruvchi gradient OLIB TASHLANDI: u banner/treyler ustida turib
-     butun hero'ni xira ko'rsatardi (ayniqsa 52% nuqtadagi 0.42 qorayish).
-     Pastga o'tish uchun .dp-hero-img/.dp-hero-media mask'lari yetarli. */
-  background: none;
+  /* Tepadagi 42% BUTUNLAY toza (video yorqin ko'rinadi — eski har-yerni
+     qoraytiruvchi gradient yo'q). Pastda esa video shunchaki shaffof
+     bo'lib "xira dog'" qoldirmasdan QORONG'ILIKKA singib ketadi —
+     matn zonasi orqasi toza qora fon bo'ladi. */
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    transparent 42%,
+    rgba(5, 5, 5, 0.45) 62%,
+    rgba(5, 5, 5, 0.85) 80%,
+    rgba(5, 5, 5, 0.96) 100%
+  );
 }
 
 /* Back button — circular glass */
@@ -4862,18 +4872,18 @@ body.movie-page .navbar.scrolled {
   z-index: 1;
   overflow: hidden;
   pointer-events: none;
-  /* Banner rasm mask'i bilan BIR XIL — erish 72% dan keyin (avval 45%). */
+  /* Banner rasm mask'i bilan BIR XIL — matn zonasidan oldin (80%) tugaydi. */
   -webkit-mask-image: linear-gradient(to bottom,
     black 0%,
-    black 72%,
-    rgba(0, 0, 0, 0.5) 88%,
-    transparent 100%
+    black 52%,
+    rgba(0, 0, 0, 0.35) 68%,
+    transparent 80%
   );
   mask-image: linear-gradient(to bottom,
     black 0%,
-    black 72%,
-    rgba(0, 0, 0, 0.5) 88%,
-    transparent 100%
+    black 52%,
+    rgba(0, 0, 0, 0.35) 68%,
+    transparent 80%
   );
 }
 
