@@ -2919,17 +2919,19 @@ main {
      shaffofga eriydi va ostidagi #movie-bg-blur (xuddi shu poster,
      kuchli blur bilan) ko'rinib qoladi — "gradient blur" o'tishning
      o'zi shu. Qo'shimcha qoraytiruvchi qatlam kerak emas. */
+  /* Erish endi ANCHA KECH boshlanadi (72%) — avvalgi 45% butun o'rta
+     qismni (sarlavha orqasini) yarim-shaffof "xira shira" qilib qo'yardi. */
   -webkit-mask-image: linear-gradient(to bottom,
     black 0%,
-    black 45%,
-    rgba(0,0,0,0.6) 68%,
-    transparent 90%
+    black 72%,
+    rgba(0,0,0,0.5) 88%,
+    transparent 100%
   );
   mask-image: linear-gradient(to bottom,
     black 0%,
-    black 45%,
-    rgba(0,0,0,0.6) 68%,
-    transparent 90%
+    black 72%,
+    rgba(0,0,0,0.5) 88%,
+    transparent 100%
   );
 }
 
@@ -3068,9 +3070,27 @@ main {
   background: rgba(8, 10, 9, 0.42);
   backdrop-filter: blur(26px) saturate(1.15);
   -webkit-backdrop-filter: blur(26px) saturate(1.15);
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 18%, black 100%);
-  mask-image: linear-gradient(to bottom, transparent 0%, black 18%, black 100%);
+  /* Shisha-blur endi HERO TUGAGAN JOYDAN boshlanadi (px hisobida —
+     0.5*hero + 36px = section'ning hero ustidagi qismi). Avvalgi 18%
+     foizli mask sarlavha orqasidagi treylerni ham surtib, "xira shira"
+     dog' hosil qilardi. Endi sarlavha zonasi ustida glass umuman yo'q. */
+  -webkit-mask-image: linear-gradient(to bottom,
+    transparent 0,
+    transparent calc(0.5 * max(78vh, 560px) - 40px),
+    black calc(0.5 * max(78vh, 560px) + 110px),
+    black 100%);
+  mask-image: linear-gradient(to bottom,
+    transparent 0,
+    transparent calc(0.5 * max(78vh, 560px) - 40px),
+    black calc(0.5 * max(78vh, 560px) + 110px),
+    black 100%);
   pointer-events: none;
+}
+
+/* Glass olib tashlangani uchun sarlavha/meta endi to'g'ridan-to'g'ri video
+   ustida — yorug' kadrlarda ham o'qilishi uchun yumshoq soya. */
+.dp-info-header {
+  text-shadow: 0 1px 14px rgba(0, 0, 0, 0.65), 0 0 3px rgba(0, 0, 0, 0.5);
 }
 
 @supports not (backdrop-filter: blur(1px)) {
@@ -4842,17 +4862,18 @@ body.movie-page .navbar.scrolled {
   z-index: 1;
   overflow: hidden;
   pointer-events: none;
+  /* Banner rasm mask'i bilan BIR XIL — erish 72% dan keyin (avval 45%). */
   -webkit-mask-image: linear-gradient(to bottom,
     black 0%,
-    black 45%,
-    rgba(0, 0, 0, 0.6) 68%,
-    transparent 90%
+    black 72%,
+    rgba(0, 0, 0, 0.5) 88%,
+    transparent 100%
   );
   mask-image: linear-gradient(to bottom,
     black 0%,
-    black 45%,
-    rgba(0, 0, 0, 0.6) 68%,
-    transparent 90%
+    black 72%,
+    rgba(0, 0, 0, 0.5) 88%,
+    transparent 100%
   );
 }
 
