@@ -229,14 +229,19 @@
       color: #fff;
     }
 
-    /* ── Also in these movies (from our DB) ── */
-    .ap-movies-row {
+    /* ── Cineplex'dagi filmlari — bosh sahifadagi standart qator
+       (.movies-row/.catalog-grid) ishlatiladi. Header link bosilishi
+       uchun label z-index bilan qator ustiga ko'tariladi. ── */
+    .ap-db-header {
       display: flex;
+      align-items: center;
       gap: 16px;
-      overflow-x: auto;
-      padding-bottom: 8px;
+      position: relative;
+      z-index: 2;
+      margin-bottom: 22px;
     }
-    .ap-movies-row::-webkit-scrollbar { display: none; }
+    /* Label'ning ::after chizig'i link'kacha cho'zilsin */
+    .ap-db-header .ap-section-label { flex: 1; }
 
     /* ── Not found ── */
     .ap-not-found {
@@ -347,8 +352,11 @@
          section hozircha yashirin turadi, topilsa ochiladi */
       const dbMoviesHTML = `
         <div class="ap-section animate-in" id="ap-db-section" style="display:none">
-          <div class="ap-section-label">CINEPLEX-DAGI FILMLARI</div>
-          <div class="ap-movies-row" id="ap-db-row"></div>
+          <div class="ap-db-header">
+            <div class="ap-section-label" style="margin-bottom:0">CINEPLEX-DAGI FILMLARI</div>
+            <a href="#" class="section-link" id="ap-db-toggle">Barchasini ko'rish</a>
+          </div>
+          <div class="movies-row" id="ap-db-row"></div>
         </div>`;
 
       const photoEl = actor.photo
@@ -454,6 +462,19 @@
             row.innerHTML = dbMovies.map(m => App.buildCard(m, '../')).join('');
             sec.style.display = '';
             if (App.initDragScroll) App.initDragScroll('ap-db-row');
+
+            /* Bosh sahifadagi kabi: gorizontal qator ⇄ to'liq grid */
+            const toggle = document.getElementById('ap-db-toggle');
+            if (toggle) {
+              let expanded = false;
+              toggle.addEventListener('click', function (e) {
+                e.preventDefault();
+                expanded = !expanded;
+                row.classList.toggle('catalog-grid', expanded);
+                row.classList.toggle('movies-row', !expanded);
+                toggle.textContent = expanded ? "Yopish" : "Barchasini ko'rish";
+              });
+            }
           }
         } catch (e) {
           if (countEl) countEl.textContent = '0 ta';

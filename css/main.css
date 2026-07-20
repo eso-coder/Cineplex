@@ -2066,6 +2066,7 @@ main {
 #new-row.movies-row .movie-card,
 #history-row.movies-row .movie-card,
 #related-row.movies-row .movie-card,
+#ap-db-row.movies-row .movie-card,
 #watch-related.movies-row .movie-card {
   width: calc((100% - 70px) / 6);
 }
@@ -2074,6 +2075,7 @@ main {
   #new-row.movies-row .movie-card,
   #history-row.movies-row .movie-card,
   #related-row.movies-row .movie-card,
+  #ap-db-row.movies-row .movie-card,
   #watch-related.movies-row .movie-card { width: var(--card-w); }
 }
 
