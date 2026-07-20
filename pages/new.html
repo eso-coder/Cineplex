@@ -14,36 +14,6 @@
   <script src="../js/perf-lite.js?v=3"></script>
   <link rel="stylesheet" href="../css/main.css?v=5">
   <style>
-    .new-hero-band {
-      padding: 0 28px 24px;
-      display: grid; grid-template-columns: 1fr 1fr 1fr;
-      gap: 14px;
-    }
-    .new-featured {
-      position: relative; border-radius: 16px; overflow: hidden;
-      height: 220px; cursor: pointer; background: #181818;
-      transition: transform 0.28s cubic-bezier(0.16,1,0.3,1);
-    }
-    .new-featured:first-child { grid-column: span 2; height: 240px; }
-    .new-featured:hover { transform: translateY(-4px); }
-    .new-featured img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.35s; }
-    .new-featured:hover img { transform: scale(1.04); }
-    .new-featured-grad { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 50%); }
-    .new-featured-info { position: absolute; bottom: 16px; left: 18px; right: 60px; z-index: 2; }
-    .new-feat-badge { display: inline-block; background: rgba(255,255,255,0.18); color: #ffffff; font-size: 11.5px; font-weight: 800; padding: 2px 8px; border-radius: 4px; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 5px; backdrop-filter: blur(6px); border: 1px solid rgba(255,255,255,0.25); }
-    .new-feat-title { font-size: 20.5px; font-weight: 800; line-height: 1.1; letter-spacing: -0.3px; }
-    .new-feat-meta { font-size: 12.5px; color: rgba(255,255,255,0.55); margin-top: 4px; }
-    .new-play-mini {
-      position: absolute; right: 14px; bottom: 14px;
-      width: 44px; height: 44px; border-radius: 50%;
-      background: rgba(255,255,255,0.15); backdrop-filter: blur(8px);
-      border: 1.5px solid rgba(255,255,255,0.3);
-      display: flex; align-items: center; justify-content: center;
-      z-index: 2; transition: background 0.2s, transform 0.2s;
-    }
-    .new-play-mini:hover { background: rgba(255,255,255,0.25); transform: scale(1.08); }
-    .new-play-mini svg { color: #ffffff; margin-left: 2px; }
-
     /* ── 3D FILM REEL (immersiv galereya) ── */
     .reel3d-section {
       position: relative;
@@ -115,7 +85,7 @@
 
   <main>
     <!-- 3D film globe — to'liq ekran immersiv galereya (WebGL bo'lmasa/
-         perf-lite'da yashirin qoladi, pastdagi band fallback bo'ladi) -->
+         perf-lite'da yashirin qoladi, pastdagi grid fallback bo'ladi) -->
     <section class="reel3d-section" id="reel3d-section" hidden>
       <div class="reel3d-tooltip" id="reel3d-tooltip"></div>
       <div class="reel3d-hint">Sichqoncha bilan suring — kadrga 2 marta bosing · pastda barcha yangi kinolar</div>
@@ -131,9 +101,6 @@
           <div class="catalog-count" id="count-label">Yuklanmoqda…</div>
         </div>
       </div>
-
-      <!-- Featured band (top 3 new) -->
-      <div class="new-hero-band animate-in" id="new-hero-band" style="transition-delay:0.06s"></div>
 
       <!-- Genre filter -->
       <div class="catalog-genre-bar animate-in" id="genre-bar" style="transition-delay:0.1s">
@@ -161,24 +128,6 @@
     App.initNavbar('new', '../');
     App.initAnimations();
 
-    function buildHeroBand(list) {
-      const top3 = list.slice(0, 3);
-      document.getElementById('new-hero-band').innerHTML = top3.map(m => `
-        <div class="new-featured" onclick="App.go('../pages/movie.html?id=${m.id}')">
-          <img src="${m.img}" alt="${m.title}" loading="lazy">
-          <div class="new-featured-grad"></div>
-          <div class="new-featured-info">
-            <span class="new-feat-badge">YANGI</span>
-            <div class="new-feat-title">${m.title}</div>
-            <div class="new-feat-meta">${m.year} · ${m.rating} IMDB · ${m.age}+</div>
-          </div>
-          <div class="new-play-mini" onclick="event.stopPropagation(); App.go('../pages/watch.html?id=${m.id}')">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-          </div>
-        </div>
-      `).join('');
-    }
-
     function render(list) {
       document.getElementById('catalog-grid').innerHTML = list.map(m => App.buildCard(m, '../')).join('');
       document.getElementById('count-label').textContent = list.length + ' ta yangi film';
@@ -193,9 +142,8 @@
       } catch {
         newList = [];
       }
-      /* Pastdagi grid/hero avvalgidek faqat 20 ta yangi bilan ishlaydi */
+      /* Pastdagi grid avvalgidek faqat 20 ta yangi bilan ishlaydi */
       const gridList = newList.slice(0, 20);
-      buildHeroBand(gridList);
       render(gridList);
       App.initGenrePills('genre-bar', genre => {
         const filtered = genre === 'all' ? gridList : gridList.filter(m => (m.genre || []).includes(genre));
