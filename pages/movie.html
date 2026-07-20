@@ -2039,7 +2039,19 @@
         const dpTrailer = document.getElementById('dp-trailer');
         if (dpTrailer) {
           const delay = dpTrailer.tagName === 'VIDEO' ? 400 : 2500;
-          setTimeout(() => { if (dpTrailer.style.display !== 'none') dpTrailer.classList.add('visible'); }, delay);
+          setTimeout(() => {
+            if (dpTrailer.style.display === 'none') return;
+            dpTrailer.classList.add('visible');
+            /* Treyler boshlanishi bilan banner rasm BUTUNLAY yashiriladi —
+               treyler ortida/chetlarida rasm qoldig'i ko'rinib qolmasin.
+               Fade tugagach visibility bilan ham o'chiriladi (GPU tejash). */
+            const heroImg = document.querySelector('.dp-hero-img');
+            if (heroImg) {
+              heroImg.style.transition = 'opacity 1.2s ease';
+              heroImg.style.opacity = '0';
+              setTimeout(() => { heroImg.style.visibility = 'hidden'; }, 1300);
+            }
+          }, delay);
         }
 
         /* Desktop star input */
