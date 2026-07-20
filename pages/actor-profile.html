@@ -229,47 +229,6 @@
       color: #fff;
     }
 
-    /* ── Known For grid ── */
-    .ap-known-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
-      gap: 16px;
-    }
-    .ap-known-card {
-      background: var(--glass-1);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      overflow: hidden;
-      cursor: pointer;
-      transition: transform 0.22s cubic-bezier(0.16,1,0.3,1),
-                  border-color 0.22s, box-shadow 0.22s;
-    }
-    .ap-known-card:hover {
-      transform: translateY(-3px);
-      border-color: rgba(255,255,255,0.18);
-      box-shadow: 0 14px 36px rgba(0,0,0,0.5);
-    }
-    .ap-known-img {
-      width: 100%; aspect-ratio: 2/3;
-      object-fit: cover; object-position: center;
-      display: block; background: var(--glass-2);
-    }
-    .ap-known-ph {
-      width: 100%; aspect-ratio: 2/3;
-      display: flex; align-items: center; justify-content: center;
-      background: var(--glass-2);
-      color: var(--text-muted); font-size: 12.5px;
-    }
-    .ap-known-title {
-      padding: 10px 12px;
-      font-size: 14.5px; font-weight: 600;
-      color: #fff; line-height: 1.3;
-    }
-    .ap-known-year {
-      padding: 0 12px 10px;
-      font-size: 12.5px; color: var(--text-muted);
-    }
-
     /* ── Also in these movies (from our DB) ── */
     .ap-movies-row {
       display: flex;
@@ -384,12 +343,6 @@
           ${c.text}
         </div>`).join('');
 
-      const knownForHTML = (actor.knownFor || []).map(title => `
-        <div class="ap-known-card" data-kf-title="${title.replace(/"/g, '&quot;')}">
-          <div class="ap-known-ph">${title}</div>
-          <div class="ap-known-title">${title}</div>
-        </div>`).join('');
-
       /* Saytdagi filmlari async yuklanadi (pastdagi loadDbMovies) —
          section hozircha yashirin turadi, topilsa ochiladi */
       const dbMoviesHTML = `
@@ -451,13 +404,6 @@
             </div>
           </div>
 
-          <!-- Known For -->
-          ${actor.knownFor && actor.knownFor.length ? `
-          <div class="ap-section animate-in">
-            <div class="ap-section-label">MASHHUR FILMLARI</div>
-            <div class="ap-known-grid">${knownForHTML}</div>
-          </div>` : ''}
-
           <!-- DB Movies -->
           ${dbMoviesHTML}
 
@@ -477,10 +423,6 @@
                 <div class="ap-stat-label">Tug'ilgan joy</div>
                 <div class="ap-stat-value" style="font-size: 16px">${actor.birthPlace}</div>
               </div>` : ''}
-              <div class="ap-stat-card">
-                <div class="ap-stat-label">Mashhur filmlari</div>
-                <div class="ap-stat-value">${(actor.knownFor || []).length} ta</div>
-              </div>
               <div class="ap-stat-card">
                 <div class="ap-stat-label">Cineplex filmlari</div>
                 <div class="ap-stat-value" id="ap-db-count">…</div>
@@ -513,23 +455,6 @@
             sec.style.display = '';
             if (App.initDragScroll) App.initDragScroll('ap-db-row');
           }
-
-          /* "Mashhur filmlari" bo'sh kartalariga poster + klik: nomi
-             saytdagi filmga mos kelsa, karta o'sha film sahifasiga olib boradi */
-          const norm = s => String(s || '').toLowerCase().replace(/[^a-z0-9а-яё]+/gi, '');
-          document.querySelectorAll('.ap-known-card[data-kf-title]').forEach(card => {
-            const t = norm(card.dataset.kfTitle);
-            if (!t) return;
-            const hit = dbMovies.find(m =>
-              norm(m.title) === t || norm(m.title_en) === t || norm(m.title_ru) === t);
-            if (!hit) return;
-            const ph = card.querySelector('.ap-known-ph');
-            if (ph && hit.img) {
-              ph.outerHTML = `<img class="ap-known-img" src="${hit.img}" alt="${card.dataset.kfTitle}" loading="lazy">`;
-            }
-            card.style.cursor = 'pointer';
-            card.addEventListener('click', () => App.go('../pages/movie.html?id=' + hit.id));
-          });
         } catch (e) {
           if (countEl) countEl.textContent = '0 ta';
         }
