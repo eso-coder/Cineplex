@@ -167,10 +167,26 @@
       >
         <div class="section-header">
           <div class="section-title" data-i18n="sec.trending">Trendda</div>
-          <a href="pages/movies.html" class="section-link" data-i18n="btn.seeall">Barchasini ko'rish</a>
+          <a href="#" class="section-link" id="trending-row-toggle" data-i18n="btn.seeall">Barchasini ko'rish</a>
         </div>
-        <div class="catalog-grid" id="trending-row" style="padding: 0"></div>
+        <div class="movies-row" id="trending-row" style="padding: 0"></div>
       </section>
+      <script>
+        (function () {
+          var toggle = document.getElementById('trending-row-toggle');
+          var row = document.getElementById('trending-row');
+          if (!toggle || !row) return;
+          var expanded = false;
+          toggle.addEventListener('click', function (e) {
+            e.preventDefault();
+            expanded = !expanded;
+            row.classList.toggle('catalog-grid', expanded);
+            row.classList.toggle('movies-row', !expanded);
+            toggle.textContent = expanded ? "Yopish" : "Barchasini ko'rish";
+            toggle.removeAttribute('data-i18n');
+          });
+        })();
+      </script>
 
       <!-- ── NEW ── -->
       <section
@@ -389,7 +405,8 @@
          stagger bilan ochiladi (App.initAnimations reveal orqali). */
       AuroraIntro.boot();
 
-      /* "Yangi chiqmalar" qatorini sichqoncha bilan ushlab surish */
+      /* "Trendda" va "Yangi chiqmalar" qatorlarini sichqoncha bilan ushlab surish */
+      App.initDragScroll("trending-row");
       App.initDragScroll("new-row");
 
       (async function loadHomeMovies() {
