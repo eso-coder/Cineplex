@@ -316,6 +316,7 @@
   <script src="../js/actors_data.js" defer></script>
   <script src="../js/i18n.js"></script>
   <script src="../js/app.js"></script>
+  <script src="../js/api.js"></script>
   <script>
   document.addEventListener('DOMContentLoaded', function () {
     App.initNavbar('actors', '../');
@@ -383,21 +384,19 @@
           ${c.text}
         </div>`).join('');
 
-      const dbMovies = [];
-
       const knownForHTML = (actor.knownFor || []).map(title => `
-        <div class="ap-known-card">
+        <div class="ap-known-card" data-kf-title="${title.replace(/"/g, '&quot;')}">
           <div class="ap-known-ph">${title}</div>
           <div class="ap-known-title">${title}</div>
         </div>`).join('');
 
-      const dbMoviesHTML = dbMovies.length ? `
-        <div class="ap-section animate-in">
-          <div class="ap-section-label">CINEPLEX-DAGi FILMLARI</div>
-          <div class="ap-movies-row">
-            ${dbMovies.map(m => App.buildCard(m, '../')).join('')}
-          </div>
-        </div>` : '';
+      /* Saytdagi filmlari async yuklanadi (pastdagi loadDbMovies) —
+         section hozircha yashirin turadi, topilsa ochiladi */
+      const dbMoviesHTML = `
+        <div class="ap-section animate-in" id="ap-db-section" style="display:none">
+          <div class="ap-section-label">CINEPLEX-DAGI FILMLARI</div>
+          <div class="ap-movies-row" id="ap-db-row"></div>
+        </div>`;
 
       const photoEl = actor.photo
         ? `<img class="ap-photo" src="${actor.photo}" alt="${actor.name}" onerror="this.style.display='none';document.getElementById('ap-photo-ph').style.display='flex'">`
@@ -484,7 +483,7 @@
               </div>
               <div class="ap-stat-card">
                 <div class="ap-stat-label">Cineplex filmlari</div>
-                <div class="ap-stat-value">${dbMovies.length} ta</div>
+                <div class="ap-stat-value" id="ap-db-count">…</div>
               </div>
             </div>
           </div>
@@ -493,6 +492,48 @@
       `;
 
       App.initAnimations();
+
+      /* ── Saytdagi filmlari: cast'ida aktyor nomi tilga olingan kinolar.
+         Backend qidiruvi fuzzy (tavsif ham mos kelishi mumkin), shuning
+         uchun natija cast bo'yicha qat'iy filtrlab olinadi. ── */
+      (async function loadDbMovies() {
+        const countEl = document.getElementById('ap-db-count');
+        try {
+          const resp = await MoviesAPI.list({ search: actor.name, limit: 50 });
+          const nm = actor.name.toLowerCase();
+          const castStr = m => (Array.isArray(m.cast) ? m.cast.join(', ') : String(m.cast || '')).toLowerCase();
+          const dbMovies = (resp.data || []).filter(m => castStr(m).includes(nm));
+          if (countEl) countEl.textContent = dbMovies.length + ' ta';
+          if (!dbMovies.length) return;
+
+          const sec = document.getElementById('ap-db-section');
+          const row = document.getElementById('ap-db-row');
+          if (sec && row) {
+            row.innerHTML = dbMovies.map(m => App.buildCard(m, '../')).join('');
+            sec.style.display = '';
+            if (App.initDragScroll) App.initDragScroll('ap-db-row');
+          }
+
+          /* "Mashhur filmlari" bo'sh kartalariga poster + klik: nomi
+             saytdagi filmga mos kelsa, karta o'sha film sahifasiga olib boradi */
+          const norm = s => String(s || '').toLowerCase().replace(/[^a-z0-9а-яё]+/gi, '');
+          document.querySelectorAll('.ap-known-card[data-kf-title]').forEach(card => {
+            const t = norm(card.dataset.kfTitle);
+            if (!t) return;
+            const hit = dbMovies.find(m =>
+              norm(m.title) === t || norm(m.title_en) === t || norm(m.title_ru) === t);
+            if (!hit) return;
+            const ph = card.querySelector('.ap-known-ph');
+            if (ph && hit.img) {
+              ph.outerHTML = `<img class="ap-known-img" src="${hit.img}" alt="${card.dataset.kfTitle}" loading="lazy">`;
+            }
+            card.style.cursor = 'pointer';
+            card.addEventListener('click', () => App.go('../pages/movie.html?id=' + hit.id));
+          });
+        } catch (e) {
+          if (countEl) countEl.textContent = '0 ta';
+        }
+      })();
 
       /* Read more toggle */
       const rmBtn = document.getElementById('read-more-btn');
