@@ -142,8 +142,8 @@
       } catch {
         newList = [];
       }
-      /* Pastdagi grid avvalgidek faqat 20 ta yangi bilan ishlaydi */
-      const gridList = newList.slice(0, 20);
+      /* Pastdagi grid oxirgi 50 ta yangi bilan ishlaydi */
+      const gridList = newList.slice(0, 50);
       render(gridList);
       App.initGenrePills('genre-bar', genre => {
         const filtered = genre === 'all' ? gridList : gridList.filter(m => (m.genre || []).includes(genre));
