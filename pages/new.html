@@ -118,12 +118,12 @@
          perf-lite'da yashirin qoladi, pastdagi band fallback bo'ladi) -->
     <section class="reel3d-section" id="reel3d-section" hidden>
       <div class="reel3d-tooltip" id="reel3d-tooltip"></div>
-      <div class="reel3d-hint">Suring yoki g'ildirakni aylantiring — kadr ustiga bosing</div>
+      <div class="reel3d-hint">Sichqoncha bilan suring — kadrga 2 marta bosing · pastda barcha yangi kinolar</div>
       <div class="reel3d-fade" id="reel3d-fade"></div>
     </section>
 
-    <!-- Klassik "Yangi chiqmalar" kontenti — FAQAT 3D devor ishga
-         tushmasa (WebGL yo'q / lite rejim) ko'rinadigan fallback -->
+    <!-- Klassik "Yangi chiqmalar" kontenti — 3D devor ostida doim
+         ko'rinadi (pastga scroll qilib kartalarga tushiladi) -->
     <div id="new-classic">
       <div class="catalog-header animate-in">
         <div>
@@ -156,7 +156,7 @@
   <script src="../js/app.js"></script>
   <script src="../js/api.js"></script>
   <!-- ?v= — brauzer keshi eski modulni ushlab qolmasligi uchun -->
-  <script type="module" src="../js/film-reel.js?v=13"></script>
+  <script type="module" src="../js/film-reel.js?v=14"></script>
   <script>
     App.initNavbar('new', '../');
     App.initAnimations();
@@ -216,12 +216,11 @@
             document.getElementById('reel3d-tooltip'),
             document.getElementById('reel3d-fade'),
             reelList,
-            /* wheel: sahifada boshqa kontent yo'q — g'ildirak devorni suradi */
-            { root: '../', wheel: true }
+            /* wheel: false — g'ildirak SAHIFANI scroll qiladi (galereyadan
+               chiqib pastdagi kartalarga tushish mumkin), devor drag bilan */
+            { root: '../', wheel: false }
           );
-          /* Devor ishladi — sahifada FAQAT 3D galereya qoladi */
-          if (ok) document.getElementById('new-classic').style.display = 'none';
-          else sec.hidden = true;
+          if (!ok) sec.hidden = true;
         } catch (e) {
           sec.hidden = true;
           console.warn('[FilmReel] ishga tushmadi:', e);
