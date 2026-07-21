@@ -3,11 +3,16 @@
    Barcha animatsiya qatlamlari shu faylda: har biri alohida class
    bilan ajratilgan — o'chirish/sozlash oson.
 
-   Motion qoidasi (qat'iy):
+   Motion qoidasi (qat'iy) — doimiy UI (hover/scroll/karta/route) uchun:
      • faqat opacity + scale + blur
      • ease-out (var(--ds-ease))
      • barcha vaqtlar --dur-* tokenlar orqali
      • hech qanday slide / bounce / rotation
+
+   Istisno: sayt introsi (1-qatlam) — sessiyada FAQAT BIR MARTA ko'rinadigan
+   bir martalik "logo yig'ilish" sekvensiyasi bo'lgani uchun o'z animatsiya
+   uslubiga ega (rotation + overshoot bounce ruxsat etiladi); qolgan barcha
+   qatlamlar yuqoridagi qat'iy qoidaga bo'ysunadi.
 
    Qatlamlar:
      1. Sayt introsi (birinchi yuklanish, sessiyada 1 marta)   ← shu turda
@@ -25,7 +30,7 @@
   /* Intro faza vaqtlari (desktop) — hammasi token */
   --dur-intro-aurora:     var(--dur-slow);   /* 0.6s — aurora markazdan ochiladi */
   --dur-intro-logo-delay: 0.15s;             /* aurora ochilib turganda logo boshlanadi */
-  --dur-intro-logo-in:    0.4s;              /* logo scale + opacity + blur bilan kiradi */
+  --dur-intro-logo-in:    0.85s;             /* logo: arcalar yig'ilib, so'ng wordmark ochiladi */
   --dur-intro-dwell:      var(--dur-hold);   /* 0.4s — logo joyida turadi */
   --dur-intro-out:        0.4s;              /* logo + overlay yumshoq chiqadi */
 }
@@ -35,7 +40,7 @@
   :root {
     --dur-intro-aurora:     0.35s;
     --dur-intro-logo-delay: 0.06s;
-    --dur-intro-logo-in:    0.26s;
+    --dur-intro-logo-in:    0.6s;
     --dur-intro-dwell:      0.16s;
     --dur-intro-out:        0.24s;
   }
@@ -92,17 +97,16 @@ html.intro-playing body { overflow: hidden; }
   align-items: center;
   text-align: center;
   opacity: 0;
-  transform: scale(0.9);
   filter: blur(8px);
   transition:
-    opacity   var(--dur-intro-logo-in) var(--ds-ease),
-    transform var(--dur-intro-logo-in) var(--ds-ease),
-    filter    var(--dur-intro-logo-in) var(--ds-ease);
-  will-change: opacity, transform, filter;
+    opacity var(--dur-fast) var(--ds-ease),
+    filter  var(--dur-fast) var(--ds-ease);
+  will-change: opacity, filter;
 }
+/* Konteyner tez ochiladi (blur olib tashlanadi) — asosiy "yig'ilish"
+   sekvensiyasini har bir arca/nuqta/wordmark o'zi ichida boshqaradi. */
 .intro-logo.is-in {
   opacity: 1;
-  transform: scale(1);
   filter: blur(0);
 }
 .intro-logo.is-out {
@@ -120,7 +124,59 @@ html.intro-playing body { overflow: hidden; }
   height: 96px;
   color: #fff;
   margin-bottom: 20px;
+  overflow: visible;
 }
+
+/* ── Arcalar: tashqaridan aylanib-kattalashib, ichkaridan tashqariga
+      qarab ketma-ket (stagger) joyiga "yig'iladi" ── */
+.intro-logo-icon .intro-arc {
+  transform-box: view-box;
+  transform-origin: 50px 50px;
+  opacity: 0;
+  transform: rotate(calc(var(--rot) + 115deg)) scale(1.3);
+}
+.intro-logo.is-in .intro-arc-1 { animation: introArcIn 0.42s cubic-bezier(0.34, 1.56, 0.64, 1) 0.05s both; }
+.intro-logo.is-in .intro-arc-2 { animation: introArcIn 0.42s cubic-bezier(0.34, 1.56, 0.64, 1) 0.14s both; }
+.intro-logo.is-in .intro-arc-3 { animation: introArcIn 0.42s cubic-bezier(0.34, 1.56, 0.64, 1) 0.23s both; }
+.intro-logo.is-in .intro-arc-4 { animation: introArcIn 0.42s cubic-bezier(0.34, 1.56, 0.64, 1) 0.32s both; }
+@keyframes introArcIn {
+  0%   { opacity: 0; transform: rotate(calc(var(--rot) + 115deg)) scale(1.3); }
+  55%  { opacity: 1; }
+  100% { opacity: 1; transform: rotate(var(--rot)) scale(1); }
+}
+
+/* ── Markaziy nuqta: arcalar deyarli yig'ilgach "sakrab" paydo bo'ladi ── */
+.intro-logo-icon .intro-dot {
+  transform-box: view-box;
+  transform-origin: 50px 50px;
+  opacity: 0;
+  transform: scale(0);
+}
+.intro-logo.is-in .intro-dot {
+  animation: introDotIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) 0.44s both;
+}
+@keyframes introDotIn {
+  0%   { opacity: 0; transform: scale(0); }
+  60%  { opacity: 1; }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+/* ── Signal halqasi: nuqtadan bir marta tashqariga tarqaladi ── */
+.intro-logo-icon .intro-ping {
+  transform-box: view-box;
+  transform-origin: 50px 50px;
+  opacity: 0;
+  transform: scale(0.2);
+}
+.intro-logo.is-in .intro-ping {
+  animation: introPingOut 0.46s ease-out 0.48s both;
+}
+@keyframes introPingOut {
+  0%   { opacity: 0;   transform: scale(0.2); }
+  25%  { opacity: 0.7; }
+  100% { opacity: 0;   transform: scale(1.6); }
+}
+
 .intro-logo-name {
   font-size: 13.5px;
   font-weight: 700;
@@ -128,6 +184,8 @@ html.intro-playing body { overflow: hidden; }
   text-indent: 0.5em;   /* letter-spacing trailing bo'shlig'ini markazlaydi */
   text-transform: uppercase;
   color: #fff;
+  opacity: 0;
+  transform: translateY(10px);
 }
 .intro-logo-sub {
   margin-top: 12px;
@@ -137,6 +195,32 @@ html.intro-playing body { overflow: hidden; }
   text-indent: 0.3em;
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.35);
+  opacity: 0;
+  transform: translateY(10px);
+}
+/* ── Wordmark: ikonka yig'ilib bo'lgach yumshoq ko'tarilib ochiladi ── */
+.intro-logo.is-in .intro-logo-name {
+  animation: introWordIn 0.32s var(--ds-ease) 0.56s both;
+}
+.intro-logo.is-in .intro-logo-sub {
+  animation: introWordIn 0.32s var(--ds-ease) 0.66s both;
+}
+@keyframes introWordIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Mobilda butun sekvensiya siqiladi (--dur-intro-logo-in qisqarganiga mos,
+   aks holda wordmark exit paytida yarim ochiq holda kesilib qoladi) */
+@media (max-width: 768px) {
+  .intro-logo.is-in .intro-arc-1 { animation-duration: 0.3s; animation-delay: 0.03s; }
+  .intro-logo.is-in .intro-arc-2 { animation-duration: 0.3s; animation-delay: 0.09s; }
+  .intro-logo.is-in .intro-arc-3 { animation-duration: 0.3s; animation-delay: 0.15s; }
+  .intro-logo.is-in .intro-arc-4 { animation-duration: 0.3s; animation-delay: 0.21s; }
+  .intro-logo.is-in .intro-dot   { animation-duration: 0.22s; animation-delay: 0.28s; }
+  .intro-logo.is-in .intro-ping  { animation-duration: 0.34s; animation-delay: 0.30s; }
+  .intro-logo.is-in .intro-logo-name { animation-duration: 0.22s; animation-delay: 0.36s; }
+  .intro-logo.is-in .intro-logo-sub  { animation-duration: 0.22s; animation-delay: 0.42s; }
 }
 
 /* ── Skip tugmasi (opacity bilan sekin paydo bo'ladi) ── */
@@ -188,6 +272,15 @@ html.intro-playing body { overflow: hidden; }
     filter: none !important;
     transition: opacity var(--dur-base) ease !important;
   }
+  .intro-logo-icon .intro-arc,
+  .intro-logo-icon .intro-dot,
+  .intro-logo-name,
+  .intro-logo-sub {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .intro-logo-icon .intro-ping { animation: none !important; opacity: 0 !important; }
   .intro-skip { animation: none; opacity: 0.9; }
   #intro-overlay { transition: opacity var(--dur-base) ease !important; }
 
