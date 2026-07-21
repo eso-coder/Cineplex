@@ -350,11 +350,16 @@ const FilmReel = (() => {
        rejim) g'ildirak sahifani scroll qiladi, devor faqat drag bilan. */
     el.style.touchAction = (isMobile && !opts.wheel) ? 'pan-y' : 'none';
     if (opts.wheel) {
-      el.addEventListener('wheel', (e) => {
+      /* wrapEl'ga ulanadi — kursor tooltip/hint ustida bo'lsa ham ishlaydi.
+         deltaMode normalizatsiyasi: Firefox (1 = qator) va ba'zi
+         sichqonchalarda deltaY piksel emas — aks holda scroll "o'lik" tuyuladi */
+      wrapEl.addEventListener('wheel', (e) => {
         e.preventDefault();
-        scrollY += e.deltaY * 0.004;
-        scrollA += e.deltaX * 0.0009;
-        velY = e.deltaY * 0.0007;
+        const k = e.deltaMode === 1 ? 33 : e.deltaMode === 2 ? wrapEl.clientHeight : 1;
+        const dy = e.deltaY * k, dx = e.deltaX * k;
+        scrollY += dy * 0.006;
+        scrollA += dx * 0.0009;
+        velY = dy * 0.0009;
         lastInput = performance.now();
       }, { passive: false });
     }
@@ -412,10 +417,21 @@ const FilmReel = (() => {
       }
     }
 
-    /* ── Klik/tap → zoom → watch ── */
+    /* ── IKKI marta bosish (chap tugma) → zoom → watch.
+       Oyna ataylab keng (700ms) — sekin ikki bosish ham qabul qilinadi.
+       Bitta bosish endi hech narsa ochmaydi (faqat hover/tooltip). ── */
     let zooming = false;
+    let lastClickT = 0, lastClickX = 0, lastClickY = 0;
+    const DBL_MS = 700, DBL_DIST = 28;
     el.addEventListener('click', (e) => {
       if (zooming || dragDist > 6) return;
+      const nowT = performance.now();
+      const isDbl = (nowT - lastClickT) < DBL_MS &&
+        Math.abs(e.clientX - lastClickX) < DBL_DIST &&
+        Math.abs(e.clientY - lastClickY) < DBL_DIST;
+      lastClickT = nowT; lastClickX = e.clientX; lastClickY = e.clientY;
+      if (!isDbl) return;
+      lastClickT = 0; /* uchinchi bosish yangi juftlik boshlasin */
       let target = hovered;
       if (!target) {
         mouseNdc(e);
