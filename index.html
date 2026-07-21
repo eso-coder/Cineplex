@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CINEPLEX — Premium Strim</title>
     <meta name="description" content="CINEPLEX — filmlar va seriallarni onlayn, yuqori sifatda tomosha qiling. Minglab film va serial bir joyda, o'zbek tilida." />
     <link rel="canonical" href="https://www.cineplex.uz/" />
@@ -17,7 +17,7 @@
     <!-- Kuchsiz qurilma (Smart TV va h.k.) aniqlanadi — CSS'dan OLDIN,
          birinchi paint'dan boshlab yengil rejim amal qilishi uchun -->
     <script src="js/perf-lite.js?v=3"></script>
-    <link rel="stylesheet" href="css/main.css?v=5" />
+    <link rel="stylesheet" href="css/main.css?v=6" />
     <link rel="stylesheet" href="css/design-system.css" />
     <link rel="stylesheet" href="css/aurora-motion.css" />
     <link rel="stylesheet" href="css/aurora-home.css" />
@@ -57,18 +57,19 @@
       <!-- ── HERO ── -->
       <section class="hero-section animate-in" id="hero-section" style="transition-delay: 0s">
         <div class="hero-featured" id="hero-card">
-          <!-- Poster fallback -->
+          <!-- Poster fallback.
+               `src=""` QO'YMAYMIZ: bo'sh src sahifaning O'ZINI (HTML) rasm
+               sifatida yuklashga urinadi — mobil tarmoqda ortiqcha so'rov va
+               konsolda xato beradi. JS haqiqiy posterni o'zi qo'yadi. -->
           <img
             class="hero-featured-img"
             id="hero-img"
-            src=""
             alt=""
           />
           <!-- YouTube trailer — autoplays muted in background -->
           <iframe
             class="hero-bg-iframe"
             id="hero-iframe"
-            src=""
             frameborder="0"
             allow="autoplay; encrypted-media; compute-pressure"
             allowfullscreen
@@ -473,6 +474,9 @@
       /* YouTube IFrame API — ovozni QAYTA YUKLAMASDAN (qotirмasdan) yoqish uchun */
       var ytHeroPlayer = null;
       var ytApiReady   = false;
+      /* Kutilmagan pauzadan qayta ishga tushirish urinishlari (aylanmani
+         to'xtatuvchi hisoblagich — pastdagi onStateChange'ga qarang) */
+      var heroResumeTries = 0;
       /* API skriptini yuklab qo'yamiz (bir marta) */
       (function loadYTApi() {
         if (window.CP_LITE) return; /* lite: treyler yo'q — YT API ham kerak emas */
@@ -509,6 +513,21 @@
                 }
                 if (e.data === YT.PlayerState.PLAYING && ytHeroPlayer) {
                   ytHeroPlayer.setPlaybackQuality('hd1080');
+                  heroResumeTries = 0;
+                }
+                /* MOBIL BUG: treyler o'z-o'zidan pauza bo'lib qolganda
+                   (fon tab, tarmoq uzilishi, telefon qo'ng'irog'i) YouTube
+                   iframe ICHIDA o'zining ⏮ ⏸ ⏭ boshqaruvini ko'rsatadi —
+                   ekran o'rtasida ortiqcha tugmalar paydo bo'lardi. Iframe
+                   `pointer-events:none` bo'lgani uchun foydalanuvchi ularni
+                   bosa ham olmaydi, ya'ni bu holatdan chiqib bo'lmasdi.
+                   Yechim: pauzani sezib qayta ishga tushiramiz. Cheklangan
+                   urinish — autoplay taqiqlangan brauzerda cheksiz aylanmaslik
+                   uchun (u holda poster ko'rinib qolaveradi). */
+                if (e.data === YT.PlayerState.PAUSED && ytHeroPlayer
+                    && heroResumeTries < 3) {
+                  heroResumeTries++;
+                  try { ytHeroPlayer.playVideo(); } catch (err) { /* ignore */ }
                 }
               },
               /* YouTube o'zining adaptiv bitrate algoritmi bilan sifatni pasaytirsa —
@@ -530,7 +549,10 @@
         if (ytHeroPlayer && ytHeroPlayer.stopVideo) {
           try { ytHeroPlayer.stopVideo(); } catch (e) {}
         } else if (ifr) {
-          ifr.src = '';
+          /* `ifr.src = ''` iframe'ga SAHIFANING O'ZINI yuklaydi (bo'sh qiymat
+             joriy URL'ga aylanadi) — hero ichida butun sayt qayta yuklanardi.
+             Atributni olib tashlash iframe'ni haqiqatan bo'shatadi. */
+          ifr.removeAttribute('src');
         }
       }
       /* YouTube trailerни yuklash — API tayyor bo'lsa loadVideoById (qotmaydi),
@@ -538,6 +560,7 @@
       function loadHeroYouTube(videoId) {
         var ifr = document.getElementById('hero-iframe');
         if (!ifr) return;
+        heroResumeTries = 0; /* yangi film — qayta urinish hisobi noldan */
         if (ytHeroPlayer && ytHeroPlayer.loadVideoById) {
           ytHeroPlayer.loadVideoById({ videoId: videoId });
           if (heroMuted) ytHeroPlayer.mute();
@@ -559,6 +582,22 @@
          admin ro'yxati bo'sh bo'lsa hero bo'limi yashiriladi. */
       var heroFilms = [];
       var heroClickableCfg = true;
+
+      /* S3 videoni UZIB QO'YISH.
+         BUG edi: `video.src = ''` manbani bo'shatmaydi — bo'sh qiymat joriy
+         sahifa URL'iga aylanadi va brauzer HTML'ni video sifatida yuklashga
+         urinadi (keraksiz so'rov + konsolda media xatosi, mobil tarmoqda
+         sezilarli). To'g'ri usul — atributni olib tashlab, load() chaqirish. */
+      function detachHeroVideo(v) {
+        if (!v) return;
+        try {
+          v.pause();
+          v.removeAttribute('src');
+          v.load();
+        } catch (e) { /* ignore */ }
+        v.style.display = 'none';
+        v.classList.remove('visible');
+      }
 
       /* S3 / to'g'ridan-to'g'ri video URL ekanligini tekshirish */
       function isS3Trailer(url) {
@@ -634,7 +673,10 @@
         startHeroTimer();
 
         setTimeout(function() {
-          img.src  = d.img || '';
+          /* `img.src = ''` sahifaning o'zini rasm sifatida yuklashga urinadi —
+             posteri yo'q film uchun atributni butunlay olib tashlaymiz. */
+          if (d.img) img.src = d.img;
+          else img.removeAttribute('src');
           img.alt  = d.logoMain || '';
           img.style.opacity = '1';
 
@@ -673,7 +715,7 @@
           if (window.CP_LITE) {
             stopHeroYouTube(iframe);
             iframe.classList.remove('visible');
-            if (heroVideo) { heroVideo.src = ''; heroVideo.style.display = 'none'; heroVideo.classList.remove('visible'); }
+            detachHeroVideo(heroVideo);
           } else if (d.trailer && isS3Trailer(d.trailer)) {
             /* S3 / to'g'ridan-to'g'ri video */
             stopHeroYouTube(iframe);
@@ -689,7 +731,7 @@
             }
           } else if (d.trailer) {
             /* YouTube — YT IFrame API orqali (ovozni qayta yuklamasdan yoqish uchun) */
-            if (heroVideo) { heroVideo.src = ''; heroVideo.style.display = 'none'; heroVideo.classList.remove('visible'); }
+            detachHeroVideo(heroVideo);
             currentTrailerId = d.trailer;
             loadHeroYouTube(d.trailer);
             heroFadeTimer = setTimeout(function() {
@@ -697,7 +739,7 @@
             }, 500);
           } else {
             stopHeroYouTube(iframe);
-            if (heroVideo) { heroVideo.src = ''; heroVideo.style.display = 'none'; heroVideo.classList.remove('visible'); }
+            detachHeroVideo(heroVideo);
           }
         }, 280);
       }

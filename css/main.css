@@ -5105,8 +5105,12 @@ video.hero-bg-iframe {
   .lang-wrap .lang-btn span {
     display: none;
   }
+  /* Navbar tugmalari 32–34px baland edi — telefonda tegish uchun kichik.
+     min-height 40px (navbar 60px — bemalol sig'adi). */
   .lang-btn {
     border-radius: var(--r-pill);
+    min-height: 40px;
+    justify-content: center;
   }
 
   /* Auth: register is in the mobile menu — keep navbar compact (login only) */
@@ -5117,8 +5121,10 @@ video.hero-bg-iframe {
     display: none !important;
   }
   .nav-login-btn {
-    padding: 7px 12px;
+    padding: 7px 14px;
     font-size: 13.5px;
+    min-height: 40px;
+    justify-content: center;
   }
 
   /* Hero */
@@ -5129,20 +5135,32 @@ video.hero-bg-iframe {
   }
   /* MUHIM: mobil brauzerda `vh` address-bar yashirilganda o'zgarib, scroll
      paytida hero (treyler) cho'ziladi. `svh` (kichik viewport) — BARQAROR:
-     sahifaga kirgandagi balandlik scroll davomida o'zgarmaydi. */
+     sahifaga kirgandagi balandlik scroll davomida o'zgarmaydi.
+     88svh ekranning ~87%'ini egallab, pastdagi "Trendda" qatori umuman
+     ko'rinmay qolardi. 72svh — treyler baribir asosiy blok, lekin birinchi
+     film qatori ham ekranga ilinadi (max-height uzun telefonlarda cheklaydi). */
   .hero-featured {
-    height: 88svh;
-    min-height: 480px;
+    height: 72svh;
+    min-height: 430px;
+    max-height: 620px;
   }
   .hero-bg-iframe {
     display: block;            /* telefon formatda ham trailer ko'rinsin */
     /* iframe kengligi ham svh asosida — scroll paytida o'zgarmaydi */
-    width: max(100%, calc(88svh * 16 / 9));
+    width: max(100%, calc(72svh * 16 / 9));
+  }
+  /* Blur/fade qatlamlari hero balandligiga nisbatan — 220/240px qisqargan
+     hero'ning yarmini bosib, treylerni xira qilib qo'yardi. */
+  .hero-bottom-blur {
+    height: 140px;
+  }
+  .hero-bottom-fade {
+    height: 170px;
   }
   .hero-content {
     left: 20px;
     right: 20px;
-    bottom: 30px;
+    bottom: 46px;
   }
   .hero-year {
     font-size: 12px;
@@ -5188,21 +5206,25 @@ video.hero-bg-iframe {
     padding: 11px 18px;
     font-size: 14.5px;
   }
+  /* Tegish sohasi kamida 44px (barmoq uchun eng kichik ishonchli o'lcham) */
   .hero-volume-btn {
-    width: 40px;
-    height: 40px;
-    bottom: 26px;
+    width: 44px;
+    height: 44px;
+    bottom: 62px;
     right: 16px;
   }
 
-  /* Hero indicators — logo pastida, meta (IMDb/yosh/davomiylik) qatoridan
-     YUQORIDA joylashadi. hero-content pastdan (bottom) tortiladi va
-     ichida year → logo → meta → tugmalar ketma-ketligida joylashgani
-     uchun, meta/tugmalar balandligi taxminan barqaror bo'lgani sababli
-     "bottom" bilan barcha filmlar uchun ishonchli joylashadi. */
+  /* Hero indicators — BUG edi: `bottom:108px` ularni logo bilan meta
+     qatori orasidagi ~16px'lik tirqishga tiqib qo'yardi (meta'gacha atigi
+     4px qolardi — siqilgan, tasodifan bosiladigan holat). Endi hero'ning
+     eng pastida, tugmalar ostida — mobil karusel uchun odatiy joy. */
   .hero-indicators {
     top: auto;
-    bottom: 108px;
+    /* padding tegish sohasini konteyner ichida qoldiradi — `overflow:hidden`
+       (ko'p film bo'lganda gorizontal toshishni to'sadi) uni kesmaydi.
+       6px + 12px padding → chiziq markazi ~19px balandlikda. */
+    bottom: 6px;
+    padding: 12px 0;
     left: 20px;
     right: 20px;
     justify-content: center;
@@ -5215,6 +5237,22 @@ video.hero-bg-iframe {
   .hero-ind {
     width: 26px;
     height: 2.5px;
+    position: relative;
+    /* `overflow:hidden` (asosiy qoidada) ko'rinmas tegish kengaytmasini
+       kesib tashlardi. Fill kengligi baribir 0–100% oralig'ida — parent'dan
+       chiqib keta olmaydi, shuning uchun kesish shart emas. */
+    overflow: visible;
+  }
+  /* 2.5px balandlikdagi chiziqni barmoq bilan bosib bo'lmasdi. Ko'rinmas
+     kengaytma chiziq o'lchamini o'zgartirmasdan tegish sohasini ~26px
+     qiladi (chiziqlar orasidagi gap 7px — ustma-ust tushmaydi). */
+  .hero-ind::after {
+    content: '';
+    position: absolute;
+    left: -3px;
+    right: -3px;
+    top: -12px;
+    bottom: -12px;
   }
   .hero-ind.active {
     width: 38px;
@@ -5229,8 +5267,8 @@ video.hero-bg-iframe {
     width: 28px;
   }
   .hero-nav-btn {
-    width: 36px;
-    height: 36px;
+    width: 44px;
+    height: 44px;
   }
   .hero-nav-btn.hero-btn-next {
     right: 12px;
